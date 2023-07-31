@@ -59,13 +59,13 @@ def load_file(file_name):
             return loaded_file
     
     except(FileNotFoundError, pickle.UnpicklingError):
-        print("Error with 'duration' file load")
+        print(f"Error with {file_name} file load")
 
-def save_file (file_name, varible):
+def save_file (file_name, variable):
     try:
         with open(file_name, "wb") as file:
-            pickle.dump(varible, file)
-        print(f"{varible} successfully saved to '{file_name}'")
+            pickle.dump(variable, file)
+        print(f"{variable} successfully saved to '{file_name}'")
 
     except (PermissionError, FileNotFoundError, pickle.PicklingError, TypeError) as e:
         print(f"Error occurred: {type(e).__name__} - {e}")
@@ -107,7 +107,7 @@ class MyFrame(ctk.CTkFrame):
         self.entry_habit2 = ctk.CTkEntry(self,placeholder_text="Habit2",width=180)
         self.entry_habit2.grid(row=2, column=0, padx=10, pady=10)
 
-        self.entry_duration = ctk.CTkEntry(self,placeholder_text="Duration",width=70)
+        self.entry_duration = ctk.CTkEntry(self, placeholder_text="Duration",width=70)
         self.entry_duration.grid(row=3, column=3, padx=10, pady=10)
 
         #Buttons
@@ -174,7 +174,7 @@ class MyFrame(ctk.CTkFrame):
     def set_habit_duration(self):#<- Python has a two pass interpreter for classes so inside a class methods and vars can be called before defined.
         set_duration = int(self.entry_duration.get())
         updated_loaded_duration = load_duration() 
-        if updated_loaded_duration == 0:
+        if updated_loaded_duration <= 0:
             self.entry_habit1.configure(state="normal", border_width=1, border_color="grey") # configuring the entry boxes style on, 0 duration load-up
             self.entry_habit2.configure (state="normal", border_width=1, border_color="grey") # configuring the entry boxes style on, 0 duration load-up
             self.label_number_of_days_remaining.configure (text = set_duration)
@@ -245,6 +245,7 @@ class MyFrame2(ctk.CTkFrame):
         MyFrame.set_habit_duration()
         self.set_dur
         pass
+##############################################################
 
     def set_month_focus(self):
         if self.remaining_days == 0:
@@ -526,8 +527,14 @@ class App(ctk.CTk):
 
         #############################################
         """ Set the duration based on elapsed days """ 
-        if:
-            self.my_frame.
+        # needs to be turned into a function #
+        
+        loaded_duration = load_duration()
+        if loaded_duration == 0:
+            
+            print(f"0 > [{loaded_duration}] no elapse update required.")
+            pass
+        
         else:
             # get the elapsed number of days
             self.get_elapsed_days()
