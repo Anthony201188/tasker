@@ -8,50 +8,8 @@ from link_click import ClickableLinkLabel
 ########################################  UTILS #####################################
 """  persistance used to save load and update stored data on opening of app """
 
-#note ~ think I could make this more concise by putting all data in one file and loading that?
-#note ~ or a change the functions here to load(file_name) and save(file_name)
-# load duration file
-def load_duration():
-    try:
-        with open("duration.pkl", "rb") as file:
-            duration = pickle.load(file)
-            print(f"duration.pkl successfully loaded:{duration}")
-            return duration
-    
-    except(FileNotFoundError, pickle.UnpicklingError):
-        print("Error with 'duration' file load")
-
-def save_duration(duration):
-    try:
-        with open("duration.pkl", "wb") as file:
-            pickle.dump(duration, file)
-        print(f"Duration successfully saved to 'duration.pkl':{duration}")
-
-    except (PermissionError, FileNotFoundError, pickle.PicklingError, TypeError) as e:
-        print(f"Error occurred: {type(e).__name__} - {e}")
-
-# load closing date file
-def load_closing_date():
-    try:
-        with open("closing_date.pkl", "rb") as file:
-            closing_date = pickle.load(file)
-            print(f"closing_date.pkl successfully loaded:{closing_date}")
-            return closing_date
-    
-    except(FileNotFoundError, pickle.UnpicklingError):
-        print("Error with 'closing_date.pkl' file load")
-
-def save_closing_date(elapse): # elapse = elapsed time in epoch whole days
-    try:
-        with open("closing_date.pkl", "wb") as file:
-            pickle.dump(elapse, file)
-        print(f"Duration successfully saved to 'closing_date.pkl':{elapse}")
-
-    except (PermissionError, FileNotFoundError, pickle.PicklingError, TypeError) as e:
-        print(f"Error occurred: {type(e).__name__} - {e}")
-
-###################################### GENERIC LOAD AND SAVE #########################
 def load_file(file_name):
+    """ generic load local binary file, takes a filename as a string arg, returns none """
     try:
         with open(file_name, "rb") as file:
             loaded_file = pickle.load(file)
@@ -62,6 +20,8 @@ def load_file(file_name):
         print(f"Error with {file_name} file load")
 
 def save_file (file_name, variable):
+    """ generic save binary file, takes file name as a string and the varialbe you want to save
+     returns none """
     try:
         with open(file_name, "wb") as file:
             pickle.dump(variable, file)
@@ -70,11 +30,17 @@ def save_file (file_name, variable):
     except (PermissionError, FileNotFoundError, pickle.PicklingError, TypeError) as e:
         print(f"Error occurred: {type(e).__name__} - {e}")
 
+def on_close():
+    closing_time = time.time()
+    save_file("closing_date.pkl", closing_time)
+    print(f"App closed at epoch time: {closing_time}")
+    app.destroy()  # Close the CTKinter app
+
 
 #####################################################################################
 
-loaded_duration = load_duration() #<- should move this to the bottom of script and add if main name statment
-loaded_closing_date = load_closing_date()
+#loaded_duration = load_duration() #<- should move this to the bottom of script and add if main name statment
+#loaded_closing_date = load_closing_date()
 
 ###################### DEFINING FRAMES AND WIDGETS ####################################
 #Habit Tasks
@@ -97,7 +63,7 @@ class MyFrame(ctk.CTkFrame):
         self.label2.grid(row=3, column=0, padx=10, pady=5)
 
         #Number of days label
-        self.label_number_of_days_remaining = ctk.CTkLabel(self,anchor=ctk.S, text=loaded_duration,width=60, height=60)
+        self.label_number_of_days_remaining = ctk.CTkLabel(self,anchor=ctk.S, text="loading duration...",width=60, height=60) 
         self.label_number_of_days_remaining.grid(row=3, column=2, padx=10, pady=5)
 
         #Entries
@@ -134,54 +100,135 @@ class MyFrame(ctk.CTkFrame):
         self.grid_rowconfigure(3, weight=1) 
         self.grid_columnconfigure(2, weight=1)
 
-        #set
+        ############## logic ################
 
-        #set the entry text on start
-        self.set_entry_text_on_start(self.habit1, self.habit2)
+    
+    
+    ############## methods ##############
 
-    def set_entry_text_on_start(self, text1,text2):
-        #updates duration
-        self.updated_loaded_duration = load_duration()
-        self.text1 = text1
-        self.text2 = text2
-        #inserts saved text
-        self.entry_habit1.insert(0,text1)
-        self.entry_habit2.insert(0,text2)
-        # disables input if duration not complete
-        if self.updated_loaded_duration != 0:
-            self.entry_habit1.configure(state="disabled", border_width=3, border_color="black")
-            self.entry_habit2.configure(state="disabled", border_width=3, border_color="black")
+    #habit functions
+    def load_habits(self):
+        """ Loads duration from "habit1/2.pkl files" and returns them as a tuple. """
+        self.text1 = load_file("habit1.pkl")
+        self.text2 = load_file("habit2.pkl")
+        return self.text1, self.text2  #<-returns tuple
 
-    def set_habits(self):
-        #updates duration
-        updated_loaded_duration = load_duration()
-        if updated_loaded_duration == 0:
-            # Sets the entry box border and disables input
-            self.entry_habit1.configure(state="disabled", border_width=3, border_color="black")
-            self.entry_habit2.configure(state="disabled", border_width=3, border_color="black")
+    def set_habits(self, tuple_of_strings):
+        """ Takes a tuple of two strings, unpacks them and sets them to their respective labels.
+        Also then disables the entreis and changes the border weight to show entries as 'set' """
+        
+        #unpack tuple
+        self.text1 ,self.text2 = tuple_of_strings
+        
+        #insert text to labels
+        self.entry_habit1.insert(0,self.text1)
+        self.entry_habit2.insert(0,self.text2)
+        
+        #disables the entries and thickens the border to show that they are 'set'
+        self.entry_habit1.configure(state="disabled", border_width=3, border_color="black")
+        self.entry_habit2.configure(state="disabled", border_width=3, border_color="black")
 
-            #gets the entry text and saves it
-            habit1 = self.entry_habit1.get()
-            habit2 = self.entry_habit2.get()
-            save_file("habit1.pkl", habit1)
-            save_file("habit1.pkl", habit2)
+    def save_habits(self):
+        """ saves whatever text is currently in the habit1/2 entries and saves it in a serial .pkl file locally """
+
+        #gets the entry text and saves it
+        habit1 = self.entry_habit1.get()
+        habit2 = self.entry_habit2.get()
+        save_file("habit1.pkl", habit1)
+        save_file("habit1.pkl", habit2)
+
+
+    #duration functions
+    def load_duration(self):
+        """ load_file method specifically for loading 'duration' file, returns duration"""
+
+        return load_file("duration.pkl")
+        
+    def set_duration(self, duration_to_set):
+        """ takes an integers as an arg and sets the duration label to it"""
+
+        self.label_number_of_days_remaining.configure (text = duration_to_set)
+        print (f"habit duration set to:{duration_to_set}")
+
+        #############################################
+        """ Set the duration based on elapsed days """ 
+        # needs to be turned into a function #
+        
+        loaded_duration = load_duration()
+        if loaded_duration == 0:
+            
+            print(f"0 > [{loaded_duration}] no elapse update required.")
+            pass
+        
         else:
-            print("Be patient you can't change habit until duration = 0 days")
+            # get the elapsed number of days
+            self.get_elapsed_days()
+            print("get_elapsed_days() successfully called")
+
+            # Schedule the duration update function to run every day
+            self.update_duration()
+            print("update_duration() successfully called")
+            
+            #Save updated duration
+            save_duration(self.duration) 
+
+            #Save the elapse
+            save_closing_date(self.elapse)
+
+    def get_duration(self):
+        """ gets whatever is in the 'duration' entry, returns it as an int """
+        self.duration = int(self.entry_duration.get())
+        return self.duration            
+    
+    def schedule_update(self, duration_hours, function):
+        """Schedule the passed function  to run after the specified number of hours."""
+        milliseconds = duration_hours * 60 * 60 * 1000
+        self.after(milliseconds, function)
+
+    def update_duration(self):
+        """ updates the duration using the elapsed days and set duration functions, finally scheduling the next update for 24 hours time """
+
+        # Update the duration based on elapsed days
+        self.whole_elapsed_days = self.get_elapsed_days()
+        print("Number of days to deduct from duration:",self.whole_elapsed_days)
+
+        # set updated duration
+        self.set_duration(self.whole_elapsed_days)
+
+        # Schedule next update
+        self.schedule_update(24, self.update_duration)
+
+    def save_duration(self, duration_to_save):
+        """ Takes a single int as a durtion, saves that to the serial 'duration.pkl' file locally """
+        save_file("duration.pkl", duration_to_save)
+
+    def get_elapsed_days(self)->int:
+        """  finds the number of elapsed days between app open and close, uses the diffference between file 'closing_date.pkl'  """
+        # get the loaded closing date (float)
+        self.loaded_date = load_file("closing_date.pkl")
+
+        # set the start date for duration calculation (float)
+        self.start_date = time.time()
+
+        # Calulate the difference between closing date and date now.
+        self.difference = self.start_date - self.loaded_date
+        print("Float difference in seconds", self.difference)
+
+        # Extract the number of whole days from the time float.
+        self.elapse = round(self.difference / (24 * 60 * 60))  # 24hrs * 60m * 60s #<-should change duration by 1 @ 1400 CET as the epoch time runs from UTC
+        print("Elapsed epoch days:",self.elapse) #should be a single number of days as an int e.g. 1 or 2
+        print(type(self.elapse))
+        return self.elapse
+    
+    #combined functions
+
+    # TODO
 
 
-# NOTE: set duration and set habits buttons might need to be combined
-# also if duration == 0 not only do the entreis need to be renabled but the save files need to be set to empty strings to avoid old habits getting re-set automatically
-    def set_habit_duration(self):#<- Python has a two pass interpreter for classes so inside a class methods and vars can be called before defined.
-        set_duration = int(self.entry_duration.get())
-        updated_loaded_duration = load_duration() 
-        if updated_loaded_duration <= 0:
-            self.entry_habit1.configure(state="normal", border_width=1, border_color="grey") # configuring the entry boxes style on, 0 duration load-up
-            self.entry_habit2.configure (state="normal", border_width=1, border_color="grey") # configuring the entry boxes style on, 0 duration load-up
-            self.label_number_of_days_remaining.configure (text = set_duration)
-            save_duration(set_duration)
-            print (f"habit duration set to:{set_duration}")
-        else:
-            print("Be patient you can't change habit until duration = 0 days")
+
+
+
+
 
 
 #Monthly focus
@@ -525,76 +572,21 @@ class App(ctk.CTk):
         self.button_finish = ctk.CTkButton(self, text="Finish for the day \n Save All",command=button_event, height=60, width=85 ) 
         self.button_finish.grid(row=0, column=3, padx=20)
 
-        #############################################
-        """ Set the duration based on elapsed days """ 
-        # needs to be turned into a function #
-        
-        loaded_duration = load_duration()
-        if loaded_duration == 0:
-            
-            print(f"0 > [{loaded_duration}] no elapse update required.")
-            pass
-        
-        else:
-            # get the elapsed number of days
-            self.get_elapsed_days()
-            print("get_elapsed_days() successfully called")
 
-            # Schedule the duration update function to run every day
-            self.update_duration()
-            print("update_duration() successfully called")
-            
-            #Save updated duration
-            save_duration(self.duration) 
 
-            #Save the elapse
-            save_closing_date(self.elapse)
-    
-    def update_duration(self):
-        # Update the duration based on elapsed days
-        self.whole_elapsed_days = self.elapse - loaded_closing_date #<- check the maths here seems to be working backwards
-        print(type(self.duration),type(self.whole_elapsed_days))
-        self.duration -= self.whole_elapsed_days
-        print("Number of days to deduct from duration:",self.whole_elapsed_days)
 
-        self.my_frame.label_number_of_days_remaining.configure(text=self.duration)
-        
-        #re-enable entries on zero duration
-        if self.duration == 0:
-            self.my_frame.entry_habit1.configure(state="normal", border_width=1,)
-            self.my_frame.entry_habit1.configure(state="normal", border_width=1,)
-        
-        else:
-            # Schedule the next update after 24 hours (1 day) / after method noramlly in milliseconds(1000)
-            self.after(24 * 60 * 60 * 1000, self.update_duration)
-    
-    def get_elapsed_days(self):
 
-        # Set the initial duration (in days)
-        self.duration = loaded_duration
-
-        #set the loaded closing date (float)
-        self.loaded_date = loaded_closing_date
-
-        # Save the start date for duration calculation
-        self.start_date = time.time()
-
-        # Calulate the difference between closing date and date now.
-        self.difference = self.start_date - self.loaded_date
-        print("Float difference in seconds", self.difference)
-
-        # Extract the number of whole days from the time float.
-        self.elapse = round(self.difference / (24 * 60 * 60))  # 24hrs * 60m * 60s #<- IMPORTANT watch for errors, should change duration by 1 @ 1400 CET as the epoch time runs from UTC
-        print("Elapsed epoch days:",self.elapse) #note this will be an epoch number of days ala "19562" @ time of writing
-        
 
 
 
  ############################################################################################       
 
-app = App()
-app.title("Tasker")
-#app.iconify()
-app.mainloop()
+if __name__ == "__main__":
+    print(" ran from outside")
+    app = App()
+    #app.title("Tasker")
+    #app.iconify()
+    app.protocol("WM_DELETE_WINDOW", on_close)
+    app.mainloop()
 
 
