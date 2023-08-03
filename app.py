@@ -1,4 +1,4 @@
-import class_def
+from class_def import *
 import pickle
 import customtkinter as ctk
 import time
@@ -31,18 +31,24 @@ def save_file (file_name, variable):
         print(f"Error occurred: {type(e).__name__} - {e}")
 
 def on_close():
+
+    # save time on close for elapse
     closing_time = time.time()
     save_file("closing_date.pkl", closing_time)
     print(f"App closed at epoch time: {closing_time}")
+    
+    # save habit1/2 on close
+    app.my_frame.save_habits()
+
+    # save duration on close
+    app.my_frame.save_duration(app.my_frame.get_current_duration())
+    
     app.destroy()  # Close the CTKinter app
 
 
 #####################################################################################
 
-#loaded_duration = load_duration() #<- should move this to the bottom of script and add if main name statment
-#loaded_closing_date = load_closing_date()
-
-###################### DEFINING FRAMES AND WIDGETS ####################################
+###################### DEFINING FRAMES AND WIDGETS ###################################
 #Habit Tasks
 class MyFrame(ctk.CTkFrame):
 
@@ -77,11 +83,12 @@ class MyFrame(ctk.CTkFrame):
         self.entry_duration.grid(row=3, column=3, padx=10, pady=10)
 
         #Buttons
-        self.button = ctk.CTkButton(self, text="set habits",command=self.set_habits ,height=28, width=28 ) 
+        self.button = ctk.CTkButton(self, text="set habits and duration",command=self.set_habits_and_duration ,height=28, width=28 ) 
         self.button.grid(row=1, column=3, padx=20)
 
-        self.button2 = ctk.CTkButton(self, text="set duration",command=self.set_habit_duration, height=28, width=28 ) 
-        self.button2.grid(row=2, column=3, padx=20)
+        #TODO - remove once button placement is correct
+        #self.button2 = ctk.CTkButton(self, text="set duration",command=self.xxxxxx, height=28, width=28 ) 
+        #self.button2.grid(row=2, column=3, padx=20)
 
         #Checkboxes
         check_var = ctk.StringVar(value="off") #need to compete the get and command events for this 
@@ -92,22 +99,48 @@ class MyFrame(ctk.CTkFrame):
         self.check2 = ctk.CTkCheckBox(self, text="Done", variable=check_var2, onvalue="on", offvalue="off") #"command=checkbox_event," needs to be added to the end 
         self.check2.grid(row=2, column=2)
 
-        #Load the habits
-        self.habit1 =load_file("habit1.pkl")
-        self.habit2 = load_file("habit2.pkl")
+        #TODO - remove - Load the habits
+        #self.habit1 =load_file("habit1.pkl")
+        #self.habit2 = load_file("habit2.pkl")
 
         # configure grid system
         self.grid_rowconfigure(3, weight=1) 
         self.grid_columnconfigure(2, weight=1)
 
-        ############## logic ################
+        ############## on-start control logic ################
+        # TODO
+
+        ##duration
+        #load duration
+        self.loaded_duration = self.load_duration() 
+
+        #updates the duration based on elapsed time then schedules next update for 24hrs
+        self.update_duration()
+
+        #gets the duration and saves it locally
+        self.save_duration(self.get_current_duration())
+
+        # on-close function edited for save duration for file persistance 
+        
+        ## habits
+        #load the habit files as a tuple
+        self.loaded_habits = self.load_habits()
+
+        # re-set the entries or load the loaded vals into the habit1/2 entries.
+        if self.loaded_duration == 0:
+            self.reset_habits()
+        else:
+            self.set_habits(self.loaded_habits)
+
+        # on-close function edited to save habits for file persistance 
+        ##
 
     
     
     ############## methods ##############
 
     #habit functions
-    def load_habits(self):
+    def load_habits(self)->tuple:
         """ Loads duration from "habit1/2.pkl files" and returns them as a tuple. """
         self.text1 = load_file("habit1.pkl")
         self.text2 = load_file("habit2.pkl")
@@ -117,8 +150,14 @@ class MyFrame(ctk.CTkFrame):
         """ Takes a tuple of two strings, unpacks them and sets them to their respective labels.
         Also then disables the entreis and changes the border weight to show entries as 'set' """
         
+        #Remove current text
+        self.entry_habit1.delete(0,999) #<- TODO - doesnt seem to work. ~ doesnt support "-1"
+        self.entry_habit2.delete(0,999)
+        print("deleting entries now")
+
         #unpack tuple
         self.text1 ,self.text2 = tuple_of_strings
+        print("habit tuple:", self.text1, self.text2)
         
         #insert text to labels
         self.entry_habit1.insert(0,self.text1)
@@ -137,6 +176,30 @@ class MyFrame(ctk.CTkFrame):
         save_file("habit1.pkl", habit1)
         save_file("habit1.pkl", habit2)
 
+    def get_habits(self)-> tuple:
+        """ gets the string val currently in enties habit1/2, returns a tuple of local vals """
+        
+        #get the text in the habits entries
+        habit1 = self.entry_habit1.get()
+        habit2 = self.entry_habit2.get()
+        return habit1, habit2
+
+    def reset_habits(self):
+        """ enables the habit entries and resets the habit1/2 persistance files back to default text """
+        
+        #enables the entries and reduces border width and colour to show'reset'
+        self.entry_habit1.configure(state="normal", border_width=1, border_color="grey")
+        self.entry_habit2.configure(state="normal", border_width=1, border_color="grey")
+        
+        # entry 1 delete and reset default text
+        self.entry_habit1.delete(0,-1)
+        self.entry_habit1.insert(0, "habit1")
+        
+        # entry 2 delete and reset default text
+        self.entry_habit2.delete(0,-1)
+        self.entry_habit2.insert(0, "habit2")
+
+        self.save_habits()
 
     #duration functions
     def load_duration(self):
@@ -150,35 +213,15 @@ class MyFrame(ctk.CTkFrame):
         self.label_number_of_days_remaining.configure (text = duration_to_set)
         print (f"habit duration set to:{duration_to_set}")
 
-        #############################################
-        """ Set the duration based on elapsed days """ 
-        # needs to be turned into a function #
-        
-        loaded_duration = load_duration()
-        if loaded_duration == 0:
-            
-            print(f"0 > [{loaded_duration}] no elapse update required.")
-            pass
-        
-        else:
-            # get the elapsed number of days
-            self.get_elapsed_days()
-            print("get_elapsed_days() successfully called")
-
-            # Schedule the duration update function to run every day
-            self.update_duration()
-            print("update_duration() successfully called")
-            
-            #Save updated duration
-            save_duration(self.duration) 
-
-            #Save the elapse
-            save_closing_date(self.elapse)
-
-    def get_duration(self):
-        """ gets whatever is in the 'duration' entry, returns it as an int """
-        self.duration = int(self.entry_duration.get())
+    def get_entry_duration(self)->str:
+        """ gets whatever is in the 'duration' entry, returns it as an str """
+        self.duration = self.entry_duration.get()
         return self.duration            
+    
+    def get_current_duration(self)-> int:
+        """ gets whatever is currently set as the remaining days label and returns it as str. """
+        current_duration = int(self.label_number_of_days_remaining.cget("text"))
+        return current_duration
     
     def schedule_update(self, duration_hours, function):
         """Schedule the passed function  to run after the specified number of hours."""
@@ -221,14 +264,32 @@ class MyFrame(ctk.CTkFrame):
         return self.elapse
     
     #combined functions
+    def set_habits_and_duration(self):
+        """ gets the string val currently in enties habit1/2, then 'sets' the entries as disabled,
+            saves the habits then does the same with the required duration  """
+        ##logic
+        current_duration = self.get_current_duration()
+        if current_duration == 0:
+            ##habits
+            #reset habits... maybe needed here.
 
-    # TODO
 
+            #gets the habits in the current entries returns tuple.
+            habits = self.get_habits()
 
+            #sets habits
+            self.set_habits(habits)
 
+            #saves habits locally
+            self.save_habits()
 
+            ##duration
+            #get and set the duration
+            test_duration = self.get_entry_duration()
+            self.set_duration(test_duration) 
 
-
+        else:
+            print("Current habit duration not elapsed, please wait until duraiton = 0")
 
 
 #Monthly focus
@@ -287,11 +348,7 @@ class MyFrame2(ctk.CTkFrame):
         #Load the month focus on start
         self.load_month_focus()
 
-######## combined set month and duration function #########
-    def set_habit_and_duration(self):
-        MyFrame.set_habit_duration()
-        self.set_dur
-        pass
+
 ##############################################################
 
     def set_month_focus(self):
@@ -495,7 +552,7 @@ class MyFrame5(ctk.CTkFrame):
         self.textbox = ctk.CTkTextbox(self, width=300,height=310, corner_radius=3 ) # insert at line 0 character 0
         self.textbox.grid(row=0, column=0)
         self.textbox.insert("0.0", "Task Display Window")# <- need to finish this line
-        self.textbox.insert("2.0",class_def.Task.display_task)# <- monitor when changing to class_def2
+        self.textbox.insert("2.0",TaskTracking.display_task)# <- monitor when changing to class_def2
 
         #Buttons
         self.button_sort = ctk.CTkButton(self, text="View selected task", height=28, width=45 ) 
@@ -572,8 +629,8 @@ class App(ctk.CTk):
         self.button_finish = ctk.CTkButton(self, text="Finish for the day \n Save All",command=button_event, height=60, width=85 ) 
         self.button_finish.grid(row=0, column=3, padx=20)
 
-
-
+#TODO - drop down menu for project tasks that shows tasks from that project in middle frame, project can only be selected if monthly focus aligns and once set cant be unset until....
+#TODO - finish for the day button should be turned into a save progress, it also should have an entry below it that takes nots and feeling 1-10
 
 
 
@@ -582,9 +639,10 @@ class App(ctk.CTk):
  ############################################################################################       
 
 if __name__ == "__main__":
-    print(" ran from outside")
+    TaskTracking.set_display_task(washing)
+
     app = App()
-    #app.title("Tasker")
+    app.title("Tasker")
     #app.iconify()
     app.protocol("WM_DELETE_WINDOW", on_close)
     app.mainloop()

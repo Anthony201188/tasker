@@ -37,8 +37,8 @@ class TaskTracking:
 
     #used to set the displayed tasks
     @classmethod    
-    def set_display_task(cls, value):
-        cls.display_task = value
+    def set_display_task(cls, task_obj):
+        cls.display_task = task_obj
 
     @classmethod
     def get_display_task(cls):
@@ -128,6 +128,7 @@ class Project(Task):
         pass
      """
     
+washing = Task("washing", "do the washing", 8, 4, "household","20-11-88")
 
 
 if __name__ == "__main__":
