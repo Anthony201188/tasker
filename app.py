@@ -495,7 +495,7 @@ class MyFrame5(ctk.CTkFrame):
         self.textbox = ctk.CTkTextbox(self, width=300,height=310, corner_radius=3 ) # insert at line 0 character 0
         self.textbox.grid(row=0, column=0)
         self.textbox.insert("0.0", "Task Display Window")# <- need to finish this line
-        self.textbox.insert("2.0",class_def.Task.display_task)# <- need to finish this line
+        self.textbox.insert("2.0",class_def.Task.display_task)# <- monitor when changing to class_def2
 
         #Buttons
         self.button_sort = ctk.CTkButton(self, text="View selected task", height=28, width=45 ) 

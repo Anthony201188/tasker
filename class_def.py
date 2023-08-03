@@ -1,63 +1,61 @@
 
 class Task:
-    task_list = [] # considering using a deque for this?
-    id_counter = -1 
-    display_task = ""
 
-
-    def __init__(self,name ,description,urgency,importance,catagory,due_date, project=False, done=False ):
+    def __init__(self,name ,description,urgency,importance,category,due_date, project=False, done=False ):
+        
+        #id tracking implimented to match class attribute count and index position in task_list
+        TaskTracking.id_counter += 1      
+        self.id_ = TaskTracking.id_counter      
+        TaskTracking.task_list.append(self) 
         
         self.name = name
         self. description = description
         self.urgency = urgency
         self.importance = importance
-        self.catagory = catagory
+        self.category = category
         self.due_date = due_date
-
         self.project = project
         self.done = done 
 
-        #id tracking implimented to match class attribute count and index position in task_list
-        Task.id_counter += 1      
-        self.id_ = Task.id_counter      
-        Task.task_list.append(self)     
+    def __str__(self) -> str:
+        return (f"""
+                Task name: [{self.name}]
+                Task description: [{self.description}]
+                Task urgency:[{self.urgency}]
+                Task importance:[{self.importance}]
+                Task catagory:[{self.category}]
+                Task due date:[{self.due_date}]
+                Task status:Done=[{self.done}]
+                Task is a project:[{self.project}]
+                Task id_:[{self.id_}]
+                """)
 
-    # used to set the task for display window
+class TaskTracking:
+    task_list = []  # contains a list of all tasks
+    id_counter = 0  # counts all instances of Task class
+    display_task = ""
+
+    #used to set the displayed tasks
     @classmethod    
-    def set_display_task(cls, value ):
+    def set_display_task(cls, value):
         cls.display_task = value
-    
+
     @classmethod
     def get_display_task(cls):
         return cls.display_task
 
     @classmethod                      
     def remove_task(cls, task):
-        Task.task_list.remove(task)
+        cls.task_list.remove(task)
         cls.update_ids()
 
     @classmethod
     def update_ids(cls):
         for index, task in enumerate(cls.task_list):
-            task.id_ = index  
+            task.id_ = index
 
-
-    
       
-    #String method overidden for testing  
-    ##testing## Current task list:{self.task_list}
-    ##testing## Task [{self.name}]'s index position in the task list [{self.id_}]
-    def __str__(self) -> str:
-        return (f"""
 
-                Task name: [{self.name}]
-                Task description: [{self.description}]
-                Task urgency:[{self.urgency}]
-                Task importance:[{self.importance}]
-                Task catagory:[{self.catagory}]
-                Task due date:[{self.due_date}]
-                Task status:Done=[{self.done}]
-                """)
 """ Explaination ofthe id function;
 -Every time a new instance is created the "self.id_" instance attribute is created and set to it's index position within the "task_list" class attribute.
 -The "update_ids" class method resets all of the instances id attributes to their index position within the class attribute "task_list".
@@ -72,10 +70,39 @@ to reset all of the ids
 ## check line 168 in app.py for an example
   """
 
+class TaskArchive:
+    """ used to manage completed tasks, will need some kind of file persistance implemented """
+    def __init__(self):
+        self.completed_tasks = []
+
+    def add_completed_task(self, task):
+        self.completed_tasks.append(task)
+
+    def get_completed_tasks(self):
+        return self.completed_tasks
+
+#NOTE - following three classes could be made into one class later depending on required methods and attributes
+# Just use instances of same class used for stacking tasks or inheritance
+
+class TaskArchive:
+    """ used to manage completed tasks, will need some kind of file persistance implemented """
+    task_archive = []
+
+class TaskNonUrgent:
+    """ Used to manage all non-urgent,high-priorty tasks """
+    non_urgent_stack = [] # could use dequws for these
+
+class TaskUrgent:
+    """ Used to manage all urgent tasks """
+    urgent_stack = []
+
+
 class Project(Task):
     """ this class is used only if the task is a project it inherits from the project class but allows the adding of sub tasks within that project task """
     # write the class for project here.
     pass
+
+
 
 
 """ class DaysProgress:
@@ -103,20 +130,25 @@ class Project(Task):
     
 
 
+if __name__ == "__main__":
+    ###### Testing ####
+    task_tracking = TaskTracking()
+    task_archive =  TaskArchive()
+    task_non_urgent = TaskNonUrgent()
+    task_urgent = TaskUrgent()
 
-###### Testing ####
-washing = Task("washing", "do the washing", 8, 4, "household","20-11-88")
-cleaning = Task("cleaning", "clean the house", 6, 2, "household","20-11-88")
-# Task.update_ids()
+    washing = Task("washing", "do the washing", 8, 4, "household","20-11-88")
+    cleaning = Task("cleaning", "clean the house", 6, 2, "household","20-11-88")
+    # Task.update_ids()
+    # note - need some error handling on the date format here.
+    # print(cleaning)
+    # print(washing)
 
-# print(cleaning)
-# print(washing)
+    # #Task.remove_task(cleaning)
 
-# #Task.remove_task(cleaning)
+    # print(Task.task_list)
+    # print(Task.id_counter)
 
-# print(Task.task_list)
-# print(Task.id_counter)
-
-Task.set_display_task(cleaning)
+    TaskTracking.set_display_task(cleaning)
 
 
