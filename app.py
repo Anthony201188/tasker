@@ -113,9 +113,9 @@ class MyFrame(ctk.CTkFrame):
         ##duration
         #load duration
         self.loaded_duration = self.load_duration() 
-
+        print(self.loaded_duration)
         #updates the duration based on elapsed time then schedules next update for 24hrs
-        self.update_duration()
+        self.update_duration(self.loaded_duration)
 
         #gets the duration and saves it locally
         self.save_duration(self.get_current_duration())
@@ -174,7 +174,7 @@ class MyFrame(ctk.CTkFrame):
         habit1 = self.entry_habit1.get()
         habit2 = self.entry_habit2.get()
         save_file("habit1.pkl", habit1)
-        save_file("habit1.pkl", habit2)
+        save_file("habit2.pkl", habit2)
 
     def get_habits(self)-> tuple:
         """ gets the string val currently in enties habit1/2, returns a tuple of local vals """
@@ -219,24 +219,28 @@ class MyFrame(ctk.CTkFrame):
         return self.duration            
     
     def get_current_duration(self)-> int:
-        """ gets whatever is currently set as the remaining days label and returns it as str. """
-        current_duration = int(self.label_number_of_days_remaining.cget("text"))
-        return current_duration
+        """ gets whatever is currently set as the remaining days label and returns it an int. """
+        current_duration = self.label_number_of_days_remaining.cget("text")
+        return int(current_duration)
     
     def schedule_update(self, duration_hours, function):
         """Schedule the passed function  to run after the specified number of hours."""
         milliseconds = duration_hours * 60 * 60 * 1000
         self.after(milliseconds, function)
 
-    def update_duration(self):
-        """ updates the duration using the elapsed days and set duration functions, finally scheduling the next update for 24 hours time """
+    def update_duration(self, loaded_duration):
+        """takes the loaded duration as an arg(int)
+        updates the duration using the elapsed days and set duration functions,
+        finally scheduling the next update for 24 hours time """
 
         # Update the duration based on elapsed days
         self.whole_elapsed_days = self.get_elapsed_days()
         print("Number of days to deduct from duration:",self.whole_elapsed_days)
 
         # set updated duration
-        self.set_duration(self.whole_elapsed_days)
+        print("Current loaded duration:", loaded_duration)
+        self.updated_duration = loaded_duration - self.whole_elapsed_days
+        self.set_duration(self.updated_duration)
 
         # Schedule next update
         self.schedule_update(24, self.update_duration)
@@ -302,7 +306,7 @@ class MyFrame2(ctk.CTkFrame):
         self.grid_rowconfigure(10, weight=1)  # configure grid system
         self.grid_columnconfigure(3, weight=1)
 
-        # add widgets onto the frame
+        ### Add widgets onto the frame
         #Label for the frame
         self.label = ctk.CTkLabel(self,anchor=ctk.N, text=self.val,width=self.val2 , height=self.val3)
         self.label.grid(row=0, column=0, padx=10, pady=10)
@@ -319,11 +323,13 @@ class MyFrame2(ctk.CTkFrame):
         #self.label2 = ctk.CTkLabel(self, text='<a href="https://trello.com/b/ygYRZRxw/focus">Trello focus board</a>',width=60, height=60)
         #self.label2.grid(row=2, column=0, padx=10, pady=5)
 
-        #test click link trello
+        #custom clickable link class from tkinter
         self.label_text = 'Click here Trello "focus" board'
-        self.link = "https://trello.com/b/ygYRZRxw/focus"
+        self.link = "https://trello.com/b/EVzPMpFs/focus-by-calander"
         self.clickable_label = ClickableLinkLabel(self, text=self.label_text, link=self.link) #<- implemented own widget class based on tkinter
         self.clickable_label.grid(row=1, column=0, padx=10, pady=5)
+
+        # TODO - add a self populated drop down to view all tasks by catagory, browse by catagory maybe? only availible when monthly focus "not-set"
 
 
         #Entries
@@ -339,7 +345,10 @@ class MyFrame2(ctk.CTkFrame):
         
 
         # Call the function and get the remaining days
-        self.remaining_days = self.remaining_days_of_month()
+        self.remaining_days = self.get_remaining_days_of_month()
+
+        #TODO - if remaining days = 0 on load then reset entries
+
         print("Remaining days of the month:", self.remaining_days)
 
         #set the remaining_days to label
@@ -349,7 +358,11 @@ class MyFrame2(ctk.CTkFrame):
         self.load_month_focus()
 
 
-##############################################################
+
+################ methods ######################
+
+    #TODO - reset month focus entries.
+    #TODO - doc strings for all these functions
 
     def set_month_focus(self):
         if self.remaining_days == 0:
@@ -375,7 +388,7 @@ class MyFrame2(ctk.CTkFrame):
             self.entry_focus2.configure(state="disabled", border_width=3, border_color="black")
 
 
-    def remaining_days_of_month(self):
+    def get_remaining_days_of_month(self):
         #Get the current time in seconds since the epoch
         self.current_time = time.time()
 
@@ -478,6 +491,7 @@ class MyFrame4(ctk.CTkFrame):
         #Button
         self.button_sort = ctk.CTkButton(self, text="Sort", height=28, width=45 ) 
         self.button_sort.grid(row=0, column=3, padx=20)
+
 
 #Project Task List
 class MyFrame4V1(ctk.CTkFrame):
@@ -585,6 +599,8 @@ class MyFrame5(ctk.CTkFrame):
         self.check = ctk.CTkCheckBox(self, text="Is a project", variable=check_var, onvalue="on", offvalue="off") #"command=checkbox_event," needs to be added to the end 
         self.check.grid(row=6, column=0, padx=10, pady=10)
 
+        #TODO - add another check button for "is urgrent", possibly requires new attribute or setting task urgency attribute to 10
+
 ############################################ DEFINING APP CLASS ############################################
 
 class App(ctk.CTk):
@@ -639,7 +655,7 @@ class App(ctk.CTk):
  ############################################################################################       
 
 if __name__ == "__main__":
-    TaskTracking.set_display_task(washing)
+    TaskTracking.set_display_task(washing)#<- testing purposes only will need to make a function and tie this to a button.
 
     app = App()
     app.title("Tasker")
