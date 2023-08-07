@@ -298,8 +298,11 @@ class MyFrame(ctk.CTkFrame):
 
 #Todays Tasks
 class MyFrame2(ctk.CTkFrame):
-    def __init__(self, master,text, width, height):
+    def __init__(self, master,text, width, height, app_instance):
         super().__init__(master, width, height)
+
+        # reference to the App instance for later use
+        self.app_instance = app_instance
 
         #Set the title and frame size on instantiation
         self.val = text
@@ -330,7 +333,7 @@ class MyFrame2(ctk.CTkFrame):
         self.entry5.grid(row=4, column=0, padx=10, pady=10)    
 
         #Buttons
-        self.button_suggest = ctk.CTkButton(self, text="suggest", height=28, width=28 ) 
+        self.button_suggest = ctk.CTkButton(self, text="suggest",command=self.suggest_non_urgent, height=28, width=28 ) 
         self.button_suggest.grid(row=0, column=3, padx=20)    
 
         self.button_set = ctk.CTkButton(self, text="set", height=28, width=50 ) 
@@ -338,6 +341,9 @@ class MyFrame2(ctk.CTkFrame):
 
         self.button_sort = ctk.CTkButton(self, text="sort all tasks", height=28, width=45 ) 
         self.button_sort.grid(row=1, column=3, padx=20)
+        
+        self.button_clear = ctk.CTkButton(self, text="clear all",command=self.clear_entries, height=28, width=45 ) 
+        self.button_clear.grid(row=3, column=3, padx=20)
 
 
         #Checkboxes
@@ -361,13 +367,23 @@ class MyFrame2(ctk.CTkFrame):
         self.check4 = ctk.CTkCheckBox(self, text="Done", variable=check_var4, onvalue="on", offvalue="off") #"command=checkbox_event," needs to be added to the end 
         self.check4.grid(row=4, column=2)    
 
-        ############ on-start control logic
+        ############ on-start control logic ###########
 
 ################ methods ######################
     def suggest_non_urgent(self):
         """ takes the top two tasks from the non-urgent task list and puts them into the entries """
-        #######testing insert_tasks
-        self.insert_tasks(self.top_tasks,(self.entry4,self.entry5) )
+
+        #Access the instance from App class
+        my_frame5_instance = self.app_instance.my_frame5
+        
+        #get the top 2 tasks from app.my_frame5 (Non-urgent task list)
+        top_tasks = self.get_top_tasks(my_frame5_instance,2)
+        print("top tasks:" ,top_tasks)
+
+        #insert these tasks into the selected entries
+        self.insert_tasks(top_tasks,(self.entry4, self.entry5)) # Non-urgent task entries
+
+
 
     def suggest_todays_tasks(self): # split into sub-functions
         """ Takes x1 project and x2 urgent/non-urgent tasks from the tasks lists and populates the correct entries with them finally locking or 'seting' them until they are saved as 'done' """
@@ -378,12 +394,39 @@ class MyFrame2(ctk.CTkFrame):
     def sort_all_tasks(self):
         """ sorts all tasks using the sorting methods from 'algo.py' """
 
+    #suggest tasks function
+    def get_top_tasks(self, class_inst, num_tasks)-> str: #list[str]
+        """ 
+        get text from task list text box and split on new line. 
+        Takes task list class instance and number of lines of text as args, returns a list of strings 
+        """
+        #get text
+        text = class_inst.textbox.get("1.0", "end-1c")#<- dont think -1 works here
+        #print(f"Text collected from Task List:{text}") #<- testing
+
+        #split on new line
+        split_text = text.splitlines() 
+        #print(split_text)
+        
+        #slice to retun that number of elements
+        return split_text[:num_tasks] 
+    
+ 
+    def clear_entries(self):
+        """ clear all entries """
+
+        #create list of all entries using getattr (uses this syntax->"getattr(object, name[, default]") to get the values of an attribute)
+        entry_widgets = [getattr(self, "entry")] + [getattr(self, f"entry{i}") for i in range(2, 6)]
+
+        #delete the contents of all entreis in the entry widget list
+        for entry_widget in entry_widgets:
+            entry_widget.delete(0, "end")
 
 
 
-    # need to add some function here to check if yesterdays tasks where done ? I think sorting should take care of this.
+ 
 
-    def insert_tasks(self, strings, *insert_entries):
+    def insert_tasks(self, strings, insert_entries):
         """ 
         Takes a single string or list of strings and the entries to populate as arguments.
         Deletes the current text and inserts the elements (str) into the insert_entries.
@@ -394,13 +437,12 @@ class MyFrame2(ctk.CTkFrame):
             strings = [strings]
 
         # Delete the current text #<-might not be needed
-        for self.entry in insert_entries:
-            self.entry.delete(0, "end")
+        for entry in insert_entries:
+            entry.delete(0, "end")
 
-        # Insert the strings into the insert_entries at the beginning
-        for args in strings:
-            for self.entry in insert_entries:
-                self.entry.insert(0, args)
+        # Use zip to pair each string with its corresponding entry, upacks from list of tuples  then inserts each string in an entry using the for loop
+        for string, entry in zip(strings, insert_entries):
+            entry.insert(0, string)
 
 
 #Monthly focus
@@ -712,7 +754,10 @@ class App(ctk.CTk):
         self.my_frame.grid(row=0, column=0, padx=10, pady=10 )
 
         #Today's tasks Frame
-        self.my_frame2 = MyFrame2(self, "Today's Tasks", 200, 90)
+        """ MyFrame2 Uses dependacy injection to share data from this instance to another class. 
+        essentially linking the two via pointing so I can get data from the instance of my_frame2 here in the App class """
+
+        self.my_frame2 = MyFrame2(self, "Today's Tasks", 200, 90,self) #<- second self passes instance to 'app_instance' in MyFrame2 
         self.my_frame2.grid(row=0, column=1, padx=10, pady=10 )
 
         #Monthly Focus Frame
@@ -742,22 +787,7 @@ class App(ctk.CTk):
     
     ########## methods  ##############
 
-    #suggest tasks function
-    def get_top_tasks(self, class_inst, num_tasks)-> str: #list[str]
-        """ 
-        get text from task list text box and split on new line. 
-        Takes task list class instance and number of lines of text as args, returns a list of strings 
-        """
-        #get text
-        self.text = class_inst.textbox.get("1.0", "end-1c")#<- dont think -1 works here
-        print(f"Text collected from Task List:{self.text}") #<- testing
 
-        #split on new line
-        split_text = self.text.splitlines() 
-        print(split_text)
-        
-        #slice to retun that number of elements
-        return split_text[:num_tasks] 
     
         #Finish for the day button
     def button_event():
@@ -778,11 +808,6 @@ if __name__ == "__main__":
 
     app = App()
     app.title("Tasker")
-
-    ######testing get_top_tasks
-    top_tasks = app.get_top_tasks(app.my_frame5, 2) #<- must be called after app instantiated 
-    print("top tasks",top_tasks)
-
     #app.iconify()
     app.protocol("WM_DELETE_WINDOW", on_close)
     app.mainloop()
