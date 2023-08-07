@@ -151,8 +151,8 @@ class MyFrame(ctk.CTkFrame):
         Also then disables the entreis and changes the border weight to show entries as 'set' """
         
         #Remove current text
-        self.entry_habit1.delete(0,999) #<- TODO - doesnt seem to work. ~ doesnt support "-1"
-        self.entry_habit2.delete(0,999)
+        self.entry_habit1.delete(0,"end") #<- TODO check "end" syntax works instead of 999
+        self.entry_habit2.delete(0,"end")
         print("deleting entries now")
 
         #unpack tuple
@@ -239,8 +239,11 @@ class MyFrame(ctk.CTkFrame):
 
         # set updated duration
         print("Current loaded duration:", loaded_duration)
-        self.updated_duration = loaded_duration - self.whole_elapsed_days
-        self.set_duration(self.updated_duration)
+        if loaded_duration <= 0: #<- should account for accidental minus durations (shouldnt occur anyway)
+            self.set_duration(0)
+        else:
+            self.updated_duration = loaded_duration - self.whole_elapsed_days
+            self.set_duration(self.updated_duration)
 
         # Schedule next update
         self.schedule_update(24, self.update_duration)
@@ -275,9 +278,6 @@ class MyFrame(ctk.CTkFrame):
         current_duration = self.get_current_duration()
         if current_duration == 0:
             ##habits
-            #reset habits... maybe needed here.
-
-
             #gets the habits in the current entries returns tuple.
             habits = self.get_habits()
 
@@ -296,116 +296,8 @@ class MyFrame(ctk.CTkFrame):
             print("Current habit duration not elapsed, please wait until duraiton = 0")
 
 
-#Monthly focus
-class MyFrame2(ctk.CTkFrame):
-    def __init__(self, master,text, width, height):
-        super().__init__(master, width, height)
-        self.val = text
-        self.val2 = width
-        self.val3 = height
-        self.grid_rowconfigure(10, weight=1)  # configure grid system
-        self.grid_columnconfigure(3, weight=1)
-
-        ### Add widgets onto the frame
-        #Label for the frame
-        self.label = ctk.CTkLabel(self,anchor=ctk.N, text=self.val,width=self.val2 , height=self.val3)
-        self.label.grid(row=0, column=0, padx=10, pady=10)
-        
-        #remaining days label
-        self.label2 = ctk.CTkLabel(self,anchor=ctk.S, text="Remaing days untill reset",width=60, height=60)
-        self.label2.grid(row=10, column=0, padx=1, pady=5)
-
-        #number of days
-        self.label3 = ctk.CTkLabel(self,anchor=ctk.S, text="6",width=60, height=60)
-        self.label3.grid(row=10, column=3, padx=10, pady=5)
-
-        #link to Trello label
-        #self.label2 = ctk.CTkLabel(self, text='<a href="https://trello.com/b/ygYRZRxw/focus">Trello focus board</a>',width=60, height=60)
-        #self.label2.grid(row=2, column=0, padx=10, pady=5)
-
-        #custom clickable link class from tkinter
-        self.label_text = 'Click here Trello "focus" board'
-        self.link = "https://trello.com/b/EVzPMpFs/focus-by-calander"
-        self.clickable_label = ClickableLinkLabel(self, text=self.label_text, link=self.link) #<- implemented own widget class based on tkinter
-        self.clickable_label.grid(row=1, column=0, padx=10, pady=5)
-
-        # TODO - add a self populated drop down to view all tasks by catagory, browse by catagory maybe? only availible when monthly focus "not-set"
-
-
-        #Entries
-        self.entry_focus1 = ctk.CTkEntry(self,placeholder_text="Month Focus1",width=180)
-        self.entry_focus1.grid(row=7, column=0, padx=10, pady=20)
-
-        self.entry_focus2= ctk.CTkEntry(self,placeholder_text="Month Focus2",width=180)
-        self.entry_focus2.grid(row=9, column=0, padx=10, pady=1)
-
-        #Button
-        self.button = ctk.CTkButton(self, text="Set focus",command=self.set_month_focus, height=28, width=28 ) # "command=button_event" needs to be added and function created and tied to it 
-        self.button.grid(row=9, column=3, padx=20)
-        
-
-        # Call the function and get the remaining days
-        self.remaining_days = self.get_remaining_days_of_month()
-
-        #TODO - if remaining days = 0 on load then reset entries
-
-        print("Remaining days of the month:", self.remaining_days)
-
-        #set the remaining_days to label
-        self.label3.configure(text=self.remaining_days)
-
-        #Load the month focus on start
-        self.load_month_focus()
-
-
-
-################ methods ######################
-
-    #TODO - reset month focus entries.
-    #TODO - doc strings for all these functions
-
-    def set_month_focus(self):
-        if self.remaining_days == 0:
-            #Get content of entries
-            self.focus1 = self.entry_focus1.get()
-            self.focus2 = self.entry_focus2.get()
-
-            self.entry_focus1.configure(state="disabled", border_width=3, border_color="black")
-            self.entry_focus1.configure(state="disabled", border_width=3, border_color="black")
-
-            save_file("focus1.pkl", self.focus1)
-            save_file("focus2.pkl", self.focus2)
-    
-    def load_month_focus(self):
-        self.focus1 = load_file("focus1.pkl")
-        self.focus2 = load_file("focus2.pkl")
-
-        self.entry_focus1.insert(0,self.focus1)
-        self.entry_focus2.insert(0,self.focus2)
-
-        if self.remaining_days != 0:
-            self.entry_focus1.configure(state="disabled", border_width=3, border_color="black")
-            self.entry_focus2.configure(state="disabled", border_width=3, border_color="black")
-
-
-    def get_remaining_days_of_month(self):
-        #Get the current time in seconds since the epoch
-        self.current_time = time.time()
-
-        #Get the current time in a structured time format (tm_year, tm_mon, tm_mday, tm_hour, tm_min, tm_sec, tm_wday, tm_yday, tm_isdst)
-        self.current_struct_time = time.localtime(self.current_time)
-
-        #Calculate the last day of the month
-        _, self.last_day = calendar.monthrange(self.current_struct_time.tm_year, self.current_struct_time.tm_mon) # month range returns tuple of day of the week (mon0-sun6) which the month starts and the secon val is the number of days in this month
-
-        #Step 4: Calculate the remaining days
-        self.remaining_days = self.last_day - self.current_struct_time.tm_mday # struct time obj can access each elem using the ".tm_xxx" tag
-
-        return self.remaining_days
-
-
 #Todays Tasks
-class MyFrame3(ctk.CTkFrame):
+class MyFrame2(ctk.CTkFrame):
     def __init__(self, master,text, width, height):
         super().__init__(master, width, height)
 
@@ -438,16 +330,19 @@ class MyFrame3(ctk.CTkFrame):
         self.entry5.grid(row=4, column=0, padx=10, pady=10)    
 
         #Buttons
-        self.button_suggest = ctk.CTkButton(self, text="suggest", height=28, width=28 ) # "command=button_event" needs to be added and function created and tied to it 
+        self.button_suggest = ctk.CTkButton(self, text="suggest", height=28, width=28 ) 
         self.button_suggest.grid(row=0, column=3, padx=20)    
 
-        self.button_set = ctk.CTkButton(self, text="set", height=28, width=50 ) # "command=button_event" needs to be added and function created and tied to it 
-        self.button_set.grid(row=1, column=3, padx=5)
+        self.button_set = ctk.CTkButton(self, text="set", height=28, width=50 ) 
+        self.button_set.grid(row=2, column=3, padx=5)
+
+        self.button_sort = ctk.CTkButton(self, text="sort all tasks", height=28, width=45 ) 
+        self.button_sort.grid(row=1, column=3, padx=20)
 
 
         #Checkboxes
-        check_var = ctk.StringVar(value="off") #need to compete the get and command events for this 
-        self.check = ctk.CTkCheckBox(self, text="Done", variable=check_var,border_color="green", onvalue="on", offvalue="off") #"command=checkbox_event," needs to be added to the end 
+        self.check_var = ctk.StringVar(value="off") #<- these should all be instance .self vars
+        self.check = ctk.CTkCheckBox(self, text="Done", variable=self.check_var,border_color="green", onvalue="on", offvalue="off") #"command=checkbox_event," needs to be added to the end 
         self.check.grid(row=0, column=2)
 
         check_var1 = ctk.StringVar(value="off") #need to compete the get and command events for this 
@@ -464,9 +359,210 @@ class MyFrame3(ctk.CTkFrame):
 
         check_var4 = ctk.StringVar(value="off") #need to compete the get and command events for this 
         self.check4 = ctk.CTkCheckBox(self, text="Done", variable=check_var4, onvalue="on", offvalue="off") #"command=checkbox_event," needs to be added to the end 
-        self.check4.grid(row=4, column=2)           
+        self.check4.grid(row=4, column=2)    
 
-#Task List
+        ############ on-start control logic
+
+################ methods ######################
+    def suggest_non_urgent(self):
+        """ takes the top two tasks from the non-urgent task list and puts them into the entries """
+        #######testing insert_tasks
+        self.insert_tasks(self.top_tasks,(self.entry4,self.entry5) )
+
+    def suggest_todays_tasks(self): # split into sub-functions
+        """ Takes x1 project and x2 urgent/non-urgent tasks from the tasks lists and populates the correct entries with them finally locking or 'seting' them until they are saved as 'done' """
+
+    def set_todays_task(self):
+        """ locks all the entries in the 'todays tasks' fram and thickens the borders """
+
+    def sort_all_tasks(self):
+        """ sorts all tasks using the sorting methods from 'algo.py' """
+
+
+
+
+    # need to add some function here to check if yesterdays tasks where done ? I think sorting should take care of this.
+
+    def insert_tasks(self, strings, *insert_entries):
+        """ 
+        Takes a single string or list of strings and the entries to populate as arguments.
+        Deletes the current text and inserts the elements (str) into the insert_entries.
+        Note: If multiple entries are passed to insert, type=tuple.
+        """
+        # Convert strings to a list of strings if it's a single string
+        if isinstance(strings, str):
+            strings = [strings]
+
+        # Delete the current text #<-might not be needed
+        for self.entry in insert_entries:
+            self.entry.delete(0, "end")
+
+        # Insert the strings into the insert_entries at the beginning
+        for args in strings:
+            for self.entry in insert_entries:
+                self.entry.insert(0, args)
+
+
+#Monthly focus
+class MyFrame3(ctk.CTkFrame):
+    def __init__(self, master,text, width, height):
+        super().__init__(master, width, height)
+        self.val = text
+        self.val2 = width
+        self.val3 = height
+        self.grid_rowconfigure(10, weight=1)  # configure grid system
+        self.grid_columnconfigure(3, weight=1)
+
+        ### Add widgets onto the frame
+        #Label for the frame
+        self.label = ctk.CTkLabel(self,anchor=ctk.N, text=self.val,width=self.val2 , height=self.val3)
+        self.label.grid(row=0, column=0, padx=10, pady=10)
+        
+        #remaining days label
+        self.label2 = ctk.CTkLabel(self,anchor=ctk.S, text="Remaing days untill reset",width=60, height=60)
+        self.label2.grid(row=10, column=0, padx=1, pady=5)
+
+        #number of days
+        self.label3 = ctk.CTkLabel(self,anchor=ctk.S, text="6",width=60, height=60)
+        self.label3.grid(row=10, column=3, padx=10, pady=5)
+
+        #custom clickable link class from tkinter
+        self.label_text = 'Click here to see Trello "focus" board'
+        self.link = "https://trello.com/b/EVzPMpFs/focus-by-calander"
+        self.clickable_label = ClickableLinkLabel(self, text=self.label_text, link=self.link) #<- implemented own widget class based on tkinter
+        self.clickable_label.grid(row=0, column=0, padx=10, pady=20)
+
+        # TODO - self population by listing all "projects" only availible when monthly focus "not-set"
+        #Combobox
+        self.dropdown = ctk.CTkComboBox(self,border_color="green", values=["Select a project","option 1", "option 2"],command=self.combobox_callback)
+        self.dropdown.set("Select a project")
+        self.dropdown.grid(row=1, column=0, padx=10, pady=5)
+
+        #TODO - show option only on zero count something along the lines of:
+        #if remain days == 0: combobox.pack/grid()
+
+        #Entries
+        self.entry_focus1 = ctk.CTkEntry(self,placeholder_text="Month Focus1",width=180)
+        self.entry_focus1.grid(row=7, column=0, padx=10, pady=20)
+
+        self.entry_focus2= ctk.CTkEntry(self,placeholder_text="Month Focus2",width=180)
+        self.entry_focus2.grid(row=9, column=0, padx=10, pady=1)
+
+        #Button
+        self.button = ctk.CTkButton(self, text="Set focus",command=self.set_month_focus, height=28, width=28 ) # "command=button_event" needs to be added and function created and tied to it 
+        self.button.grid(row=9, column=3, padx=20)
+        
+
+        ################# on-start logic ######################
+
+        # Call the function and get the remaining days
+        self.remaining_days = self.get_remaining_days_of_month()
+
+        #TODO - if remaining days = 0 on load then reset entries
+
+        print("Remaining days of the month:", self.remaining_days)
+
+        #set the remaining_days to label
+        self.label3.configure(text=self.remaining_days)
+
+        #Load the month focus on start
+        self.load_month_focus()
+
+
+
+################ methods ######################
+
+    #TODO - reset month focus entries.
+    #TODO - doc strings for all these functions
+
+    def set_month_focus(self):
+        if self.remaining_days == 0:
+            #Get content of entries
+            self.focus1 = self.entry_focus1.get()
+            self.focus2 = self.entry_focus2.get()
+            
+            #'set' the entries
+            self.entry_focus1.configure(state="disabled", border_width=3, border_color="black")
+            self.entry_focus1.configure(state="disabled", border_width=3, border_color="black")
+           
+            #save the files
+            save_file("focus1.pkl", self.focus1)
+            save_file("focus2.pkl", self.focus2)
+
+        else:
+            print("Please wait the remaining days until reset to set a new focus")
+    
+    def load_month_focus(self):
+        self.focus1 = load_file("focus1.pkl")
+        self.focus2 = load_file("focus2.pkl")
+
+        self.entry_focus1.insert(0,self.focus1)
+        self.entry_focus2.insert(0,self.focus2)
+
+        if self.remaining_days != 0:
+            self.entry_focus1.configure(state="disabled", border_width=3, border_color="black")
+            self.entry_focus2.configure(state="disabled", border_width=3, border_color="black")
+
+
+    def get_remaining_days_of_month(self):
+        #Get the current time in seconds since the epoch
+        self.current_time = time.time()
+
+        #Get the current time in a structured time format (tm_year, tm_mon, tm_mday, tm_hour, tm_min, tm_sec, tm_wday, tm_yday, tm_isdst)
+        self.current_struct_time = time.localtime(self.current_time)
+
+        #Calculate the last day of the month
+        _, self.last_day = calendar.monthrange(self.current_struct_time.tm_year, self.current_struct_time.tm_mon) # month range returns tuple of day of the week (mon0-sun6) which the month starts and the secon val is the number of days in this month
+
+        #Step 4: Calculate the remaining days
+        self.remaining_days = self.last_day - self.current_struct_time.tm_mday # struct time obj can access each elem using the ".tm_xxx" tag
+
+        return self.remaining_days
+    
+    def combobox_callback(self, choice):
+        print("combobox dropdown clicked:", choice) #<- TODO
+
+################ methods2 ######################
+    def suggest_non_urgent(self):
+        """ takes the top two tasks from the non-urgent task list and puts them into the entries """
+        #######testing insert_tasks
+        self.insert_tasks(self.top_tasks,(self.entry4,self.entry5) )
+
+    def suggest_todays_tasks(self): # split into sub-functions
+        """ Takes x1 project and x2 urgent/non-urgent tasks from the tasks lists and populates the correct entries with them finally locking or 'seting' them until they are saved as 'done' """
+
+    def set_todays_task(self):
+        """ locks all the entries in the 'todays tasks' fram and thickens the borders """
+
+    def sort_all_tasks(self):
+        """ sorts all tasks using the sorting methods from 'algo.py' """
+
+
+
+
+    # need to add some function here to check if yesterdays tasks where done ? I think sorting should take care of this.
+
+    # def insert_tasks(self, strings, *insert_entries):
+    #     """ 
+    #     Takes a single string or list of strings and the entries to populate as arguments.
+    #     Deletes the current text and inserts the elements (str) into the insert_entries.
+    #     Note: If multiple entries are passed to insert, type=tuple.
+    #     """
+    #     # Convert strings to a list of strings if it's a single string
+    #     if isinstance(strings, str):
+    #         strings = [strings]
+
+    #     # Delete the current text #<-might not be needed
+    #     for self.entry in insert_entries:
+    #         self.entry.delete(0, "end")
+
+    #     # Insert the strings into the insert_entries at the beginning
+    #     for args in strings:
+    #         for self.entry in insert_entries:
+    #             self.entry.insert(0, args)
+
+
+#Task manager
 class MyFrame4(ctk.CTkFrame):
     def __init__(self, master,text, width, height):
         super().__init__(master, width, height)
@@ -475,88 +571,8 @@ class MyFrame4(ctk.CTkFrame):
         self.val3 = height
 
         # configure grid system
-        self.grid_rowconfigure(20, weight=1) 
-        self.grid_columnconfigure(3, weight=1)
-        
-        #Label for the frame
-        self.label = ctk.CTkLabel(self,anchor=ctk.N, text=self.val,width=self.val2 , height=self.val3)
-        self.label.grid(row=0, column=0, padx=10, pady=5)
-
-        #Textbox
-        self.textbox = ctk.CTkTextbox(self,height=500, width=200, corner_radius=3 )
-        self.textbox.grid(row=0, column=0)
-        self.textbox.insert("0.0", "Some example text!\n" * 50)
-        self.textbox.configure(state="disabled")
-
-        #Button
-        self.button_sort = ctk.CTkButton(self, text="Sort", height=28, width=45 ) 
-        self.button_sort.grid(row=0, column=3, padx=20)
-
-
-#Project Task List
-class MyFrame4V1(ctk.CTkFrame):
-    def __init__(self, master,text, width, height):
-        super().__init__(master, width, height)
-        self.val = text
-        self.val2 = width
-        self.val3 = height
-
-        # configure grid system
-        self.grid_rowconfigure(20, weight=1) 
-        self.grid_columnconfigure(2, weight=1)
-        
-        #Label for the frame
-        self.label = ctk.CTkLabel(self,anchor=ctk.N, text=self.val,width=self.val2 , height=self.val3)
-        self.label.grid(row=0, column=0, padx=10, pady=5)
-
-        #Textbox
-        self.textbox = ctk.CTkTextbox(self,height=500, width=200, corner_radius=3, text_color="green" ) # insert at line 0 character 0
-        self.textbox.grid(row=0, column=0)
-        self.textbox.insert("0.0", "Some example text!\n" * 15)
-        self.textbox.configure(state="disabled")
-
-        #Button
-        self.button_sort = ctk.CTkButton(self, text="Sort", height=28, width=45 ) 
-        self.button_sort.grid(row=0, column=3, padx=20)
-
-#Urgent Task List
-class MyFrame4V2(ctk.CTkFrame):
-    def __init__(self, master,text, width, height):
-        super().__init__(master, width, height)
-        self.val = text
-        self.val2 = width
-        self.val3 = height
-
-        # configure grid system
-        self.grid_rowconfigure(20, weight=1) 
-        self.grid_columnconfigure(2, weight=1)
-        
-        #Label for the frame
-        self.label = ctk.CTkLabel(self,anchor=ctk.N, text=self.val,width=self.val2 , height=self.val3)
-        self.label.grid(row=0, column=0, padx=10, pady=5)
-
-        #Textbox
-        self.textbox = ctk.CTkTextbox(self,height=500, width=200, corner_radius=3, fg_color="red") # insert at line 0 character 0
-        self.textbox.grid(row=0, column=0)
-        self.textbox.insert("0.0", "Some example text!\n" * 5)
-        self.textbox.configure(state="disabled")
-
-        #Button
-        self.button_sort = ctk.CTkButton(self, text="Sort", height=28, width=45 ) 
-        self.button_sort.grid(row=0, column=3, padx=20)
-
-
-#Task manager
-class MyFrame5(ctk.CTkFrame):
-    def __init__(self, master,text, width, height):
-        super().__init__(master, width, height)
-        self.val = text
-        self.val2 = width
-        self.val3 = height
-
-        # configure grid system
-        self.grid_rowconfigure(10) 
-        self.grid_columnconfigure(3)
+        self.grid_rowconfigure(8) 
+        self.grid_columnconfigure(2)
     
         #Label for the frame
         self.label = ctk.CTkLabel(self,anchor=ctk.N, text=self.val,width=self.val2 , height=self.val3)
@@ -570,13 +586,13 @@ class MyFrame5(ctk.CTkFrame):
 
         #Buttons
         self.button_sort = ctk.CTkButton(self, text="View selected task", height=28, width=45 ) 
-        self.button_sort.grid(row=0, column=3, padx=20,pady=20)
+        self.button_sort.grid(row=0, column=2, padx=20,pady=20)
 
         self.button_sort = ctk.CTkButton(self, text="Edit selected task", height=28, width=45 ) 
-        self.button_sort.grid(row=1, column=3, padx=20, pady=20)
+        self.button_sort.grid(row=1, column=2, padx=20, pady=20)
 
         self.button_sort = ctk.CTkButton(self, text="Add new task", height=28, width=45 ) 
-        self.button_sort.grid(row=2, column=3, padx=20,pady=20)
+        self.button_sort.grid(row=2, column=2, padx=20,pady=20)
 
         #Entries
         self.entry = ctk.CTkEntry(self,placeholder_text="Task name", width=180)
@@ -598,8 +614,89 @@ class MyFrame5(ctk.CTkFrame):
         check_var = ctk.StringVar(value="off") #need to compete the get and command events for this 
         self.check = ctk.CTkCheckBox(self, text="Is a project", variable=check_var, onvalue="on", offvalue="off") #"command=checkbox_event," needs to be added to the end 
         self.check.grid(row=6, column=0, padx=10, pady=10)
+        
 
+        #Combobox
+        self.dropdown = ctk.CTkComboBox(self, values=["Select a project","option 1", "option 2"],command=None)
+        self.dropdown.set("Select a project")
+        self.dropdown.grid(row=6, column=1, padx=10, pady=5) #<- if is project checkbox checked this should be shown to select which task
+
+        #TODO - checkbox for prject selction to be shown on check line 617
         #TODO - add another check button for "is urgrent", possibly requires new attribute or setting task urgency attribute to 10
+        #TODO - hide combo box until "project" checkbox checked then show list of projects
+
+
+#Task List
+class MyFrame5(ctk.CTkFrame):
+    def __init__(self, master,text, width, height):
+        super().__init__(master, width, height)
+        self.val = text
+        self.val2 = width
+        self.val3 = height
+
+        # configure grid system
+        self.grid_rowconfigure(20, weight=1) 
+        self.grid_columnconfigure(3, weight=1)
+        
+        #Label for the frame
+        self.label = ctk.CTkLabel(self,anchor=ctk.N, text=self.val,width=self.val2 , height=self.val3)
+        self.label.grid(row=0, column=0, padx=10, pady=5)
+
+        #Textbox
+        self.textbox = ctk.CTkTextbox(self,height=500, width=200, corner_radius=3 )
+        self.textbox.grid(row=0, column=0)
+        self.textbox.insert("0.0", "Some example text!\n" * 50) #
+        self.textbox.configure(state="disabled")
+
+################ methods ######################
+
+    #method here to use a list to display the name attribute of the task objects, then join them all in one string with a new line for the textbox insertline 575
+
+#Project Task List
+class MyFrame5V2(ctk.CTkFrame):
+    def __init__(self, master,text, width, height):
+        super().__init__(master, width, height)
+        self.val = text
+        self.val2 = width
+        self.val3 = height
+
+        # configure grid system
+        self.grid_rowconfigure(20, weight=1) 
+        self.grid_columnconfigure(2, weight=1)
+        
+        #Label for the frame
+        self.label = ctk.CTkLabel(self,anchor=ctk.N, text=self.val,width=self.val2 , height=self.val3)
+        self.label.grid(row=0, column=0, padx=10, pady=5)
+
+        #Textbox
+        self.textbox = ctk.CTkTextbox(self,height=500, width=200, corner_radius=3, text_color="green" ) # insert at line 0 character 0
+        self.textbox.grid(row=0, column=0)
+        self.textbox.insert("0.0", "Some example text!\n" * 15)
+        self.textbox.configure(state="disabled")
+
+
+#Urgent Task List
+class MyFrame5V3(ctk.CTkFrame):
+    def __init__(self, master,text, width, height):
+        super().__init__(master, width, height)
+        self.val = text
+        self.val2 = width
+        self.val3 = height
+
+        # configure grid system
+        self.grid_rowconfigure(20, weight=1) 
+        self.grid_columnconfigure(2, weight=1)
+        
+        #Label for the frame
+        self.label = ctk.CTkLabel(self,anchor=ctk.N, text=self.val,width=self.val2 , height=self.val3)
+        self.label.grid(row=0, column=0, padx=10, pady=5)
+
+        #Textbox
+        self.textbox = ctk.CTkTextbox(self,height=500, width=200, corner_radius=3, fg_color="red") # insert at line 0 character 0
+        self.textbox.grid(row=0, column=0)
+        self.textbox.insert("0.0", "Some example text!\n" * 5)
+        self.textbox.configure(state="disabled")
+
 
 ############################################ DEFINING APP CLASS ############################################
 
@@ -611,39 +708,60 @@ class App(ctk.CTk):
         self.grid_columnconfigure(2)
 
         #Habit Tasks Frame
-        self.my_frame = MyFrame(self,"Habit Tasks", 50 , 30) # frame args size order is width, height 
+        self.my_frame = MyFrame(self,"Habit Tasks", 50 , 30) # frame args order: width, height 
         self.my_frame.grid(row=0, column=0, padx=10, pady=10 )
 
-        #Monthly Focus Frame
-        self.my_frame2 = MyFrame2(self,"Monthly Focus",300, 50)
-        self.my_frame2.grid(row=0, column=2, padx=10, pady=10 )
-
         #Today's tasks Frame
-        self.my_frame3 = MyFrame3(self, "Today's Tasks", 200, 90)
-        self.my_frame3.grid(row=0, column=1, padx=10, pady=10 )
+        self.my_frame2 = MyFrame2(self, "Today's Tasks", 200, 90)
+        self.my_frame2.grid(row=0, column=1, padx=10, pady=10 )
 
-        #Task list
-        self.my_frame4 = MyFrame4(self,"Task List",200, 550 )
-        self.my_frame4.grid(row=1, column=1, padx=2, pady=10) 
-
-        #Project task list
-        self.my_frame4 = MyFrame4V1(self,"Project Task List",200, 550 )
-        self.my_frame4.grid(row=1, column=2, padx=2, pady=10) 
-
-        #Urgent Task list
-        self.my_frame4 = MyFrame4V2(self,"Urgent/Admin Task List",200, 550 )
-        self.my_frame4.grid(row=1, column=3, padx=2, pady=10,)
+        #Monthly Focus Frame
+        self.my_frame3 = MyFrame3(self,"Monthly Focus",300, 80)
+        self.my_frame3.grid(row=0, column=2, padx=10, pady=10 )
 
         #Task manager
-        self.my_frame5 = MyFrame5(self,"Task Manager",300, 350)
-        self.my_frame5.grid(row=1, column=0, padx=10, pady=10) 
+        self.my_frame4 = MyFrame4(self,"Task Manager",300, 350)
+        self.my_frame4.grid(row=1, column=0, padx=10, pady=10) 
 
-        #Finish for the day button
-        def button_event():
-           print("Everything saved!") #<- change this to actually save everything!! call a save all method that calls all the save methods 
+        #Task list
+        self.my_frame5 = MyFrame5(self,"Task List",220, 550 )
+        self.my_frame5.grid(row=1, column=1, padx=2, pady=10) 
 
-        self.button_finish = ctk.CTkButton(self, text="Finish for the day \n Save All",command=button_event, height=60, width=85 ) 
+        #Project task list
+        self.my_frame5v2 = MyFrame5V2(self,"Project Task List",220, 550 )
+        self.my_frame5v2.grid(row=1, column=2, padx=2, pady=10) 
+
+        #Urgent Task list
+        self.my_frame5v3 = MyFrame5V3(self,"Urgent/Admin Task List",220, 550 )
+        self.my_frame5v3.grid(row=1, column=3, padx=2, pady=10,)
+
+
+
+        self.button_finish = ctk.CTkButton(self, text="Finish for the day \n Save All",command=self.button_event, height=60, width=85 ) 
         self.button_finish.grid(row=0, column=3, padx=20)
+    
+    ########## methods  ##############
+
+    #suggest tasks function
+    def get_top_tasks(self, class_inst, num_tasks)-> str: #list[str]
+        """ 
+        get text from task list text box and split on new line. 
+        Takes task list class instance and number of lines of text as args, returns a list of strings 
+        """
+        #get text
+        self.text = class_inst.textbox.get("1.0", "end-1c")#<- dont think -1 works here
+        print(f"Text collected from Task List:{self.text}") #<- testing
+
+        #split on new line
+        split_text = self.text.splitlines() 
+        print(split_text)
+        
+        #slice to retun that number of elements
+        return split_text[:num_tasks] 
+    
+        #Finish for the day button
+    def button_event():
+        print("Everything saved!") #<- change this to actually save everything!! call a save all method that calls all the save methods     
 
 #TODO - drop down menu for project tasks that shows tasks from that project in middle frame, project can only be selected if monthly focus aligns and once set cant be unset until....
 #TODO - finish for the day button should be turned into a save progress, it also should have an entry below it that takes nots and feeling 1-10
@@ -655,10 +773,16 @@ class App(ctk.CTk):
  ############################################################################################       
 
 if __name__ == "__main__":
-    TaskTracking.set_display_task(washing)#<- testing purposes only will need to make a function and tie this to a button.
+    TaskTracking.set_display_task(washing)#<- testing purposes only 
+
 
     app = App()
     app.title("Tasker")
+
+    ######testing get_top_tasks
+    top_tasks = app.get_top_tasks(app.my_frame5, 2) #<- must be called after app instantiated 
+    print("top tasks",top_tasks)
+
     #app.iconify()
     app.protocol("WM_DELETE_WINDOW", on_close)
     app.mainloop()

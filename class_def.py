@@ -102,6 +102,7 @@ class Project(Task):
     # write the class for project here.
     pass
 
+# TODO - implement some kind of log, that logs everything printed to the terminal every "session" (nice to have)
 
 
 
