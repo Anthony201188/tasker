@@ -1,8 +1,9 @@
-from class_def import *
+from class_def import * #TODO = import this properly
 import pickle
 import customtkinter as ctk
 import time
 import calendar
+import os
 from link_click import ClickableLinkLabel
 
 ########################################  UTILS #####################################
@@ -36,9 +37,13 @@ def on_close():
     closing_time = time.time()
     save_file("closing_date.pkl", closing_time)
     print(f"App closed at epoch time: {closing_time}")
-    
+
     # save habit1/2 on close
     app.my_frame.save_habits()
+
+    # save daily tasks
+    if app.my_frame2.daily_tasks_set:
+        app.my_frame2.save_daily_tasks()    
 
     # save duration on close
     app.my_frame.save_duration(app.my_frame.get_current_duration())
@@ -108,12 +113,11 @@ class MyFrame(ctk.CTkFrame):
         self.grid_columnconfigure(2, weight=1)
 
         ############## on-start control logic ################
-        # TODO
 
         ##duration
         #load duration
         self.loaded_duration = self.load_duration() 
-        print(self.loaded_duration)
+
         #updates the duration based on elapsed time then schedules next update for 24hrs
         self.update_duration(self.loaded_duration)
 
@@ -132,10 +136,6 @@ class MyFrame(ctk.CTkFrame):
         else:
             self.set_habits(self.loaded_habits)
 
-        # on-close function edited to save habits for file persistance 
-        ##
-
-    
     
     ############## methods ##############
 
@@ -151,7 +151,7 @@ class MyFrame(ctk.CTkFrame):
         Also then disables the entreis and changes the border weight to show entries as 'set' """
         
         #Remove current text
-        self.entry_habit1.delete(0,"end") #<- TODO check "end" syntax works instead of 999
+        self.entry_habit1.delete(0,"end")
         self.entry_habit2.delete(0,"end")
         print("deleting entries now")
 
@@ -267,7 +267,6 @@ class MyFrame(ctk.CTkFrame):
         # Extract the number of whole days from the time float.
         self.elapse = round(self.difference / (24 * 60 * 60))  # 24hrs * 60m * 60s #<-should change duration by 1 @ 1400 CET as the epoch time runs from UTC
         print("Elapsed epoch days:",self.elapse) #should be a single number of days as an int e.g. 1 or 2
-        print(type(self.elapse))
         return self.elapse
     
     #combined functions
@@ -317,7 +316,7 @@ class MyFrame2(ctk.CTkFrame):
         self.label.grid(row=0, column=0, padx=10, pady=10)
 
         #Entries
-        self.entry = ctk.CTkEntry(self,placeholder_text="Project", border_color="green",text_color="green", border_width=3, width=180)
+        self.entry = ctk.CTkEntry(self,placeholder_text="Project", border_color="green",text_color="green", width=180)
         self.entry.grid(row=0, column=0, padx=10, pady=10) 
  
         self.entry2 = ctk.CTkEntry(self,placeholder_text="Urgent",border_color="red",text_color="red", width=180)
@@ -330,19 +329,22 @@ class MyFrame2(ctk.CTkFrame):
         self.entry4.grid(row=3, column=0, padx=10, pady=10)
 
         self.entry5 = ctk.CTkEntry(self,placeholder_text="Task2",width=180)
-        self.entry5.grid(row=4, column=0, padx=10, pady=10)    
+        self.entry5.grid(row=4, column=0, padx=10, pady=10)
+
+        self.all_entries = [self.entry, self.entry2, self.entry3, self.entry4, self.entry5]
+
 
         #Buttons
-        self.button_suggest = ctk.CTkButton(self, text="suggest",command=self.suggest_non_urgent, height=28, width=28 ) 
+        self.button_suggest = ctk.CTkButton(self, text="suggest",command=self.suggest_todays_tasks, height=28, width=28 ) 
         self.button_suggest.grid(row=0, column=3, padx=20)    
 
-        self.button_set = ctk.CTkButton(self, text="set", height=28, width=50 ) 
+        self.button_set = ctk.CTkButton(self, text="set",command=self.set_entries, height=28, width=50 ) 
         self.button_set.grid(row=2, column=3, padx=5)
 
         self.button_sort = ctk.CTkButton(self, text="sort all tasks", height=28, width=45 ) 
         self.button_sort.grid(row=1, column=3, padx=20)
         
-        self.button_clear = ctk.CTkButton(self, text="clear all",command=self.clear_entries, height=28, width=45 ) 
+        self.button_clear = ctk.CTkButton(self, text="clear all",command=self.reset_clear, height=28, width=45 ) 
         self.button_clear.grid(row=3, column=3, padx=20)
 
 
@@ -365,11 +367,65 @@ class MyFrame2(ctk.CTkFrame):
 
         check_var4 = ctk.StringVar(value="off") #need to compete the get and command events for this 
         self.check4 = ctk.CTkCheckBox(self, text="Done", variable=check_var4, onvalue="on", offvalue="off") #"command=checkbox_event," needs to be added to the end 
-        self.check4.grid(row=4, column=2)    
+        self.check4.grid(row=4, column=2) 
+
+        #define a set var for Todays tasks
+        self.daily_tasks_set = False   
 
         ############ on-start control logic ###########
+        #TODO - some file peristance for the entries onces they are set to save on clos
+        #TODO - might need to edit this method to work with a list of dictionaries created via the 'save_daily_tasks' method.
+        #TODO - tidy the below up when its well tested
+        
+
+        self.loaded_entries = []
+
+        #load pickled file
+        daily_task_entry_lst = load_file("daily_task_entry_lst.pkl")
+
+        #select entry dicts to pseudo-load, shouldnt need this as only truthy values should be stored in file double filtering not bad.
+        for dict in daily_task_entry_lst:
+            if dict["load_on_start"]: #checks if entry dict "load_on_start" value is truthy 
+                self.loaded_entries.append(dict)
+
+        print(f"Daily task entries successfully loaded: {self.loaded_entries}")
+
+        #create a list of the content to load and the entry name to load to
+        self.loaded_entires_content = [value["content"] for value in self.loaded_entries]
+        self.loaded_entries_name = [value["entry_name"] for value in self.loaded_entries] 
+
+        #set content to entries 
+        self.insert_tasks(self.loaded_entires_content, self.loaded_entries_name )
+
+        #lock entries
+        self.set_entries()
+
+
+        #version-1 of this operation below
+        #find all files containing "daily_task_entry" in cwd
+        #testing below removed for list of dicts in one file and unpacked as in version 2 above
+        
+        """current_directory = os.getcwd()
+        daily_task_files = [os.path.join(root, file) for root, _, files in os.walk(current_directory) for file in files if "daily_task_entry" in file]
+        print("Files found", daily_task_files)"""
+
+        """#read files using for loop and if "load_on_start=True"
+        #load files for entries
+        self.loaded_entries = []
+        for entry_dict in daily_task_entry_lst:
+            loaded_entry_dict = self.if_required_load_file(entry_dict) #<- returns none causes ERROR
+            if loaded_entry_dict is not None:#<- stops the none types being added to the list if files not required to be loaded
+                print("Files required to load:", loaded_entry_dict)
+                self.loaded_entries.append(loaded_entry_dict) """
+
+        #on-close if entry is NOT empty get entry text and save to file and load on start=True
+        #save file should contain a dict daily_task_entry = {"entry_name":"entry2","content":"entry_text_here", "load_on_start":True}
+
 
 ################ methods ######################
+#TODO - on 'save-all progress' button press, collect all checkbox states and store in dictionary. Use file persistance on this dictionary 
+#TODO -  check on start if the task_done=True then unlock and empty that entry only, will need to modify the set and suggest function to check if single empties are empty
+#TODO - modify suggest fuction to check if entries are empty and suggest only empty entries, modify entries_empty function to take entries single or list as args
     def suggest_non_urgent(self):
         """ takes the top two tasks from the non-urgent task list and puts them into the entries """
 
@@ -378,21 +434,142 @@ class MyFrame2(ctk.CTkFrame):
         
         #get the top 2 tasks from app.my_frame5 (Non-urgent task list)
         top_tasks = self.get_top_tasks(my_frame5_instance,2)
-        print("top tasks:" ,top_tasks)
+        print("Non-urgent top tasks:" ,top_tasks)
 
         #insert these tasks into the selected entries
-        self.insert_tasks(top_tasks,(self.entry4, self.entry5)) # Non-urgent task entries
+        self.insert_tasks(top_tasks,["entry4", "entry5"]) # Non-urgent task entries
 
+
+    def suggest_urgent(self):
+        """ takes the top two tasks from the urgent task list and puts them into the entries """
+
+        #Access the instance from App class
+        my_frame5v3_instance = self.app_instance.my_frame5v3
+        
+        #get the top 2 tasks from app.my_frame5 (Non-urgent task list)
+        top_tasks = self.get_top_tasks(my_frame5v3_instance,2)
+        print("Urgent top tasks:" ,top_tasks)
+
+        #insert these tasks into the selected entries
+        self.insert_tasks(top_tasks,["entry2", "entry3"])
+
+
+    def suggest_project(self):
+        """ takes the top task from the urgent task list and puts it into the entry """
+
+        #Access the instance from App class
+        my_frame5v2_instance = self.app_instance.my_frame5v2
+        
+        #get the top 2 tasks from app.my_frame5 (Non-urgent task list)
+        top_task = self.get_top_tasks(my_frame5v2_instance,1)
+        print("Project top tasks:" ,top_task)
+
+        #insert these tasks into the selected entries
+        self.insert_tasks(top_task,["entry"]) #<- none passed here as a tuple of 1 doesnt seem to count as a tuple its just a string!
 
 
     def suggest_todays_tasks(self): # split into sub-functions
-        """ Takes x1 project and x2 urgent/non-urgent tasks from the tasks lists and populates the correct entries with them finally locking or 'seting' them until they are saved as 'done' """
+        """ Takes x1 project and x2 urgent/non-urgent tasks from the tasks lists and populates the correct entries
+            with them finally locking or 'seting' them until they are saved as 'done' """
+        
+        self.suggest_non_urgent()
+        self.suggest_urgent()
+        self.suggest_project()
 
-    def set_todays_task(self):
-        """ locks all the entries in the 'todays tasks' fram and thickens the borders """
+    def single_entry_empty(self, entry)->bool:
+        """ takes a single entry(attr)obj name as an arg and,returns True if empty """
+        contents = entry.get()
+        print(f"Entry contents: {contents}")
+        return bool(contents)
+    
+#TODO - write the below function save daily tasks
+    def save_daily_tasks(self):
+
+        if self.daily_tasks_set:
+            
+            all_entries_str = ["entry","entry2","entry3","entry4","entry5"]
+            entry_content = []   
+            entry_names = []
+
+            #get set entry names
+            for entry in all_entries_str:
+                entry_attr = getattr(self, entry) #<- dynamic use of attr objs needed for pickling
+                if self.single_entry_empty(entry_attr):
+                    entry_names.append(entry) #<- check for attribute or TKinter obj here
+
+            #get all entry content
+            for entry in self.all_entries:
+                content = entry.get()
+                entry_content.append(content)
+            print("Full entry_content:",entry_content)#<- testing
+            
+            #filter the list for empty strings
+            filtered_entry_content = [item for item in entry_content if item != ""] 
+            print("Filtered entry content to be saved",filtered_entry_content)#<- testing 
+
+            #zip the list and cast the obj to a list 
+            self.names_content_zipped = list(zip(entry_names, filtered_entry_content))
+
+            # list comprehension to create a list of dictionaries to save for file persistance
+            #save file should contain a dict daily_task_entry = {"entry_name":"entry2","content":"entry_text_here", "load_on_start":True}
+            daily_tasks_to_save = [{"entry_name":tup[0],"content":tup[1], "load_on_start":True} for tup in self.names_content_zipped]
+            print("Daily tasks to be saved:",daily_tasks_to_save)#<- testing
+
+            save_file("daily_task_entry_lst.pkl", daily_tasks_to_save)
+
+
+    def all_entries_empty(self)->bool:
+        """ check all entries to see if they are empty, returns bool """
+        
+        #checks if all entries in list are truthy
+        for entry in self.all_entries:
+            if entry.get():  
+                return False  #<-At least one entry is not empty
+        
+        #Else returns True
+        return True  
+
+    def if_required_load_file(self, file_path):
+        """ checks whether the  "daily_task_entry.pkl" file needs to be loaded or not
+        returns the contents of the bin file as a python var """
+
+        with open(file_path, 'rb') as file:
+            data = pickle.load(file)
+            if data.get("load_on_start", False): #<-second param here is default val
+                    return data
+            
+            #print(f"File [{file_path}] not required load")
+
+
+    def set_entries(self):
+        """ locks all the entries in the 'todays tasks' frame and thickens the borders.
+          IF they have text in them finally the self.daily_tasks_set is set to True """
+        
+        #check if all entries == empty they have text "set" the entry with text in 
+        if self.all_entries_empty(): 
+            pass
+
+        else:
+            for entry in self.all_entries:
+                if entry.get():
+                    entry.configure(state="disabled", border_width=3)
+
+    def set_button(self):
+        """ a second version of the above function but sets the sets the
+            self.daily_tasks_set=True so that the entries are saved 
+            but empty entries arent saved when the entries are initialy set on load"""
+        self.set_entries()
+        self.daily_tasks_set=True 
+        print("Daily tasks successfully set = True")
+ 
+
+            
 
     def sort_all_tasks(self):
         """ sorts all tasks using the sorting methods from 'algo.py' """
+        #TODO - write this method.
+
+
 
     #suggest tasks function
     def get_top_tasks(self, class_inst, num_tasks)-> str: #list[str]
@@ -401,7 +578,7 @@ class MyFrame2(ctk.CTkFrame):
         Takes task list class instance and number of lines of text as args, returns a list of strings 
         """
         #get text
-        text = class_inst.textbox.get("1.0", "end-1c")#<- dont think -1 works here
+        text = class_inst.textbox.get("1.0", "end-1c")#<- dont think -1 works here check tkinter docs for widget syntax
         #print(f"Text collected from Task List:{text}") #<- testing
 
         #split on new line
@@ -415,34 +592,57 @@ class MyFrame2(ctk.CTkFrame):
     def clear_entries(self):
         """ clear all entries """
 
-        #create list of all entries using getattr (uses this syntax->"getattr(object, name[, default]") to get the values of an attribute)
-        entry_widgets = [getattr(self, "entry")] + [getattr(self, f"entry{i}") for i in range(2, 6)]
+        entries = [self.entry, self.entry2, self.entry3, self.entry4, self.entry5]
 
         #delete the contents of all entreis in the entry widget list
-        for entry_widget in entry_widgets:
-            entry_widget.delete(0, "end")
-
-
-
- 
-
-    def insert_tasks(self, strings, insert_entries):
-        """ 
-        Takes a single string or list of strings and the entries to populate as arguments.
-        Deletes the current text and inserts the elements (str) into the insert_entries.
-        Note: If multiple entries are passed to insert, type=tuple.
-        """
-        # Convert strings to a list of strings if it's a single string
-        if isinstance(strings, str):
-            strings = [strings]
-
-        # Delete the current text #<-might not be needed
-        for entry in insert_entries:
+        for entry in entries:
             entry.delete(0, "end")
+        
+    def reset_entries(self):
+        """ re-configure entries to 'un-set' """
+
+        self.entry.configure(state="normal", border_width=1, border_color="green")
+        self.entry2.configure(state="normal", border_width=1, border_color="red")
+        self.entry3.configure(state="normal", border_width=1, border_color="red")
+        self.entry4.configure(state="normal", border_width=1, border_color="grey")
+        self.entry5.configure(state="normal", border_width=1, border_color="grey")  
+
+    def reset_clear(self):
+        """ temp function to clear and reset entries """
+        self.reset_entries()
+        self.clear_entries()
+
+
+    def insert_tasks(self, strings, entries)->None:
+        """ 
+        Takes entry text to isnert as a list of strings and a list of entries to insert them into in the same format.
+        
+        Arguments:
+        strings -> ["name_of_entry_here","name_of_entry2_here"] type -> lst(str)
+        entries -> ["entry text here","more entry text here"] type -> lst(str)
+
+        Note: entries Type(str) used for easy file persistance 
+        """
+        self.count = 0 
+
+        # Delete the current text  
+        if len(strings) >= 2 :
+            for entry in entries:
+                entry_attr = getattr(self,entries[self.count])
+                self.count += 1
+                entry_attr.delete(0, "end")
+        else:
+            entry_attr = getattr(self,entries[0]) #<- changes text into actual attribute to use with delete method
+            entry_attr.delete(0,"end")
 
         # Use zip to pair each string with its corresponding entry, upacks from list of tuples  then inserts each string in an entry using the for loop
-        for string, entry in zip(strings, insert_entries):
-            entry.insert(0, string)
+        if len(strings) >= 2 :
+            for string, entry in zip(strings, entries):
+                entry_attr = getattr(self, entry)
+                entry_attr.insert(0, string)
+        else:
+            entry_attr = getattr(self, entries[0])
+            entry_attr.insert(0, strings[0])
 
 
 #Monthly focus
@@ -473,6 +673,8 @@ class MyFrame3(ctk.CTkFrame):
         self.link = "https://trello.com/b/EVzPMpFs/focus-by-calander"
         self.clickable_label = ClickableLinkLabel(self, text=self.label_text, link=self.link) #<- implemented own widget class based on tkinter
         self.clickable_label.grid(row=0, column=0, padx=10, pady=20)
+
+        # TODO  add custom clicakble link for google calander as well
 
         # TODO - self population by listing all "projects" only availible when monthly focus "not-set"
         #Combobox
