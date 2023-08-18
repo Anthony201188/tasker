@@ -1,4 +1,4 @@
-import pickle
+""" import pickle
 import os
 daily_task_entry_lst = [
 {"entry_name":"entry","content":"test123" ,"load_on_start":True},
@@ -9,6 +9,7 @@ daily_task_entry_lst = [
 with open("daily_task_entry_lst.pkl", "wb") as file:
     pickle.dump(daily_task_entry_lst, file)
 
+ """
 
 
 # def load_required_file(file_path):

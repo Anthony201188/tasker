@@ -1,0 +1,28 @@
+entry1|content:"content for entry1"|S,18-08-2023,22:30:16|D,18-08-2023,22:30:16
+entry2|content:"content for entry2"|S,18-08-2023,22:30:16|D,18-08-2023,22:30:16
+entry1|content:"content for entry1"|S,18-08-2023,22:30:30|D,18-08-2023,22:30:30
+entry2|content:"content for entry2"|S,18-08-2023,22:30:30|D,18-08-2023,22:30:30
+entry1|content:"content for entry1"|S,18-08-2023,22:30:31|D,18-08-2023,22:30:31
+entry2|content:"content for entry2"|S,18-08-2023,22:30:31|D,18-08-2023,22:30:31
+entry1|content:"content for entry1"|S,18-08-2023,22:30:33|D,18-08-2023,22:30:33
+entry2|content:"content for entry2"|S,18-08-2023,22:30:33|D,18-08-2023,22:30:33
+habit1|content:"habit1"|S,18-08-2023,23:52:46|D,18-08-2023,23:52:46
+habit2|content:"habit2"|S,18-08-2023,23:52:46|D,18-08-2023,23:52:46
+.!myframe2.!ctkentry|content:"test123"|S,18-08-2023,23:52:46|D,18-08-2023,23:52:46
+.!myframe2.!ctkentry2|content:"test345"|S,18-08-2023,23:52:46|D,18-08-2023,23:52:46
+habit1|content:"habit1"|S,18-08-2023,23:59:16|D,18-08-2023,23:59:16
+habit2|content:"habit2"|S,18-08-2023,23:59:16|D,18-08-2023,23:59:16
+.!myframe2.!ctkentry|content:"test123"|S,18-08-2023,23:59:16|D,18-08-2023,23:59:16
+.!myframe2.!ctkentry2|content:"test345"|S,18-08-2023,23:59:16|D,18-08-2023,23:59:16
+habit1|content:"habit1"|S,19-08-2023,00:01:42|D,19-08-2023,00:01:42
+habit2|content:"habit2"|S,19-08-2023,00:01:42|D,19-08-2023,00:01:42
+.!myframe2.!ctkentry|content:"test123"|S,19-08-2023,00:01:42|D,19-08-2023,00:01:42
+.!myframe2.!ctkentry2|content:"test345"|S,19-08-2023,00:01:42|D,19-08-2023,00:01:42
+habit1|content:"habit1"|S,19-08-2023,00:06:46|D,19-08-2023,00:06:46
+habit2|content:"habit2"|S,19-08-2023,00:06:46|D,19-08-2023,00:06:46
+<bound method MyFrame2.get_entry_object_name of <__main__.MyFrame2 object .!myframe2>>|content:"test123"|S,19-08-2023,00:06:46|D,19-08-2023,00:06:46
+<bound method MyFrame2.get_entry_object_name of <__main__.MyFrame2 object .!myframe2>>|content:"test345"|S,19-08-2023,00:06:46|D,19-08-2023,00:06:46
+habit1|content:"habit1"|S,19-08-2023,00:32:04|D,19-08-2023,00:32:04
+habit2|content:"habit2"|S,19-08-2023,00:32:04|D,19-08-2023,00:32:04
+.!myframe2.!ctkentry|content:"test123"|S,19-08-2023,00:32:04|D,19-08-2023,00:32:04
+.!myframe2.!ctkentry2|content:"test345"|S,19-08-2023,00:32:04|D,19-08-2023,00:32:04

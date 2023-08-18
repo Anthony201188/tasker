@@ -1,4 +1,5 @@
 from class_def import * #TODO = import this properly
+import data_structure
 import pickle
 import customtkinter as ctk
 import time
@@ -7,7 +8,7 @@ import os
 from link_click import ClickableLinkLabel
 
 ########################################  UTILS #####################################
-"""  persistance used to save load and update stored data on opening of app """
+""" file persistance used to save load and update stored data on opening of app """
 
 def load_file(file_name):
     """ generic load local binary file, takes a filename as a string arg, returns none """
@@ -57,11 +58,14 @@ def on_close():
 #Habit Tasks
 class MyFrame(ctk.CTkFrame):
 
-    def __init__(self, master,text, width, height):
+    def __init__(self, master,text, width, height, app_instance):
         super().__init__(master, width, height)
         self.val = text
         self.val2 = width
         self.val3 = height
+
+        # reference to the App instance for later use
+        self.app_instance = app_instance #<-dependency injection
 
         # --Add widgets onto the frame--
 
@@ -184,6 +188,20 @@ class MyFrame(ctk.CTkFrame):
         habit2 = self.entry_habit2.get()
         return habit1, habit2
 
+    def get_habits_names(self):
+        """ returns a list of entry names and list of entry content used for finish for the day button press"""
+        self.entry_content = []
+        self.entry_names = ["habit1","habit2"]
+
+        #get the text in the habits entries
+        self.entry_content.append(self.entry_habit1.get())
+        self.entry_content.append(self.entry_habit2.get())
+
+        print(f"Entry content:{self.entry_content},Entry names:{self.entry_names}")
+
+        return self.entry_names, self.entry_content 
+
+        
     def reset_habits(self):
         """ enables the habit entries and resets the habit1/2 persistance files back to default text """
         
@@ -476,11 +494,36 @@ class MyFrame2(ctk.CTkFrame):
         self.suggest_urgent()
         self.suggest_project()
 
+    def get_entry_variable_name(self, entry_instance):
+        for name, entry in self.entries.items():
+            if entry_instance is entry:
+                return name
+        return None
+
     def single_entry_empty(self, entry)->bool:
         """ takes a single entry(attr)obj name as an arg and,returns True if empty """
         contents = entry.get()
         print(f"Entry contents: {contents}")
         return bool(contents)
+    
+    def get_daily_tasks(self)->list:
+        """ returns a list of entry content and a list of entry  names   """
+
+        self.daily_tasks = []
+        self.entry_names = []
+        
+        #get all entry content
+        for entry in self.all_entries:
+            if entry:
+                content = entry.get()
+                self.daily_tasks.append(content)
+                self.entry_names.append(entry)
+        self.collected_content = [item for item in self.daily_tasks if item != ""]
+        print(f"Collected daily tasks:{self.entry_names} ")#<- testing
+        print(f"Collected daily tasks content:{self.collected_content} ")#<- testing
+        
+        #filter the list for empty strings
+        return self.entry_names , self.collected_content
     
 #TODO - write the below function save daily tasks
     def save_daily_tasks(self):
@@ -952,7 +995,7 @@ class App(ctk.CTk):
         self.grid_columnconfigure(2)
 
         #Habit Tasks Frame
-        self.my_frame = MyFrame(self,"Habit Tasks", 50 , 30) # frame args order: width, height 
+        self.my_frame = MyFrame(self,"Habit Tasks", 50 , 30, self) # frame args order: width, height 
         self.my_frame.grid(row=0, column=0, padx=10, pady=10 )
 
         #Today's tasks Frame
@@ -984,7 +1027,7 @@ class App(ctk.CTk):
 
 
 
-        self.button_finish = ctk.CTkButton(self, text="Finish for the day \n Save All",command=self.button_event, height=60, width=85 ) 
+        self.button_finish = ctk.CTkButton(self, text="Finish for the day \n Save All",command=self.finish_for_day, height=60, width=85 ) 
         self.button_finish.grid(row=0, column=3, padx=20)
     
     ########## methods  ##############
@@ -992,7 +1035,11 @@ class App(ctk.CTk):
 
     
         #Finish for the day button
-    def button_event():
+    def finish_for_day(self):
+        habit_names, habits =self.my_frame.get_habits_names()
+        task_names, tasks = self.my_frame2.get_daily_tasks()
+        data_structure.save_entries(habit_names,habits)
+        data_structure.save_entries(task_names,tasks)
         print("Everything saved!") #<- change this to actually save everything!! call a save all method that calls all the save methods     
 
 #TODO - drop down menu for project tasks that shows tasks from that project in middle frame, project can only be selected if monthly focus aligns and once set cant be unset until....
