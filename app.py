@@ -495,6 +495,7 @@ class MyFrame2(ctk.CTkFrame):
         self.suggest_project()
 
     def get_entry_variable_name(self, entry_instance):
+        """ returns names of entry instace via the dict they are held in (if i can get the dict of instances to work) """
         for name, entry in self.entries.items():
             if entry_instance is entry:
                 return name
@@ -508,16 +509,17 @@ class MyFrame2(ctk.CTkFrame):
     
     def get_daily_tasks(self)->list:
         """ returns a list of entry content and a list of entry  names   """
-
+        count = 0
         self.daily_tasks = []
         self.entry_names = []
         
         #get all entry content
         for entry in self.all_entries:
+            count += 1
             if entry:
                 content = entry.get()
                 self.daily_tasks.append(content)
-                self.entry_names.append(entry)
+                self.entry_names.append(f"entry{count}")
         self.collected_content = [item for item in self.daily_tasks if item != ""]
         print(f"Collected daily tasks:{self.entry_names} ")#<- testing
         print(f"Collected daily tasks content:{self.collected_content} ")#<- testing
