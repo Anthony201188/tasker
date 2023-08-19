@@ -1,4 +1,4 @@
-from class_def import * #TODO = import this properly
+from class_def import * #TODO = im properly
 import data_structure
 import pickle
 import customtkinter as ctk
@@ -53,7 +53,7 @@ def on_close():
 
 
 #####################################################################################
-
+#TODO - make all ##### banners match data_structure.py style
 ###################### DEFINING FRAMES AND WIDGETS ###################################
 #Habit Tasks
 class MyFrame(ctk.CTkFrame):
@@ -82,9 +82,11 @@ class MyFrame(ctk.CTkFrame):
         self.label_number_of_days_remaining.grid(row=3, column=2, padx=10, pady=5)
 
         #Entries
+        self.habit1_set_var = ctk.BooleanVar(value=False)
         self.entry_habit1 = ctk.CTkEntry(self,placeholder_text="Habit1",width=180)
         self.entry_habit1.grid(row=1, column=0, padx=10, pady=10)
-
+        
+        self.habit2_set_var = ctk.BooleanVar(value=False)
         self.entry_habit2 = ctk.CTkEntry(self,placeholder_text="Habit2",width=180)
         self.entry_habit2.grid(row=2, column=0, padx=10, pady=10)
 
@@ -92,7 +94,7 @@ class MyFrame(ctk.CTkFrame):
         self.entry_duration.grid(row=3, column=3, padx=10, pady=10)
 
         #Buttons
-        self.button = ctk.CTkButton(self, text="set habits and duration",command=self.set_habits_and_duration ,height=28, width=28 ) 
+        self.button = ctk.CTkButton(self, text="set habits and duration",command=lambda:(self.toggle_habits_set(),self.set_habits_and_duration()) ,height=28, width=28 ) 
         self.button.grid(row=1, column=3, padx=20)
 
         #TODO - remove once button placement is correct
@@ -100,13 +102,13 @@ class MyFrame(ctk.CTkFrame):
         #self.button2.grid(row=2, column=3, padx=20)
 
         #Checkboxes
-        check_var = ctk.StringVar(value="off") #need to compete the get and command events for this 
-        self.check = ctk.CTkCheckBox(self, text="Done", variable=check_var, onvalue="on", offvalue="off") #"command=checkbox_event," needs to be added to the end 
-        self.check.grid(row=1, column=2)
+        self.habit1_check_var = ctk.BooleanVar(value=False)  
+        self.habit1_check = ctk.CTkCheckBox(self, text="Done", variable=self.habit1_check_var,fg_color="black", onvalue=True, offvalue=False) 
+        self.habit1_check.grid(row=1, column=2)
 
-        check_var2 = ctk.StringVar(value="off") #need to compete the get and command events for this 
-        self.check2 = ctk.CTkCheckBox(self, text="Done", variable=check_var2, onvalue="on", offvalue="off") #"command=checkbox_event," needs to be added to the end 
-        self.check2.grid(row=2, column=2)
+        self.habit2_check_var2 = ctk.BooleanVar(value=False)  
+        self.habit2_check2 = ctk.CTkCheckBox(self, text="Done", variable=self.habit2_check_var2,fg_color="black", onvalue=True, offvalue=False) 
+        self.habit2_check2.grid(row=2, column=2)
 
         #TODO - remove - Load the habits
         #self.habit1 =load_file("habit1.pkl")
@@ -200,8 +202,25 @@ class MyFrame(ctk.CTkFrame):
         print(f"Entry content:{self.entry_content},Entry names:{self.entry_names}")
 
         return self.entry_names, self.entry_content 
+    
+    def toggle_habits_set(self):
+        #gets habits to only set if they are truthy
+        habit1, habit2 = self.get_habits()
 
-        
+        # Toggles the set BooleanVars for each entry and prints the
+        if habit1:
+            new_value = not self.habit1_set_var.get()
+            self.habit1_set_var.set(new_value)
+            print(f"Habit1 set = {new_value}")
+
+        if habit2:
+            new_value = not self.habit2_set_var.get()
+            self.habit2_set_var.set(new_value)
+            print(f"Habit2 set = {new_value}")
+
+
+
+    
     def reset_habits(self):
         """ enables the habit entries and resets the habit1/2 persistance files back to default text """
         
@@ -318,10 +337,10 @@ class MyFrame2(ctk.CTkFrame):
     def __init__(self, master,text, width, height, app_instance):
         super().__init__(master, width, height)
 
-        # reference to the App instance for later use
+        # Reference to the App instance for later use
         self.app_instance = app_instance
 
-        #Set the title and frame size on instantiation
+        # Set the title and frame size on instantiation
         self.val = text
         self.val2 = width
         self.val3 = height
@@ -329,27 +348,34 @@ class MyFrame2(ctk.CTkFrame):
         self.grid_rowconfigure(10, weight=1)  # configure grid system
         self.grid_columnconfigure(3, weight=1)
 
-        #Label for the frame
+        # Label for the frame
         self.label = ctk.CTkLabel(self,anchor=ctk.N, text=self.val,width=self.val2 , height=self.val3)
         self.label.grid(row=0, column=0, padx=10, pady=10)
 
-        #Entries
+        # Entries
+        self.entry_set_var = ctk.BooleanVar(value=False)
         self.entry = ctk.CTkEntry(self,placeholder_text="Project", border_color="green",text_color="green", width=180)
         self.entry.grid(row=0, column=0, padx=10, pady=10) 
  
+        self.entry2_set_var = ctk.BooleanVar(value=False)
         self.entry2 = ctk.CTkEntry(self,placeholder_text="Urgent",border_color="red",text_color="red", width=180)
         self.entry2.grid(row=1, column=0, padx=10, pady=10)    
 
+        self.entry3_set_var = ctk.BooleanVar(value=False)
         self.entry3 = ctk.CTkEntry(self,placeholder_text="Urgent",border_color="red",text_color="red" , width=180)
         self.entry3.grid(row=2, column=0, padx=10, pady=10) 
        
+        self.entry4_set_var = ctk.BooleanVar(value=False)
         self.entry4 = ctk.CTkEntry(self,placeholder_text="Task1",width=180)
         self.entry4.grid(row=3, column=0, padx=10, pady=10)
 
+        self.entry5_set_var = ctk.BooleanVar(value=False)
         self.entry5 = ctk.CTkEntry(self,placeholder_text="Task2",width=180)
         self.entry5.grid(row=4, column=0, padx=10, pady=10)
 
+        #list of all entries
         self.all_entries = [self.entry, self.entry2, self.entry3, self.entry4, self.entry5]
+        self.all_set_entry_vars = [self.entry_set_var, self.entry2_set_var, self.entry3_set_var, self.entry4_set_var]
 
 
         #Buttons
@@ -367,25 +393,25 @@ class MyFrame2(ctk.CTkFrame):
 
 
         #Checkboxes
-        self.check_var = ctk.StringVar(value="off") #<- these should all be instance .self vars
-        self.check = ctk.CTkCheckBox(self, text="Done", variable=self.check_var,border_color="green", onvalue="on", offvalue="off") #"command=checkbox_event," needs to be added to the end 
+        self.project_check_var = ctk.BooleanVar(value=False) 
+        self.check = ctk.CTkCheckBox(self, text="Done", variable=self.project_check_var,fg_color="green",border_color="green", onvalue=True, offvalue=False) #"command=checkbox_event," needs to be added to the end 
         self.check.grid(row=0, column=2)
 
-        check_var1 = ctk.StringVar(value="off") #need to compete the get and command events for this 
-        self.check1 = ctk.CTkCheckBox(self, text="Done", variable=check_var1, onvalue="on", border_color="red", offvalue="off") #"command=checkbox_event," needs to be added to the end 
-        self.check1.grid(row=1, column=2)   
+        self.urgent_check1_var = ctk.BooleanVar(value=False)  
+        self.urgent_check1 = ctk.CTkCheckBox(self, text="Done", variable=self.urgent_check1_var, onvalue=True,fg_color="red", border_color="red", offvalue=False) #"command=checkbox_event," needs to be added to the end 
+        self.urgent_check1.grid(row=1, column=2)   
 
-        check_var2 = ctk.StringVar(value="off") #need to compete the get and command events for this 
-        self.check2 = ctk.CTkCheckBox(self, text="Done", variable=check_var2, onvalue="on",border_color="red", offvalue="off") #"command=checkbox_event," needs to be added to the end 
-        self.check2.grid(row=2, column=2)   
+        self.urgent_check2_var = ctk.BooleanVar(value=False)  
+        self.urgent_check2 = ctk.CTkCheckBox(self, text="Done", variable=self.urgent_check2_var, onvalue=True,fg_color="red", border_color="red", offvalue=False) #"command=checkbox_event," needs to be added to the end 
+        self.urgent_check2.grid(row=2, column=2)   
 
-        check_var3 = ctk.StringVar(value="off") #need to compete the get and command events for this 
-        self.check3 = ctk.CTkCheckBox(self, text="Done", variable=check_var3, onvalue="on", offvalue="off") #"command=checkbox_event," needs to be added to the end 
-        self.check3.grid(row=3, column=2)   
+        self.non_urgent_check1_var = ctk.BooleanVar(value=False)  
+        self.non_urgent_check1 = ctk.CTkCheckBox(self, text="Done", variable=self.non_urgent_check1_var, onvalue=True, fg_color="black",offvalue=False) #"command=checkbox_event," needs to be added to the end 
+        self.non_urgent_check1.grid(row=3, column=2)   
 
-        check_var4 = ctk.StringVar(value="off") #need to compete the get and command events for this 
-        self.check4 = ctk.CTkCheckBox(self, text="Done", variable=check_var4, onvalue="on", offvalue="off") #"command=checkbox_event," needs to be added to the end 
-        self.check4.grid(row=4, column=2) 
+        self.non_urgent_check2_var = ctk.BooleanVar(value=False)  
+        self.non_urgent_check2 = ctk.CTkCheckBox(self, text="Done", variable=self.non_urgent_check2_var, onvalue=True, fg_color="black",offvalue=False) #"command=checkbox_event," needs to be added to the end 
+        self.non_urgent_check2.grid(row=4, column=2) 
 
         #define a set var for Todays tasks
         self.daily_tasks_set = False   
@@ -401,7 +427,7 @@ class MyFrame2(ctk.CTkFrame):
         #load pickled file
         daily_task_entry_lst = load_file("daily_task_entry_lst.pkl")
 
-        #select entry dicts to pseudo-load, shouldnt need this as only truthy values should be stored in file double filtering not bad.
+        #select entry dicts to pseudo-load, shouldnt  as only truthy values should be stored in file double filtering not bad.
         for dict in daily_task_entry_lst:
             if dict["load_on_start"]: #checks if entry dict "load_on_start" value is truthy 
                 self.loaded_entries.append(dict)
@@ -419,7 +445,7 @@ class MyFrame2(ctk.CTkFrame):
         self.set_entries()
 
 
-        #version-1 of this operation below
+        #version- operation below
         #find all files containing "daily_task_entry" in cwd
         #testing below removed for list of dicts in one file and unpacked as in version 2 above
         
@@ -441,7 +467,7 @@ class MyFrame2(ctk.CTkFrame):
 
 
 ################ methods ######################
-#TODO - on 'save-all progress' button press, collect all checkbox states and store in dictionary. Use file persistance on this dictionary 
+#TODO - on 'save-all progress' button press, collect all checkbox states and store in dictionary. Use file persistanc dictionary 
 #TODO -  check on start if the task_done=True then unlock and empty that entry only, will need to modify the set and suggest function to check if single empties are empty
 #TODO - modify suggest fuction to check if entries are empty and suggest only empty entries, modify entries_empty function to take entries single or list as args
     def suggest_non_urgent(self):
@@ -588,9 +614,10 @@ class MyFrame2(ctk.CTkFrame):
 
     def set_entries(self):
         """ locks all the entries in the 'todays tasks' frame and thickens the borders.
-          IF they have text in them finally the self.daily_tasks_set is set to True """
+          IF they have text in them finally the self.daily_tasks_set is set to True
+        also returns a list of all set_flags """
         
-        #check if all entries == empty they have text "set" the entry with text in 
+        #check if all entries == empty they have entry configured to "set" the entry with text in 
         if self.all_entries_empty(): 
             pass
 
@@ -598,21 +625,26 @@ class MyFrame2(ctk.CTkFrame):
             for entry in self.all_entries:
                 if entry.get():
                     entry.configure(state="disabled", border_width=3)
-
+            
     def set_button(self):
         """ a second version of the above function but sets the sets the
             self.daily_tasks_set=True so that the entries are saved 
-            but empty entries arent saved when the entries are initialy set on load"""
+            but empty entries arent saved when the entries are initialy set on load """
+        
         self.set_entries()
         self.daily_tasks_set=True 
         print("Daily tasks successfully set = True")
- 
+        count = 0
 
-            
+        for entry_var in self.all_entry_vars:
+            count += 1 
+            new_value = entry_var.get()
+            print(f"Entry set variable{count} set to = {new_value}")#<-testing
+
 
     def sort_all_tasks(self):
         """ sorts all tasks using the sorting methods from 'algo.py' """
-        #TODO - write this method.
+        #TODO - w method.
 
 
 
@@ -801,7 +833,7 @@ class MyFrame3(ctk.CTkFrame):
         self.current_struct_time = time.localtime(self.current_time)
 
         #Calculate the last day of the month
-        _, self.last_day = calendar.monthrange(self.current_struct_time.tm_year, self.current_struct_time.tm_mon) # month range returns tuple of day of the week (mon0-sun6) which the month starts and the secon val is the number of days in this month
+        _, self.last_day = calendar.monthrange(self.current_struct_time.tm_year, self.current_struct_time.tm_mon) # month range returns tuple of day of the week (mon0-sun6) which the month starts and the secon val is the number of day month
 
         #Step 4: Calculate the remaining days
         self.remaining_days = self.last_day - self.current_struct_time.tm_mday # struct time obj can access each elem using the ".tm_xxx" tag
@@ -829,7 +861,7 @@ class MyFrame3(ctk.CTkFrame):
 
 
 
-    # need to add some function here to check if yesterdays tasks where done ? I think sorting should take care of this.
+    # need to add some function here to check if yesterdays tasks where done ? I think sorting should take car.
 
     # def insert_tasks(self, strings, *insert_entries):
     #     """ 
@@ -870,7 +902,7 @@ class MyFrame4(ctk.CTkFrame):
         #Textbox
         self.textbox = ctk.CTkTextbox(self, width=300,height=310, corner_radius=3 ) # insert at line 0 character 0
         self.textbox.grid(row=0, column=0)
-        self.textbox.insert("0.0", "Task Display Window")# <- need to finish this line
+        self.textbox.insert("0.0", "Task Display Window")# <- need to fi line
         self.textbox.insert("2.0",TaskTracking.display_task)# <- monitor when changing to class_def2
 
         #Buttons
@@ -900,7 +932,7 @@ class MyFrame4(ctk.CTkFrame):
         self.entry.grid(row=5, column=0, padx=10, pady=10) 
 
         #checkbox
-        check_var = ctk.StringVar(value="off") #need to compete the get and command events for this 
+        check_var = ctk.StringVar(value="off") #need to compete the get and command events 
         self.check = ctk.CTkCheckBox(self, text="Is a project", variable=check_var, onvalue="on", offvalue="off") #"command=checkbox_event," needs to be added to the end 
         self.check.grid(row=6, column=0, padx=10, pady=10)
         
@@ -908,7 +940,7 @@ class MyFrame4(ctk.CTkFrame):
         #Combobox
         self.dropdown = ctk.CTkComboBox(self, values=["Select a project","option 1", "option 2"],command=None)
         self.dropdown.set("Select a project")
-        self.dropdown.grid(row=6, column=1, padx=10, pady=5) #<- if is project checkbox checked this should be shown to select which task
+        self.dropdown.grid(row=6, column=1, padx=10, pady=5) #<- if is project checkbox che should be shown to select which task
 
         #TODO - checkbox for prject selction to be shown on check line 617
         #TODO - add another check button for "is urgrent", possibly requires new attribute or setting task urgency attribute to 10
@@ -1001,7 +1033,7 @@ class App(ctk.CTk):
         self.my_frame.grid(row=0, column=0, padx=10, pady=10 )
 
         #Today's tasks Frame
-        """ MyFrame2 Uses dependacy injection to share data from this instance to another class. 
+        """ MyFrame2 Uses dependacy injection to share data  instance to another class. 
         essentially linking the two via pointing so I can get data from the instance of my_frame2 here in the App class """
 
         self.my_frame2 = MyFrame2(self, "Today's Tasks", 200, 90,self) #<- second self passes instance to 'app_instance' in MyFrame2 
@@ -1027,22 +1059,53 @@ class App(ctk.CTk):
         self.my_frame5v3 = MyFrame5V3(self,"Urgent/Admin Task List",220, 550 )
         self.my_frame5v3.grid(row=1, column=3, padx=2, pady=10,)
 
-
-
         self.button_finish = ctk.CTkButton(self, text="Finish for the day \n Save All",command=self.finish_for_day, height=60, width=85 ) 
         self.button_finish.grid(row=0, column=3, padx=20)
     
     ########## methods  ##############
+    def get_set_flags(self)->list:
+        """ returns a list of all set_flags """
+        self.set_flags = []
 
+        for set_var in self.my_frame2.all_set_entry_vars:
+            new_value = set_var.get()
+            self.set_flags.append(new_value)
+        
+        #testing
+        print(f"set_flags{self.set_flags}")
+        return self.set_flags
+
+    def get_done_flags(self)->list:
+        """ returns a list of all done_flags """
+    
+        checkbox_vars = [
+        self.my_frame.habit1_check_var,
+        self.my_frame.habit2_check_var2,
+        self.my_frame2.project_check_var,
+        self.my_frame2.urgent_check1_var,
+        self.my_frame2.urgent_check2_var,
+        self.my_frame2.non_urgent_check1_var,
+        self.my_frame2.non_urgent_check2_var]
+        
+        self.done_flags = [var.get() for var in checkbox_vars]
+        print("done_flags",self.done_flags)#<-testing
+
+        return self.done_flags
 
     
-        #Finish for the day button
+    #callback Finish for the day button
     def finish_for_day(self):
+        """ callback function that gets all the required data to save """
+        
+        done_flags = self.get_done_flags()
+        set_flags = self.get_set_flags()
+
         habit_names, habits =self.my_frame.get_habits_names()
         task_names, tasks = self.my_frame2.get_daily_tasks()
-        data_structure.save_entries(habit_names,habits)
-        data_structure.save_entries(task_names,tasks)
-        print("Everything saved!") #<- change this to actually save everything!! call a save all method that calls all the save methods     
+        data_structure.save_entries(habit_names,habits, set_flags, done_flags)
+        data_structure.save_entries(task_names,tasks,set_flags, done_flags)
+        print("Everything saved!")   
+
 
 #TODO - drop down menu for project tasks that shows tasks from that project in middle frame, project can only be selected if monthly focus aligns and once set cant be unset until....
 #TODO - finish for the day button should be turned into a save progress, it also should have an entry below it that takes nots and feeling 1-10

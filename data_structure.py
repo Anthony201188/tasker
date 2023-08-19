@@ -144,14 +144,46 @@ def get_current_time():
 formatted_time = get_current_time()
 #print("Formatted Time:", formatted_time)
 
-##### SAVE ENTRY #######
+##### SAVE ENTRY (TO BE DELETED ONCE V2.0 IS IMPLEMENTED!)#######
 def save_entries(entries_to_save, entry_contents):
+    pass
+    # """
+    # Save entries and their corresponding content to a text file.
+
+    # Args:
+    #     entries_to_save lst(str): List of entry names to be saved.
+    #     entry_contents lst(str): Corresponding list of content for each entry.
+
+    # Adds timestamps to each entry and its content, formats them, and saves them
+    # to a specified text file in the specified format.
+
+    # Timestamps are generated using the get_current_time() function.
+    # """
+    # entry_lines = []
+
+    # timestamp = get_current_time()
+
+    # for entry, content in zip(entries_to_save, entry_contents):
+    #     set_info = f"S,{timestamp}"
+    #     done_info = f"D,{timestamp}"
+    #     entry_line = f"{entry}|content:\"{content}\"|{set_info}|{done_info}"
+    #     entry_lines.append(entry_line)
+
+    # with open("entries.txt", "a") as file:
+    #     for entry_line in entry_lines:
+    #         file.write(entry_line + "\n")
+    #         print(f"Entry line successfully saved: {entry_line}")
+
+##### SAVE ENTRY V2.0 ####
+def save_entries(entries_to_save, entry_contents, set_flags, done_flags):
     """
     Save entries and their corresponding content to a text file.
 
     Args:
         entries_to_save lst(str): List of entry names to be saved.
         entry_contents lst(str): Corresponding list of content for each entry.
+        set_flags lst(bool): List of flags indicating whether entries are "set."
+        done_flags lst(bool): List of flags indicating whether entries are done.
 
     Adds timestamps to each entry and its content, formats them, and saves them
     to a specified text file in the specified format.
@@ -162,9 +194,9 @@ def save_entries(entries_to_save, entry_contents):
 
     timestamp = get_current_time()
 
-    for entry, content in zip(entries_to_save, entry_contents):
-        set_info = f"S,{timestamp}"
-        done_info = f"D,{timestamp}"
+    for entry, content, set_flag, done_flag in zip(entries_to_save, entry_contents, set_flags, done_flags):
+        set_info = f"S,{timestamp}" if set_flag else ""
+        done_info = f"D,{timestamp}" if done_flag else ""
         entry_line = f"{entry}|content:\"{content}\"|{set_info}|{done_info}"
         entry_lines.append(entry_line)
 
