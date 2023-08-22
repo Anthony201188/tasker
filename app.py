@@ -43,6 +43,7 @@ def on_close():
     app.my_frame.save_habits()
 
     # save daily tasks
+    print("daily tasks set:",app.my_frame2.daily_tasks_set)#<- testing
     if app.my_frame2.daily_tasks_set:
         app.my_frame2.save_daily_tasks()    
 
@@ -97,6 +98,7 @@ class MyFrame(ctk.CTkFrame):
         self.button = ctk.CTkButton(self, text="set habits and duration",command=lambda:(self.toggle_habits_set(),self.set_habits_and_duration()) ,height=28, width=28 ) 
         self.button.grid(row=1, column=3, padx=20)
 
+        # TODO - dont need this toggle option above  as it will only ever bet set not "unset"
         #TODO - remove once button placement is correct
         #self.button2 = ctk.CTkButton(self, text="set duration",command=self.xxxxxx, height=28, width=28 ) 
         #self.button2.grid(row=2, column=3, padx=20)
@@ -375,20 +377,20 @@ class MyFrame2(ctk.CTkFrame):
 
         #list of all entries
         self.all_entries = [self.entry, self.entry2, self.entry3, self.entry4, self.entry5]
-        self.all_set_entry_vars = [self.entry_set_var, self.entry2_set_var, self.entry3_set_var, self.entry4_set_var]
+        self.all_set_entry_vars = [self.entry_set_var, self.entry2_set_var, self.entry3_set_var, self.entry4_set_var, self.entry5_set_var]
 
 
         #Buttons
         self.button_suggest = ctk.CTkButton(self, text="suggest",command=self.suggest_todays_tasks, height=28, width=28 ) 
         self.button_suggest.grid(row=0, column=3, padx=20)    
 
-        self.button_set = ctk.CTkButton(self, text="set",command=self.set_entries, height=28, width=50 ) 
+        self.button_set = ctk.CTkButton(self, text="set",command=self.set_entries_callback, height=28, width=50 ) 
         self.button_set.grid(row=2, column=3, padx=5)
 
         self.button_sort = ctk.CTkButton(self, text="sort all tasks", height=28, width=45 ) 
         self.button_sort.grid(row=1, column=3, padx=20)
         
-        self.button_clear = ctk.CTkButton(self, text="clear all",command=self.reset_clear, height=28, width=45 ) 
+        self.button_clear = ctk.CTkButton(self, text="clear all",command=lambda:(self.toggle_set_entry_var(),self.reset_clear()), height=28, width=45 ) 
         self.button_clear.grid(row=3, column=3, padx=20)
 
 
@@ -442,7 +444,7 @@ class MyFrame2(ctk.CTkFrame):
         self.insert_tasks(self.loaded_entires_content, self.loaded_entries_name )
 
         #lock entries
-        self.set_entries()
+        self.set_entries_on_start()
 
 
         #version- operation below
@@ -520,13 +522,6 @@ class MyFrame2(ctk.CTkFrame):
         self.suggest_urgent()
         self.suggest_project()
 
-    def get_entry_variable_name(self, entry_instance):
-        """ returns names of entry instace via the dict they are held in (if i can get the dict of instances to work) """
-        for name, entry in self.entries.items():
-            if entry_instance is entry:
-                return name
-        return None
-
     def single_entry_empty(self, entry)->bool:
         """ takes a single entry(attr)obj name as an arg and,returns True if empty """
         contents = entry.get()
@@ -564,7 +559,7 @@ class MyFrame2(ctk.CTkFrame):
 
             #get set entry names
             for entry in all_entries_str:
-                entry_attr = getattr(self, entry) #<- dynamic use of attr objs needed for pickling
+                entry_attr = getattr(self, entry)
                 if self.single_entry_empty(entry_attr):
                     entry_names.append(entry) #<- check for attribute or TKinter obj here
 
@@ -611,11 +606,9 @@ class MyFrame2(ctk.CTkFrame):
             
             #print(f"File [{file_path}] not required load")
 
-
-    def set_entries(self):
-        """ locks all the entries in the 'todays tasks' frame and thickens the borders.
-          IF they have text in them finally the self.daily_tasks_set is set to True
-        also returns a list of all set_flags """
+    def set_entries_on_start(self):
+        """ same as set entries but without the change of self.daily_tasks_set to True """
+        print("set entries on start function ran()")#<- testing
         
         #check if all entries == empty they have entry configured to "set" the entry with text in 
         if self.all_entries_empty(): 
@@ -625,27 +618,40 @@ class MyFrame2(ctk.CTkFrame):
             for entry in self.all_entries:
                 if entry.get():
                     entry.configure(state="disabled", border_width=3)
-            
-    def set_button(self):
-        """ a second version of the above function but sets the sets the
-            self.daily_tasks_set=True so that the entries are saved 
-            but empty entries arent saved when the entries are initialy set on load """
+            self.toggle_set_entry_var()
+
+    def set_entries_callback(self):
+        """ locks all the entries in the 'todays tasks' frame and thickens the borders.
+          IF they have text in. Also calls to toggle the Boolvars for the entries to show they are set"""
+        print("set entries function ran()")#<- testing
         
-        self.set_entries()
-        self.daily_tasks_set=True 
-        print("Daily tasks successfully set = True")
-        count = 0
+        #check if all entries == empty they have entry configured to "set" the entry with text in 
+        if self.all_entries_empty(): 
+            pass
 
-        for entry_var in self.all_entry_vars:
-            count += 1 
-            new_value = entry_var.get()
-            print(f"Entry set variable{count} set to = {new_value}")#<-testing
+        else:
+            self.daily_tasks_set = True
+            for entry in self.all_entries:
+                if entry.get():
+                    entry.configure(state="disabled", border_width=3)
+            print("toggle_set_entry_var ran()")
+            self.toggle_set_entry_var()
 
+
+    def toggle_set_entry_var(self):
+        """ toggles the entries BoolVar to show that entry has been set, called on set and clear. Only toggles the BoolVar if not empty and not already set """
+        zipped = zip(self.all_entries, self.all_set_entry_vars)
+
+        for entry, set_entry_var in zipped:
+            if entry.get() and not set_entry_var.get(): 
+                new_value = not set_entry_var.get()
+                set_entry_var.set(new_value)
+                print(f"{set_entry_var} set to = {new_value}")
+            
 
     def sort_all_tasks(self):
         """ sorts all tasks using the sorting methods from 'algo.py' """
         #TODO - w method.
-
 
 
     #suggest tasks function
@@ -689,37 +695,21 @@ class MyFrame2(ctk.CTkFrame):
         self.reset_entries()
         self.clear_entries()
 
-
-    def insert_tasks(self, strings, entries)->None:
+    def insert_tasks(self, strings, entries) -> None:
         """ 
-        Takes entry text to isnert as a list of strings and a list of entries to insert them into in the same format.
+        Takes entry text to insert as a list of strings and a list of entries to insert them into in the same format.
         
         Arguments:
-        strings -> ["name_of_entry_here","name_of_entry2_here"] type -> lst(str)
-        entries -> ["entry text here","more entry text here"] type -> lst(str)
+        strings -> ["name_of_entry_here", "name_of_entry2_here"] type -> lst(str)
+        entries -> ["entry text here", "more entry text here"] type -> lst(str)
 
-        Note: entries Type(str) used for easy file persistance 
+        Note: entries Type(str) used for easy file persistence 
         """
-        self.count = 0 
+        for entry_name, string in zip(entries, strings):
+            entry_attr = getattr(self, entry_name)
+            entry_attr.delete(0, "end")
+            entry_attr.insert(0, string)
 
-        # Delete the current text  
-        if len(strings) >= 2 :
-            for entry in entries:
-                entry_attr = getattr(self,entries[self.count])
-                self.count += 1
-                entry_attr.delete(0, "end")
-        else:
-            entry_attr = getattr(self,entries[0]) #<- changes text into actual attribute to use with delete method
-            entry_attr.delete(0,"end")
-
-        # Use zip to pair each string with its corresponding entry, upacks from list of tuples  then inserts each string in an entry using the for loop
-        if len(strings) >= 2 :
-            for string, entry in zip(strings, entries):
-                entry_attr = getattr(self, entry)
-                entry_attr.insert(0, string)
-        else:
-            entry_attr = getattr(self, entries[0])
-            entry_attr.insert(0, strings[0])
 
 
 #Monthly focus
@@ -1066,6 +1056,7 @@ class App(ctk.CTk):
     def get_set_flags(self)->list:
         """ returns a list of all set_flags """
         self.set_flags = []
+        print("testing get_set_flags()")
 
         for set_var in self.my_frame2.all_set_entry_vars:
             new_value = set_var.get()
@@ -1099,6 +1090,8 @@ class App(ctk.CTk):
         
         done_flags = self.get_done_flags()
         set_flags = self.get_set_flags()
+
+        print("Set flags:",set_flags)
 
         habit_names, habits =self.my_frame.get_habits_names()
         task_names, tasks = self.my_frame2.get_daily_tasks()
