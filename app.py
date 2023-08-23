@@ -127,7 +127,7 @@ class MyFrame(ctk.CTkFrame):
         self.loaded_duration = self.load_duration() 
 
         #updates the duration based on elapsed time then schedules next update for 24hrs
-        self.update_duration(self.loaded_duration)
+        self.updated_duration = self.update_duration(self.loaded_duration) #<- needs to return the updatded duration so theres no errors on non zero load -> not resetting entries
 
         #gets the duration and saves it locally
         self.save_duration(self.get_current_duration())
@@ -139,7 +139,7 @@ class MyFrame(ctk.CTkFrame):
         self.loaded_habits = self.load_habits()
 
         # re-set the entries or load the loaded vals into the habit1/2 entries.
-        if self.loaded_duration == 0:
+        if self.updated_duration == 0:
             self.reset_habits()
         else:
             self.set_habits(self.loaded_habits)
@@ -272,6 +272,9 @@ class MyFrame(ctk.CTkFrame):
         updates the duration using the elapsed days and set duration functions,
         finally scheduling the next update for 24 hours time """
 
+        # Initialize updated_duration with a default value, stops unbounderror due to else block
+        updated_duration = 0
+
         # Update the duration based on elapsed days
         self.whole_elapsed_days = self.get_elapsed_days()
         print("Number of days to deduct from duration:",self.whole_elapsed_days)
@@ -281,11 +284,13 @@ class MyFrame(ctk.CTkFrame):
         if loaded_duration <= 0: #<- should account for accidental minus durations (shouldnt occur anyway)
             self.set_duration(0)
         else:
-            self.updated_duration = loaded_duration - self.whole_elapsed_days
-            self.set_duration(self.updated_duration)
+            updated_duration = loaded_duration - self.whole_elapsed_days
+            self.set_duration(updated_duration)
 
         # Schedule next update
         self.schedule_update(24, self.update_duration)
+
+        return updated_duration
 
     def save_duration(self, duration_to_save):
         """ Takes a single int as a durtion, saves that to the serial 'duration.pkl' file locally """

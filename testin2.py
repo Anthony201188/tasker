@@ -38,3 +38,6 @@ with open("daily_task_entry_lst.pkl", "wb") as file:
 #         print(file)
 # else:
 #     print("No daily task files found in the current directory and its subdirectories.")
+
+
+# print console out redirect window testing  ↓
