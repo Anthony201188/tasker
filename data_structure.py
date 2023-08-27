@@ -6,6 +6,8 @@ entry2|content:"content goes here"|S,18-08-2023,10:00:00|D,21-08-2023,15:30:00
 
  """
 
+ # NOTE - in future use the  ISO 8601 standard for date time which is "YYYY-MM-DD" this is not only the standard but can be searched lexographically (will still appear in date order when sorting by integer)
+ # NOTE - could have also used sqlite locally but this was quite fun!
 
 ##### FOR SAVING THE INITIAL TEXT FILE ######
 # entry1 = """

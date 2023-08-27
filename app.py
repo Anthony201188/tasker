@@ -79,7 +79,7 @@ class MyFrame(ctk.CTkFrame):
         self.label2.grid(row=3, column=0, padx=10, pady=5)
 
         #Number of days label
-        self.label_number_of_days_remaining = ctk.CTkLabel(self,anchor=ctk.S, text="loading duration...",width=60, height=60) 
+        self.label_number_of_days_remaining = ctk.CTkLabel(self,anchor=ctk.S, text="0",width=60, height=60) 
         self.label_number_of_days_remaining.grid(row=3, column=2, padx=10, pady=5)
 
         #Entries
@@ -260,6 +260,8 @@ class MyFrame(ctk.CTkFrame):
     def get_current_duration(self)-> int:
         """ gets whatever is currently set as the remaining days label and returns it an int. """
         current_duration = self.label_number_of_days_remaining.cget("text")
+        #testing
+        print("current_duration:",current_duration)
         return int(current_duration)
     
     def schedule_update(self, duration_hours, function):
@@ -282,13 +284,16 @@ class MyFrame(ctk.CTkFrame):
         # set updated duration
         print("Current loaded duration:", loaded_duration)
         if loaded_duration <= 0: #<- should account for accidental minus durations (shouldnt occur anyway)
-            self.set_duration(0)
+            updated_duration = 0
         else:
             updated_duration = loaded_duration - self.whole_elapsed_days
             self.set_duration(updated_duration)
 
         # Schedule next update
         self.schedule_update(24, self.update_duration)
+
+        #testing
+        print("returnedupdated_duration:", updated_duration) 
 
         return updated_duration
 
