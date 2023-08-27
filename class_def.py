@@ -1,3 +1,4 @@
+from app import load_file, save_file
 
 class Task:
 
@@ -30,8 +31,14 @@ class Task:
                 Task id_:[{self.id_}]
                 """)
 
+class Project(Task):
+    """ this class is used only if the task is a project it inherits from the project class but allows the adding of sub tasks within that project task """
+    # write the class for project here.
+    pass
+
 class TaskTracking:
-    task_list = []  # contains a list of all tasks
+    # TODO -  needs to be a constructor so I can save the class instance on load on start for file persistance of task tracking!
+    task_list = []  # contains a list of all tasks <- will neet to be changed to instance attribute
     id_counter = 0  # counts all instances of Task class
     display_task = ""
 
@@ -70,23 +77,33 @@ to reset all of the ids
 ## check line 168 in app.py for an example
   """
 
-class TaskArchive:
-    """ used to manage completed tasks, will need some kind of file persistance implemented """
+# NOTE - worth noting hrer you can paickle an instance of a class this maybe the way to store the stacks and also the main task list
+
+############  STACK CLASSES USED FOR SORTING AND STORING TASK OBJECTS ############
+class Stack:
+    """ used to store/manage tasks, will need some kind of file persistance implemented.""" 
     def __init__(self):
-        self.completed_tasks = []
 
-    def add_completed_task(self, task):
-        self.completed_tasks.append(task)
+        self.stack = []
 
-    def get_completed_tasks(self):
+    def add_task(self, task):
+        """ adds task obj to the stack(lst) by task name attribute(str) """
+        self.stack.append(task)
+
+    def remove_task(self, task):
+        """ removes task obj from stack(lst) by task name attribute (str) """
+    def print_task_stack(self):
+        print(self.stack)
+
         return self.completed_tasks
 
 #NOTE - following three classes could be made into one class later depending on required methods and attributes
 # Just use instances of same class used for stacking tasks or inheritance
 
+
 class TaskArchive:
     """ used to manage completed tasks, will need some kind of file persistance implemented """
-    task_archive = []
+    task_archive_stack = []
 
 class TaskNonUrgent:
     """ Used to manage all non-urgent,high-priorty tasks """
@@ -97,10 +114,7 @@ class TaskUrgent:
     urgent_stack = []
 
 
-class Project(Task):
-    """ this class is used only if the task is a project it inherits from the project class but allows the adding of sub tasks within that project task """
-    # write the class for project here.
-    pass
+
 
 # TODO - implement some kind of log, that logs everything printed to the terminal every "session" (nice to have)
 
@@ -133,6 +147,7 @@ washing = Task("washing", "do the washing", 8, 4, "household","20-11-88")
 
 
 if __name__ == "__main__":
+    # note might be worth creating a class to contain all other class so only one thing needs to be instatiated with task tracking / sorting
     ###### Testing ####
     task_tracking = TaskTracking()
     task_archive =  TaskArchive()
