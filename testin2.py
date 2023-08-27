@@ -40,4 +40,118 @@ with open("daily_task_entry_lst.pkl", "wb") as file:
 #     print("No daily task files found in the current directory and its subdirectories.")
 
 
-# print console out redirect window testing  ↓
+''' class Stack:
+    """Used to store/manage tasks, will need some kind of file persistence implemented."""
+    def __init__(self):
+        self.stack = []
+
+    def add_task(self, task, position=None):
+        """
+        Adds task obj to stack(obj) by task name attribute (str).
+        Can take an optional third argument to add it at a certain position.
+        """
+        if position is not None:
+            self.stack.insert(position, task)
+        else:
+            self.stack.append(task)
+
+    def remove_task(self, task_name):
+        """
+        Removes task obj from stack(lst) by task name attribute (str).
+        """
+        self.stack = [task for task in self.stack if task.name != task_name]
+
+    def print_task_stack(self):
+        for task in self.stack:
+            print(task.name)
+
+
+class TaskTracking:
+    id_counter = 0
+    task_list = []
+
+
+class Task:
+    def __init__(self, name, description, urgency, importance, category, due_date, project=False, done=False):
+        self.name = name
+        self.description = description
+        self.urgency = urgency
+        self.importance = importance
+        self.category = category
+        self.due_date = due_date
+        self.project = project
+        self.done = done
+
+
+# Creating instances of the Task class
+task1 = Task("Task 1", "Description 1", 2, 3, "Category A", "2023-08-31")
+task2 = Task("Task 2", "Description 2", 1, 2, "Category B", "2023-09-15")
+task3 = Task("Task 3", "Description 3", 3, 1, "Category A", "2023-09-01")
+
+# Creating an instance of the Stack class
+task_stack = Stack()
+
+# Adding tasks to the stack
+task_stack.add_task(task1)
+task_stack.add_task(task2)
+task_stack.add_task(task3)
+
+# Removing a task by name
+task_stack.remove_task("Task 2")
+
+# Printing the updated stack
+task_stack.print_task_stack() '''
+from app import save_file
+from class_def import *
+
+
+
+
+washing = Task("washing", "do the washing", 8, 4, "household","20-11-88")
+cleaning = Task("cleaning", "clean the house", 6, 2, "household","20-11-88")
+
+save_file(task_tracking,"task-tracking.pkl")
+
+##### factory method example #####
+
+""" import tkinter as tk
+
+class Product:
+    def __init__(self, name):
+        self.name = name
+
+class ProductFactory:
+    @staticmethod
+    def create_product(product_type, name):
+        if product_type == "A":
+            return ProductA(name)
+        elif product_type == "B":
+            return ProductB(name)
+        else:
+            raise ValueError("Invalid product type")
+
+class ProductA(Product):
+    pass
+
+class ProductB(Product):
+    pass
+
+def create_product():
+    product_type = product_type_var.get()
+    name = name_entry.get()
+
+    new_product = ProductFactory.create_product(product_type, name)
+
+    # Display new_product details in GUI
+
+# GUI setup
+root = tk.Tk()
+
+product_type_var = tk.StringVar()
+name_entry = tk.Entry(root)
+create_button = tk.Button(root, text="Create Product", command=create_product)
+
+# Arrange GUI elements and start the main event loop
+# ...
+
+root.mainloop() """

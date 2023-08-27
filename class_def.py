@@ -1,13 +1,32 @@
-from app import load_file, save_file
+import pickle
+
+def load_file(file_name):
+    """ generic load local binary file, takes a filename as a string arg, returns none """
+    try:
+        with open(file_name, "rb") as file:
+            loaded_file = pickle.load(file)
+            print(f"{file_name} successfully loaded:{loaded_file}")
+            return loaded_file
+    
+    except(FileNotFoundError, pickle.UnpicklingError):
+        print(f"Error with {file_name} file load")
+
+def save_file (file_name, variable):
+    """ generic save binary file, takes file name as a string and the varialbe you want to save
+     returns none """
+    try:
+        with open(file_name, "wb") as file:
+            pickle.dump(variable, file)
+        print(f"{variable} successfully saved to '{file_name}'")
+
+    except (PermissionError, FileNotFoundError, pickle.PicklingError, TypeError) as e:
+        print(f"Error occurred: {type(e).__name__} - {e}")
+
 
 class Task:
 
     def __init__(self,name ,description,urgency,importance,category,due_date, project=False, done=False ):
         
-        #id tracking implimented to match class attribute count and index position in task_list
-        TaskTracking.id_counter += 1      
-        self.id_ = TaskTracking.id_counter      
-        TaskTracking.task_list.append(self) 
         
         self.name = name
         self. description = description
@@ -17,6 +36,10 @@ class Task:
         self.due_date = due_date
         self.project = project
         self.done = done 
+
+        # NOTE - BEWARE TASK TRAKING ID_ IS INSTANCE NAME SENSITIVE!!! as it is an instance method
+        self.id_ = task_tracking.create_task(self)
+
 
     def __str__(self) -> str:
         return (f"""
@@ -36,82 +59,95 @@ class Project(Task):
     # write the class for project here.
     pass
 
+
+
+# TODO -  needs to be a constructor so I can save the class instance on load on start for file persistance of task tracking!
+# TODO -  change all the references to old class and cls methods in app.py
 class TaskTracking:
-    # TODO -  needs to be a constructor so I can save the class instance on load on start for file persistance of task tracking!
-    task_list = []  # contains a list of all tasks <- will neet to be changed to instance attribute
-    id_counter = 0  # counts all instances of Task class
-    display_task = ""
+    def __init__(self):
 
-    #used to set the displayed tasks
-    @classmethod    
-    def set_display_task(cls, task_obj):
-        cls.display_task = task_obj
+        self.all_tasks = []
+        self.id_counter = 0
+        self.display_task = ""
 
-    @classmethod
-    def get_display_task(cls):
-        return cls.display_task
+        self.task_archive = Stack() 
+        self.urgent_stack = Stack()
+        self.non_urgent_task_stack = Stack()
 
-    @classmethod                      
-    def remove_task(cls, task):
-        cls.task_list.remove(task)
-        cls.update_ids()
+    def create_task(self, task):
+        self.all_tasks.append(task)
+        self.id_counter += 1
+        print(f"""task name: [{task.name}] added to all_tasks -> :{self.all_tasks}""")
+        print("id_ counter:", self.id_counter)
+        return self.id_counter
+    
+    def get_task(self,task_name):
+        """ pass task name as a string to return that task from the all_task list as an obj """
+        for task in self.all_tasks:
+            if task.name == task_name:
+                print(f"[{task.name}] found and returned")
+                return task
+            else:
+                print(task_name,"not currently in all_tasks list")
+    
+    def no_of_total_tasks(self):
+        return len(self.all_tasks)
+    
+    def delete_task(self,task):
+        """ type(arg) == obj  """
+        self.all_tasks.remove(task)
+        print(f"[{task}] successfully deleted from main task list")
 
-    @classmethod
-    def update_ids(cls):
-        for index, task in enumerate(cls.task_list):
-            task.id_ = index
 
-      
+    def set_display_task(self, task_obj):
+        self.display_task = task_obj
 
-""" Explaination ofthe id function;
--Every time a new instance is created the "self.id_" instance attribute is created and set to it's index position within the "task_list" class attribute.
--The "update_ids" class method resets all of the instances id attributes to their index position within the class attribute "task_list".
--The "remove_task" class method should be used to remove tasks from the task list as it removes the task insatance from the task_list and then calls the reset method
-to reset all of the ids
+    def get_display_task(self):
+        return self.display_task
 
-**Note:
--This feature allows for a dynamic unique id  to be set for each instance of a task that matches its index number in the task.
--The class attribute "Task.id_counter" keeps track of the number of instances that have been created starting at -1 to account for the first instance.
--This allows the calling of the tasks id using list indexing elsewhere in the app.py main script.
--The id counter starts at -1 to indicate and empty list and so the id matches with the list index
-## check line 168 in app.py for an example
-  """
+
 
 # NOTE - worth noting hrer you can paickle an instance of a class this maybe the way to store the stacks and also the main task list
 
 ############  STACK CLASSES USED FOR SORTING AND STORING TASK OBJECTS ############
-class Stack:
-    """ used to store/manage tasks, will need some kind of file persistance implemented.""" 
-    def __init__(self):
 
+class Stack:
+    """Used to store/manage tasks
+       note these are duplicate task obj in realtion to TaskTracking.all_tasks and are for display and sorting purposes"""
+    
+    def __init__(self):
         self.stack = []
 
-    def add_task(self, task):
-        """ adds task obj to the stack(lst) by task name attribute(str) """
-        self.stack.append(task)
 
-    def remove_task(self, task):
-        """ removes task obj from stack(lst) by task name attribute (str) """
+    def add_task(self, task, position=None):
+        """
+        Adds task obj to stack, Can take an optional third argument to add it at a certain position.
+        """
+        if position is not None:
+            self.stack.insert(position, task)
+        else:
+            self.stack.append(task)
+
+    def remove_task(self, task_name):
+        """
+        Removes task obj from stack(lst) by task name attribute (str).
+        """
+        self.stack = [task for task in self.stack if task.name != task_name] 
+
     def print_task_stack(self):
-        print(self.stack)
+        print("self.stack:",self.stack)
+        for task in self.stack:
+            print(task.name)
 
-        return self.completed_tasks
+class ArchiveStack(Stack):
+    def __init__(self):
+        super().__init__()
+    
+    def add_task(self, task):
+        """ removes task from all_tasks list upon adding to the archive stack"""
+        super().add_task(task)
+        task_tracking.delete_task(task) 
 
-#NOTE - following three classes could be made into one class later depending on required methods and attributes
-# Just use instances of same class used for stacking tasks or inheritance
-
-
-class TaskArchive:
-    """ used to manage completed tasks, will need some kind of file persistance implemented """
-    task_archive_stack = []
-
-class TaskNonUrgent:
-    """ Used to manage all non-urgent,high-priorty tasks """
-    non_urgent_stack = [] # could use dequws for these
-
-class TaskUrgent:
-    """ Used to manage all urgent tasks """
-    urgent_stack = []
 
 
 
@@ -119,43 +155,38 @@ class TaskUrgent:
 # TODO - implement some kind of log, that logs everything printed to the terminal every "session" (nice to have)
 
 
-
-""" class DaysProgress:
-
-    history = [list_of_instances, inst2]
-
-    def __init__(self, datestamp , JSON):
+###### testing
     
-        #datestamp = timenow.localtime()
-
-        # use JSON or nested dict for this
-        self.checkbox1 = {"datestamp": "done=bool"}
-        self.checkbox2 = {"datestamp": "done=bool"}
-        self.checkbox3 = {"datestamp": "done=bool"}
-        self.checkbox4 = {"datestamp": "done=bool"}
-        self.checkbox5 = {"datestamp": "done=bool"}
-        self.checkbox6 = {"datestamp": "done=bool"}
-        self.checkbox7 = {"datestamp": "done=bool"}
-        self.checkbox8 = {"datestamp": "done=bool"}
-
-    def save_progress(self):
-        #save an instance of this class 
-        pass
-     """
-    
-washing = Task("washing", "do the washing", 8, 4, "household","20-11-88")
 
 
 if __name__ == "__main__":
     # note might be worth creating a class to contain all other class so only one thing needs to be instatiated with task tracking / sorting
+    
+    
     ###### Testing ####
-    task_tracking = TaskTracking()
-    task_archive =  TaskArchive()
-    task_non_urgent = TaskNonUrgent()
-    task_urgent = TaskUrgent()
 
+    #testing the saving
+    task_tracking = TaskTracking()
     washing = Task("washing", "do the washing", 8, 4, "household","20-11-88")
     cleaning = Task("cleaning", "clean the house", 6, 2, "household","20-11-88")
+
+    task_tracking.get_task("washing")
+
+    #save_file("task_tracking.pkl",task_tracking)
+
+
+    #testing the loading
+    # task_tracking = load_file("task_tracking.pkl")
+
+    
+    # print("main task stack:")
+    # task_tracking.main_task_stack.print_task_stack()
+    
+
+
+
+
+
     # Task.update_ids()
     # note - need some error handling on the date format here.
     # print(cleaning)
@@ -166,6 +197,5 @@ if __name__ == "__main__":
     # print(Task.task_list)
     # print(Task.id_counter)
 
-    TaskTracking.set_display_task(cleaning)
 
 
