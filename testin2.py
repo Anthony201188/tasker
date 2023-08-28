@@ -102,15 +102,27 @@ task_stack.remove_task("Task 2")
 # Printing the updated stack
 task_stack.print_task_stack() '''
 from app import save_file
-from class_def import *
+from class_def import task_tracking
 
 
+# testing the task_tracking instance created in class_def 
+#NOTE -  this is how it should it should function when its in the app.py script
+#NOTE - its worth creating good concicie doc strings so that I can see whats needed type and arg wise.
+
+task_tracking.create_task("washing", "do the washing", 8, 4, "household","20-11-88")
+task_tracking.create_task("cleaning", "clean the house", 6, 2, "household","20-11-88")
+
+print(task_tracking.all_tasks)
+display  = task_tracking.get_display_task()
+print(display)
+washing = task_tracking.get_task("washing")
+task_tracking.set_display_task(washing)
+print(task_tracking.get_display_task())
+
+save_file("task_tracking.pkl",task_tracking)
 
 
-washing = Task("washing", "do the washing", 8, 4, "household","20-11-88")
-cleaning = Task("cleaning", "clean the house", 6, 2, "household","20-11-88")
-
-save_file(task_tracking,"task-tracking.pkl")
+#save_file("task_tracking.pkl", task_tracking)
 
 ##### factory method example #####
 

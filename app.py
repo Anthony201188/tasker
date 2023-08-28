@@ -1,4 +1,4 @@
-from class_def import * #TODO = im properly
+import class_def 
 import data_structure
 import pickle
 import customtkinter as ctk
@@ -900,11 +900,21 @@ class MyFrame4(ctk.CTkFrame):
         self.label = ctk.CTkLabel(self,anchor=ctk.N, text=self.val,width=self.val2 , height=self.val3)
         self.label.grid(row=0, column=0, padx=10, pady=5)
 
+        #testing task creation and setting (prior to setting display task) 
+        #create two new tasks (factory and callbacks later for this)
+        class_def.task_tracking.create_task("washing", "do the washing", 8, 4, "household","20-11-88")
+        class_def.task_tracking.create_task("cleaning", "clean the house", 6, 2, "household","20-11-88")
+
+        washing = class_def.task_tracking.get_task("washing")
+        class_def.task_tracking.set_display_task(washing)
+        display = class_def.task_tracking.get_display_task()
+        print(display)
+
         #Textbox
         self.textbox = ctk.CTkTextbox(self, width=300,height=310, corner_radius=3 ) # insert at line 0 character 0
         self.textbox.grid(row=0, column=0)
         self.textbox.insert("0.0", "Task Display Window")# <- need to fi line
-        self.textbox.insert("2.0",TaskTracking.display_task)# <- monitor when changing to class_def2
+        self.textbox.insert("2.0", class_def.task_tracking.display_task)# <- monitor when changing to class_def2
 
         #Buttons
         self.button_sort = ctk.CTkButton(self, text="View selected task", height=28, width=45 ) 
@@ -1062,6 +1072,9 @@ class App(ctk.CTk):
 
         self.button_finish = ctk.CTkButton(self, text="Finish for the day \n Save All",command=self.finish_for_day, height=60, width=85 ) 
         self.button_finish.grid(row=0, column=3, padx=20)
+
+
+        
     
     ########## methods  ##############
     def get_set_flags(self)->list:
@@ -1121,11 +1134,13 @@ class App(ctk.CTk):
  ############################################################################################       
 
 if __name__ == "__main__":
-    TaskTracking.set_display_task(washing)#<- testing purposes only 
 
+
+    washing = None
 
     app = App()
     app.title("Tasker")
+
     #app.iconify()
     app.protocol("WM_DELETE_WINDOW", on_close)
     app.mainloop()
