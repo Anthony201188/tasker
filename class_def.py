@@ -1,3 +1,5 @@
+
+##### REMOVE WHEN FINSHED TESTING ########
 import pickle
 
 def load_file(file_name):
@@ -22,7 +24,7 @@ def save_file (file_name, variable):
     except (PermissionError, FileNotFoundError, pickle.PicklingError, TypeError) as e:
         print(f"Error occurred: {type(e).__name__} - {e}")
 
-
+######  TASK CLASSES ########
 class Task:
 
     def __init__(self,name ,description,urgency,importance,category,due_date, project=False, done=False ):
@@ -56,13 +58,28 @@ class Task:
 
 class Project(Task):
     """ this class is used only if the task is a project it inherits from the project class but allows the adding of sub tasks within that project task """
-    # write the class for project here.
-    pass
+    # thinking about using a list or stack here that contains all the sub tasks for this project and a class ProjectSubtask
+    def __init__(self, name, description, urgency, importance, category, due_date, project=True, done=False):
+        super().__init__(name, description, urgency, importance, category, due_date, project, done)
 
+        self.all_subtasks = {}#<- going to try dict of instaces here, other option is using a getter method that takes names as strings.
+    
+    def create_subtask(self, name, description, urgency, importance, category, due_date, done=False):
+        subtask = ProjectSubtask(name, description, urgency, importance, category, due_date, done=done, parent_project=self)
+        self.all_subtasks[name] = subtask #<- add instance with name as key
+        subtask.id_ = task_tracking.create_id(subtask)  # Call the create_id method to update all_tasks and create an ID
+        return subtask
+    
+class ProjectSubtask(Task):
+    def __init__(self, name, description, urgency, importance, category, due_date,parent_task, project=True, done=False):
+        super().__init__(name, description, urgency, importance, category, due_date, project, done)
+        self.parent_project_task_inst = parent_task #<- may need this for sorting/browsing may not
 
+####### TASK MANAGEMENT ###########
 
 # TODO -  needs to be a constructor so I can save the class instance on load on start for file persistance of task tracking!
 # TODO -  change all the references to old class and cls methods in app.py
+# TODO -  add in doc string that all tasks need to be created using the create_tasks method to keep track of them.
 class TaskTracking:
     def __init__(self):
 
@@ -73,13 +90,23 @@ class TaskTracking:
         self.task_archive = Stack() 
         self.urgent_stack = Stack()
         self.non_urgent_task_stack = Stack()
+        self.project_stack = Stack() 
 
-    def create_task(self, task):
+    def create_id(self, task)-> int:
+        """ creates an id number and returns it """
         self.all_tasks.append(task)
         self.id_counter += 1
         print(f"""task name: [{task.name}] added to all_tasks -> :{self.all_tasks}""")
         print("id_ counter:", self.id_counter)
         return self.id_counter
+    
+    def create_task(self, name, description, urgency, importance, category, due_date, project=False, done=False):
+        if project:
+            task = Project(name, description, urgency, importance, category, due_date, done=done)
+        else:
+            task = Task(name, description, urgency, importance, category, due_date, done=done)
+        task.id_ = self.create_id(task) 
+        return task
     
     def get_task(self,task_name):
         """ pass task name as a string to return that task from the all_task list as an obj """
@@ -90,7 +117,7 @@ class TaskTracking:
             else:
                 print(task_name,"not currently in all_tasks list")
     
-    def no_of_total_tasks(self):
+    def no_of_total_tasks(self)->int:
         return len(self.all_tasks)
     
     def delete_task(self,task):
@@ -107,7 +134,6 @@ class TaskTracking:
 
 
 
-# NOTE - worth noting hrer you can paickle an instance of a class this maybe the way to store the stacks and also the main task list
 
 ############  STACK CLASSES USED FOR SORTING AND STORING TASK OBJECTS ############
 
