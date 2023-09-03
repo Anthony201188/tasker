@@ -101,7 +101,9 @@ task_stack.remove_task("Task 2")
 
 # Printing the updated stack
 task_stack.print_task_stack() '''
-from app import save_file
+
+
+""" from app import save_file
 from class_def import task_tracking
 
 
@@ -119,7 +121,7 @@ washing = task_tracking.get_task("washing")
 task_tracking.set_display_task(washing)
 print(task_tracking.get_display_task())
 
-save_file("task_tracking.pkl",task_tracking)
+save_file("task_tracking.pkl",task_tracking) """
 
 
 #save_file("task_tracking.pkl", task_tracking)
@@ -167,3 +169,13 @@ create_button = tk.Button(root, text="Create Product", command=create_product)
 # ...
 
 root.mainloop() """
+
+import customtkinter 
+def switch_event():
+    print("switch toggled, current value:", switch_var.get())
+
+switch_var = customtkinter.StringVar(value="on")
+switch = customtkinter.CTkSwitch(root, text="CTkSwitch", command=switch_event,
+                                 variable=switch_var, onvalue="on", offvalue="off")
+
+root.mainloop()

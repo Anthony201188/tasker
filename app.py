@@ -901,7 +901,7 @@ class MyFrame4(ctk.CTkFrame):
         self.label.grid(row=0, column=0, padx=10, pady=5)
 
         #testing task creation and setting (prior to setting display task) 
-        #create two new tasks (factory and callbacks later for this)
+        # TODO - create two new tasks (factory and callbacks later for this)
         class_def.task_tracking.create_task("washing", "do the washing", 8, 4, "household","20-11-88")
         class_def.task_tracking.create_task("cleaning", "clean the house", 6, 2, "household","20-11-88")
 
@@ -992,19 +992,36 @@ class MyFrame5V2(ctk.CTkFrame):
         self.val2 = width
         self.val3 = height
 
-        # configure grid system
-        self.grid_rowconfigure(20, weight=1) 
-        self.grid_columnconfigure(2, weight=1)
-        
+        # #configure grid system
+        # self.grid_rowconfigure(20, weight=1) 
+        # self.grid_columnconfigure(2, weight=1)
+
         #Label for the frame
         self.label = ctk.CTkLabel(self,anchor=ctk.N, text=self.val,width=self.val2 , height=self.val3)
-        self.label.grid(row=0, column=0, padx=10, pady=5)
+        self.label.place_configure(x=0, y=5)
+        self.label.place()
+
+        # switch
+        self.switch_var = ctk.BooleanVar(value=False)
+        self.switch = ctk.CTkSwitch(self,variable=self.switch_var,command=self.switch_callback,text=None, onvalue=True, offvalue=False)
+        self.switch.place_configure(x=220, y=5)
+        self.switch.place()
+
+        #label for switch
+        self.switch_label = ctk.CTkLabel(self,font=("",9) , text="Projects/\nTask List",width=50 , height=10)
+        self.switch_label.place_configure(x=220, y=30)
+        self.switch_label.place()
 
         #Textbox
-        self.textbox = ctk.CTkTextbox(self,height=500, width=200, corner_radius=3, text_color="green" ) # insert at line 0 character 0
-        self.textbox.grid(row=0, column=0)
+        self.textbox = ctk.CTkTextbox(self,height=500, width=200,border_spacing=0, corner_radius=3, text_color="green" ) # insert at line 0 character 0
         self.textbox.insert("0.0", "Some example text!\n" * 15)
         self.textbox.configure(state="disabled")
+        self.textbox.place_configure(x=10, y=35)
+        self.textbox.place()
+    
+################ methods ######################
+    def switch_callback(self):
+        print("switch swtiched!")
 
 
 #Urgent Task List
@@ -1028,6 +1045,8 @@ class MyFrame5V3(ctk.CTkFrame):
         self.textbox.grid(row=0, column=0)
         self.textbox.insert("0.0", "Some example text!\n" * 5)
         self.textbox.configure(state="disabled")
+
+
 
 
 ############################################ DEFINING APP CLASS ############################################
@@ -1063,7 +1082,7 @@ class App(ctk.CTk):
         self.my_frame5.grid(row=1, column=1, padx=2, pady=10) 
 
         #Project task list
-        self.my_frame5v2 = MyFrame5V2(self,"Project Task List",220, 550 )
+        self.my_frame5v2 = MyFrame5V2(self,"Project Task List",280, 550 )
         self.my_frame5v2.grid(row=1, column=2, padx=2, pady=10) 
 
         #Urgent Task list
