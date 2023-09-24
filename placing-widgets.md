@@ -49,6 +49,7 @@ self.switch.update()
 print("Switch info X:", self.switch.winfo_x())
 print("Switch info Y:", self.switch.winfo_y())
 ```
+
 The update() method in Tkinter is used to process all the pending tasks in the event queue. This includes redrawing widgets, geometry management, configuring widget properties, and calling functions.
 
 The update() method is called automatically by the Tkinter event loop, but you can also call it explicitly. This can be useful if you want to force Tkinter to process all the pending tasks immediately.
@@ -87,3 +88,20 @@ Here are some of the things to keep in mind when using the update() method:
     The update() method should only be called when it is necessary. If you call it too often, it can slow down your application.
     The update() method should not be called from within event handlers. This can cause deadlocks.
     The update() method should not be called from within loops. This can also cause deadlocks.
+
+
+# info on event handling 
+Yes, CustomTkinter has all of the same event handling as Tkinter. In fact, it extends Tkinter's event handling by adding new events and event properties. For example, CustomTkinter adds the following events:
+
+    <Enter>: This event is triggered when the mouse cursor enters a widget.
+    <Leave>: This event is triggered when the mouse cursor leaves a widget.
+    <Hover>: This event is triggered when the mouse cursor hovers over a widget.
+    <FocusIn>: This event is triggered when a widget gains focus.
+    <FocusOut>: This event is triggered when a widget loses focus.
+
+CustomTkinter also adds the following event properties:
+
+    widget: This property is the widget that the event occurred on.
+    x: This property is the x-coordinate of the mouse cursor when the event occurred.
+    y: This property is the y-coordinate of the mouse cursor when the event occurred.
+

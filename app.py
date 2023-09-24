@@ -672,7 +672,7 @@ class MyFrame2(ctk.CTkFrame):
         Takes task list class instance and number of lines of text as args, returns a list of strings 
         """
         #get text
-        text = class_inst.textbox.get("1.0", "end-1c")#<- dont think -1 works here check tkinter docs for widget syntax
+        text = class_inst.textbox.get("1.0", "end-1c")
         #print(f"Text collected from Task List:{text}") #<- testing
 
         #split on new line
@@ -756,12 +756,16 @@ class MyFrame3(ctk.CTkFrame):
 
         # TODO - self population by listing all "projects" only availible when monthly focus "not-set"
         #Combobox
-        self.dropdown = ctk.CTkComboBox(self,border_color="green", values=["Select a project","option 1", "option 2"],command=self.combobox_callback)
+        
+        #TODO - show option only on zero count something along the lines of:
+        #if remain days == 0: combobox.pack/grid()
+
+        self.dropdown_options = class_def.task_tracking.project_stack.return_stack_names()
+        self.dropdown_options.insert(0,"Select a project")
+        self.dropdown = ctk.CTkComboBox(self,state="readonly", values=self.dropdown_options,command=None)
         self.dropdown.set("Select a project")
         self.dropdown.grid(row=1, column=0, padx=10, pady=5)
 
-        #TODO - show option only on zero count something along the lines of:
-        #if remain days == 0: combobox.pack/grid()
 
         #Entries
         self.entry_focus1 = ctk.CTkEntry(self,placeholder_text="Month Focus1",width=180)
@@ -910,55 +914,118 @@ class MyFrame4(ctk.CTkFrame):
         display = class_def.task_tracking.get_display_task()
         print(display)
 
-        #Textbox
-        self.textbox = ctk.CTkTextbox(self, width=300,height=310, corner_radius=3 ) # insert at line 0 character 0
-        self.textbox.grid(row=0, column=0)
-        self.textbox.insert("0.0", "Task Display Window")# <- need to fi line
-        self.textbox.insert("2.0", class_def.task_tracking.display_task)# <- monitor when changing to class_def2
+        #Textbox single task
+        self.textbox = ctk.CTkTextbox(self, width=300,height=310, corner_radius=3 ) 
+        self.textbox.insert("0.0", "Task Display Window")
+        self.textbox.insert("2.0", class_def.task_tracking.display_task)
+        self.textbox.place(x=10, y=25)
+        
+        #Textbox all tasks
+        self.textbox2 = ctk.CTkTextbox(self, width=300,height=310, corner_radius=3 ) 
+        self.textbox2.insert("0.0", "All Tasks Display Window")
+
 
         #Buttons
-        self.button_sort = ctk.CTkButton(self, text="View selected task", height=28, width=45 ) 
-        self.button_sort.grid(row=0, column=2, padx=20,pady=20)
+        self.button_create_new_task = ctk.CTkButton(self, text="Create new task", height=28, width=45 ) 
+        self.button_create_new_task.place(x=330, y=235)
 
-        self.button_sort = ctk.CTkButton(self, text="Edit selected task", height=28, width=45 ) 
-        self.button_sort.grid(row=1, column=2, padx=20, pady=20)
+        self.button_edit_selected_task = ctk.CTkButton(self, text="Edit selected task", height=28, width=45 ) 
+        self.button_edit_selected_task.place(x=330, y=270)
 
-        self.button_sort = ctk.CTkButton(self, text="Add new task", height=28, width=45 ) 
-        self.button_sort.grid(row=2, column=2, padx=20,pady=20)
+        self.button_archive_task = ctk.CTkButton(self, text="Archive selected task", height=28, width=45 ) 
+        self.button_archive_task.place(x=330, y=305)
 
-        #Entries
-        self.entry = ctk.CTkEntry(self,placeholder_text="Task name", width=180)
-        self.entry.grid(row=1, column=0, padx=10, pady=10) 
+        # switch
+        self.switch_var = ctk.BooleanVar(value=False)
+        self.switch = ctk.CTkSwitch(self,variable=self.switch_var,command=self.toggle_single_all_task_view,text=None, onvalue=True, offvalue=False)
+        self.switch.place(x=330, y=340)
 
-        self.entry = ctk.CTkEntry(self,placeholder_text="Task description", width=180)
-        self.entry.grid(row=2, column=0, padx=10, pady=10) 
-
-        self.entry = ctk.CTkEntry(self,placeholder_text="Task urgency", width=180)
-        self.entry.grid(row=3, column=0, padx=10, pady=10) 
-
-        self.entry = ctk.CTkEntry(self,placeholder_text="Task importance", width=180)
-        self.entry.grid(row=4, column=0, padx=10, pady=10) 
-
-        self.entry = ctk.CTkEntry(self,placeholder_text="Task catagory", width=180)
-        self.entry.grid(row=5, column=0, padx=10, pady=10) 
-
-        #checkbox
-        check_var = ctk.StringVar(value="off") #need to compete the get and command events 
-        self.check = ctk.CTkCheckBox(self, text="Is a project", variable=check_var, onvalue="on", offvalue="off") #"command=checkbox_event," needs to be added to the end 
-        self.check.grid(row=6, column=0, padx=10, pady=10)
-        
+        #label for switch
+        self.switch_label = ctk.CTkLabel(self,font=("",9) , text="View selected task/\nView all tasks",width=50 , height=10)
+        self.switch_label.place_configure(x=370, y=340)
+        self.switch_label.place()
 
         #Combobox
-        self.dropdown = ctk.CTkComboBox(self, values=["Select a project","option 1", "option 2"],command=None)
-        self.dropdown.set("Select a project")
-        self.dropdown.grid(row=6, column=1, padx=10, pady=5) #<- if is project checkbox che should be shown to select which task
+        self.dropdown_options = class_def.task_tracking.project_stack.return_stack_names()
+        self.dropdown_options.insert(0,"Select a project parent")
+        self.dropdown_options.insert(-1,"None")
+        self.dropdown_parent_project = ctk.CTkComboBox(self,state="readonly", values=self.dropdown_options,command=None)
+        self.dropdown_parent_project.set("Select a project")
+
+
+        #Entries
+        self.entry_task_name = ctk.CTkEntry(self,placeholder_text="Task name", width=180)
+        self.entry_task_name.place(x=330,y=25)
+
+        self.entry_task_description = ctk.CTkEntry(self,placeholder_text="Task description", width=180)
+        self.entry_task_description.place(x=330,y=60) 
+
+        self.entry_task_urgency = ctk.CTkEntry(self,placeholder_text="Task urgency", width=180)
+        self.entry_task_urgency.place(x=330,y=95) 
+        
+        self.entry_task_importance = ctk.CTkEntry(self,placeholder_text="Task importance", width=180)
+        self.entry_task_importance.place(x=330,y=130) 
+        
+        self.entry_task_catagory = ctk.CTkEntry(self,placeholder_text="Task catagory", width=180)
+        self.entry_task_catagory.place(x=330,y=165) 
+        
+        self.entry_task_due_date = ctk.CTkEntry(self,placeholder_text="Due date", width=180)
+        self.entry_task_due_date.place(x=330,y=200) 
+        
+
+        #checkbox
+        self.check_var = ctk.StringVar(value="off")  
+        self.check = ctk.CTkCheckBox(self, text="Is a project", variable=self.check_var,command=lambda event=None: self.is_project_toggle(event), onvalue="on", offvalue="off") #"command=checkbox_event," needs to be added to the end 
+        self.check.place(x=10,y=360)
+        
+        # bind the function on button release aswell
+        self.check.bind("<ButtonRelease-1>", self.is_project_toggle)
+        
+
+
 
         #TODO - checkbox for prject selction to be shown on check line 617
         #TODO - add another check button for "is urgrent", possibly requires new attribute or setting task urgency attribute to 10
         #TODO - hide combo box until "project" checkbox checked then show list of projects
+        
+        ########## on start-up logic ###########
+        
+        #get and format task names into strings for all tasks to be displayed
+        self.textbox2.insert("2.0", "\n")
+        self.tasks = class_def.task_tracking.string_list_all_tasks() 
+        self.formatted_tasks = "\n".join([f"- {task}" for task in self.tasks])
+        for task in self.formatted_tasks:
+            self.textbox2.insert("end",task )
+
+    ####### methods ###########
+    def toggle_single_all_task_view(self):
+
+        self.switch_state = self.switch_var.get()
+        print("toggle single all task view switch state:", self.switch_state)
+
+        if self.switch_state:
+            self.textbox2.place(x=10, y=35)
+            self.textbox.place_forget()
+        else:
+            self.textbox.place(x=10,y=35)
+            self.textbox2.place_forget()
+    
+    def is_project_toggle(self, event):
+
+        self.check_var_state = self.check_var.get()
+        print("toggle is project state:changed")
+
+        if self.check_var_state == "on" :
+            self.dropdown_parent_project.place(x=140, y=360)
+            
+        else:
+            self.dropdown_parent_project.place_forget()
+    
 
 
-#Task List
+            
+        
+#Non urgent Task List
 class MyFrame5(ctk.CTkFrame):
     def __init__(self, master,text, width, height):
         super().__init__(master, width, height)
@@ -967,22 +1034,44 @@ class MyFrame5(ctk.CTkFrame):
         self.val3 = height
 
         # configure grid system
-        self.grid_rowconfigure(20, weight=1) 
-        self.grid_columnconfigure(3, weight=1)
+        self.grid_rowconfigure(2, weight=1) 
+        self.grid_columnconfigure(1, weight=1)
         
         #Label for the frame
         self.label = ctk.CTkLabel(self,anchor=ctk.N, text=self.val,width=self.val2 , height=self.val3)
         self.label.grid(row=0, column=0, padx=10, pady=5)
 
         #Textbox
-        self.textbox = ctk.CTkTextbox(self,height=500, width=200, corner_radius=3 )
+        self.textbox = ctk.CTkTextbox(self,height=500, width=250, corner_radius=3 )
         self.textbox.grid(row=0, column=0)
-        self.textbox.insert("0.0", "Some example text!\n" * 50) #
-        self.textbox.configure(state="disabled")
+        #self.textbox.insert("0.0", "Some example text!\n" * 50) #
+        #self.textbox.configure(state="disabled")
+        
+        ########## on-start control logic #########
+        
+        self.populate_task_list(class_def.task_tracking.non_urgent_task_stack)
+        # testing to show whats in the stack
+        class_def.task_tracking.non_urgent_task_stack.print_task_stack()
+
 
 ################ methods ######################
+    def populate_task_list(self, task_stack):
+        """ populates the task list with all relevant, takes the task_stack(obj) as arg """
 
-    #method here to use a list to display the name attribute of the task objects, then join them all in one string with a new line for the textbox insertline 575
+        #insert task names
+        print("task_stack type:",type(task_stack))
+        task_names = task_stack.return_stack_names()
+        for task_name in task_names:
+            self.textbox.insert("end", task_name, "\n")
+            self.textbox.configure(state="disabled")
+            print("Tasks text successfully inserted")
+
+        else:
+            #insert alt text into box
+            self.textbox.insert("0.0", "Task list empty no tasks to display")
+            self.textbox.configure(state="disabled")
+
+
 
 #Project Task List
 class MyFrame5V2(ctk.CTkFrame):
@@ -992,36 +1081,52 @@ class MyFrame5V2(ctk.CTkFrame):
         self.val2 = width
         self.val3 = height
 
-        # #configure grid system
-        # self.grid_rowconfigure(20, weight=1) 
-        # self.grid_columnconfigure(2, weight=1)
+        #configure grid system
+        self.grid_rowconfigure(20, weight=1) 
+        self.grid_columnconfigure(1, weight=1)
 
         #Label for the frame
         self.label = ctk.CTkLabel(self,anchor=ctk.N, text=self.val,width=self.val2 , height=self.val3)
-        self.label.place_configure(x=0, y=5)
-        self.label.place()
+        self.label.grid(row=0, column=0)
 
-        # switch
-        self.switch_var = ctk.BooleanVar(value=False)
-        self.switch = ctk.CTkSwitch(self,variable=self.switch_var,command=self.switch_callback,text=None, onvalue=True, offvalue=False)
-        self.switch.place_configure(x=220, y=5)
-        self.switch.place()
-
-        #label for switch
-        self.switch_label = ctk.CTkLabel(self,font=("",9) , text="Projects/\nTask List",width=50 , height=10)
-        self.switch_label.place_configure(x=220, y=30)
-        self.switch_label.place()
 
         #Textbox
-        self.textbox = ctk.CTkTextbox(self,height=500, width=200,border_spacing=0, corner_radius=3, text_color="green" ) # insert at line 0 character 0
-        self.textbox.insert("0.0", "Some example text!\n" * 15)
-        self.textbox.configure(state="disabled")
-        self.textbox.place_configure(x=10, y=35)
-        self.textbox.place()
+        self.textbox = ctk.CTkTextbox(self,height=500, width=250, corner_radius=3, text_color="green" )
+        self.textbox.grid(row=0, column=0)
+
+        ############## on-start control logic ################
+        self.populate_task_list()
     
 ################ methods ######################
-    def switch_callback(self):
-        print("switch swtiched!")
+    def populate_task_list(self):
+        """ populates the task list with all the project tasks. """
+        this_months_project = self.get_project_set_for_this_month()
+
+    
+        #checks if any project set this month
+        if this_months_project:
+            task_names = this_months_project.return_stack_names()
+            for task_name in task_names:
+                self.textbox.insert("end", task_name, "\n")
+                self.textbox.configure(state="disabled")
+                print("Project tasks text successfully inserted")
+        else:
+            #insert alt text into box
+            self.textbox.insert("0.0", "To display project tasks please select a \n project for this month")
+            self.textbox.configure(state="disabled")
+
+    def get_project_set_for_this_month(self):
+        """ gets the project set for this month, if none set returns none """
+        project_task_list = class_def.task_tracking.project_stack.return_task_stack()
+        for project in project_task_list:
+            if project.set_for_this_month :
+                return project
+        return None
+
+
+    # TODO -  mote to task manager frame
+    # def switch_callback(self):
+    #     print("switch swtiched!")
 
 
 #Urgent Task List
@@ -1041,10 +1146,14 @@ class MyFrame5V3(ctk.CTkFrame):
         self.label.grid(row=0, column=0, padx=10, pady=5)
 
         #Textbox
-        self.textbox = ctk.CTkTextbox(self,height=500, width=200, corner_radius=3, fg_color="red") # insert at line 0 character 0
+        self.textbox = ctk.CTkTextbox(self,height=500, width=250, corner_radius=3, fg_color="red") 
         self.textbox.grid(row=0, column=0)
-        self.textbox.insert("0.0", "Some example text!\n" * 5)
-        self.textbox.configure(state="disabled")
+
+        
+        ########## on-start control logic #########
+        MyFrame5.populate_task_list(self, class_def.task_tracking.urgent_stack)
+        # testing to show whats in the stack
+        class_def.task_tracking.urgent_stack.print_task_stack()
 
 
 
@@ -1074,19 +1183,19 @@ class App(ctk.CTk):
         self.my_frame3.grid(row=0, column=2, padx=10, pady=10 )
 
         #Task manager
-        self.my_frame4 = MyFrame4(self,"Task Manager",300, 350)
+        self.my_frame4 = MyFrame4(self,"Task Manager",500, 400)
         self.my_frame4.grid(row=1, column=0, padx=10, pady=10) 
 
         #Task list
-        self.my_frame5 = MyFrame5(self,"Task List",220, 550 )
+        self.my_frame5 = MyFrame5(self,"Non Urgent Task List",280, 550)
         self.my_frame5.grid(row=1, column=1, padx=2, pady=10) 
 
         #Project task list
-        self.my_frame5v2 = MyFrame5V2(self,"Project Task List",280, 550 )
+        self.my_frame5v2 = MyFrame5V2(self,"Project Task List",280, 550)
         self.my_frame5v2.grid(row=1, column=2, padx=2, pady=10) 
 
         #Urgent Task list
-        self.my_frame5v3 = MyFrame5V3(self,"Urgent/Admin Task List",220, 550 )
+        self.my_frame5v3 = MyFrame5V3(self,"Urgent Task List",280, 550)
         self.my_frame5v3.grid(row=1, column=3, padx=2, pady=10,)
 
         self.button_finish = ctk.CTkButton(self, text="Finish for the day \n Save All",command=self.finish_for_day, height=60, width=85 ) 

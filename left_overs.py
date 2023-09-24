@@ -25,3 +25,23 @@ to reset all of the ids
 -The id counter starts at -1 to indicate and empty list and so the id matches with the list index
 ## check line 168 in app.py for an example
   """
+
+
+
+
+
+""" def compare_combine(list1, list2):
+    set1 = set(list1)
+    set2 = set(list2)
+
+    # Elements that are in both lists
+    common_elements = list(set1 & set2)
+
+    # Elements that are unique to each list
+    unique_to_list1 = list(set1 - set2)
+    unique_to_list2 = list(set2 - set1)
+
+    #combine
+    combined = common_elements + unique_to_list1
+
+    return combined """

@@ -31,8 +31,26 @@ class Stack:
     """Used to store/manage tasks
        note these are duplicate task obj in realtion to TaskTracking.all_tasks and are for display and sorting purposes"""
     
-    def __init__(self):
+    def __init__(self, name):
         self.stack = []
+        self.name = name
+
+    def add_task_from_main(self,task, position=None):
+        """
+        Adds task obj to stack, Can take an optional third argument to add it at a certain position
+        IMPORTANTLY removes stack from tasktracking.all_tasks
+        """
+        if position is not None:
+            self.stack.insert(position, task)
+            task_tracking.delete_task(task)
+            print(f"{task.name} added to {self.name} tracing:class_def,if")
+
+
+        else:
+            self.stack.append(task)
+            print(f"{task.name} added to {self.name} tracing:class_def,else")
+            task_tracking.delete_task(task)
+
 
 
     def add_task(self, task, position=None):
@@ -43,6 +61,7 @@ class Stack:
             self.stack.insert(position, task)
         else:
             self.stack.append(task)
+            print(f"{task.name} added to {self.name}")
 
     def remove_task(self, task_name):
         """
@@ -50,26 +69,49 @@ class Stack:
         """
         self.stack = [task for task in self.stack if task.name != task_name] 
 
+    def return_task_stack(self):
+        return self.stack
+    
+    def return_stack_names(self):
+        """ returns a list of all task names as type(str) """
+        stack_names = [x.name for x in self.stack]
+        return stack_names
+
     def print_task_stack(self):
-        print("self.stack:",self.stack)
+        print(self.name ,self.stack)
         for task in self.stack:
             print(task.name)
-
-class ArchiveStack(Stack):
-    def __init__(self):
-        super().__init__()
     
-    def add_task(self, task):
-        """ removes task from all_tasks list upon adding to the archive stack"""
-        super().add_task(task)
-        task_tracking.delete_task(task) 
+    def task_exists(self, task)->bool:
+        """ Checks if a task exists in the stack """
+        return task in self.stack
+        
+class ArchiveStack(Stack):
+    def __init__(self,name):
+        super().__init__(name)
+    
 
+    def remove_from_all_stacks(self, task):
+        """ Checks for duplicate tasks and removes task from all_stacks list upon adding to the archive stack """
+        #list of all stacks
+        all_stacks = [task_tracking.task_archive, task_tracking.urgent_stack, task_tracking.non_urgent_task_stack, task_tracking.project_stack, task_tracking]
+        
+        #while loop to remove them, using task_exists membership method from Stack and Tasktracking classes.
+        while any(stack.task_exists(task) for stack in all_stacks):
+            for stack in all_stacks:
+                if stack.task_exists(task):
+                    stack.stack.remove(task)
+            
+    def add_task_from_main(self,task):
+        super().add_task_from_main(task)
+        #self.remove_from_all_stacks(task)
+        print(f"{task.name} completley removed from all stacks and moved to the archive stack")
 
 ####### TASK MANAGEMENT ###########
 
 # TODO -  needs to be a constructor so I can save the class instance on load on start for file persistance of task tracking!
 # TODO -  change all the references to old class and cls methods in app.py
-# TODO -  add in doc string that all tasks need to be created using the create_tasks method to keep track of them.
+# TODO -  add in doc string that all tasks need to be ceated using the create_tasks method to keep track of them.
 class TaskTracking:
     def __init__(self):
 
@@ -77,10 +119,11 @@ class TaskTracking:
         self.id_counter = 0
         self.display_task = ""
 
-        self.task_archive = Stack() 
-        self.urgent_stack = Stack()
-        self.non_urgent_task_stack = Stack()
-        self.project_stack = Stack() 
+        #pass the var names as args to easily retrieve var names via instance attributes - good alternative to dict of instances
+        self.task_archive = ArchiveStack("task_archive") 
+        self.urgent_stack = Stack("non_urgent")
+        self.non_urgent_task_stack = Stack("non_urgent_task_stack")
+        self.project_stack = Stack("project_task_stack") 
 
     def create_id(self, task)-> int:
         """ creates an id number and returns it """
@@ -109,11 +152,22 @@ class TaskTracking:
     def no_of_total_tasks(self)->int:
         return len(self.all_tasks)
     
+    def string_list_all_tasks(self):
+        string_list = [task.name for task in self.all_tasks] 
+        return string_list
+    
     def delete_task(self,task):
         """ type(arg) == obj  """
+        print("delete_task()","task",task)#<-testing
+        print(self.string_list_all_tasks())#<-testing
         self.all_tasks.remove(task)
         print(f"[{task}] successfully deleted from main task list")
+        print(self.string_list_all_tasks())#<-testing
 
+    def task_exists(self, task)->bool:
+        """ Checks if a task exists in the stack """
+        return task in self.all_tasks#<- membership syntax to check if something is in something consicley and return bool
+        
     def set_display_task(self, task_obj):
         self.display_task = task_obj
 
@@ -127,6 +181,7 @@ task_tracking = TaskTracking()
 #keep the instance here so the methods can use it or rename the methods and put it in app.py
 #load on app start
 #save on app close
+#might be a good idea to move stack and tasktracking to another module and import them here. using a callback function in the init of app.py.
 
 ######  TASK CLASSES ########
 class Task:
@@ -148,8 +203,6 @@ class Task:
         #task_tracking.create_task(self.name, self.description, self.urgency, self.importance, self.category, self.due_date, project=False, done=False)
 
 
-
-
     def __str__(self) -> str:
         return (f"""
                 Task name: [{self.name}]
@@ -166,7 +219,7 @@ class Task:
 class Project(Task):
     """ this class is used only if the task is a project it inherits from the project class but allows the adding of sub tasks within that project task """
     # thinking about using a list or stack here that contains all the sub tasks for this project and a class ProjectSubtask
-    def __init__(self, name, description, urgency, importance, category, due_date, project=True, done=False):
+    def __init__(self, name, description, urgency, importance, category, due_date, set_for_this_month=False, project=True, done=False):
         super().__init__(name, description, urgency, importance, category, due_date, project, done)
 
         self.all_subtasks = {}#<- going to try dict of instaces here, other option is using a getter method that takes names as strings.
@@ -222,12 +275,14 @@ class ProjectSubtask(Task):
 
 if __name__ == "__main__":
 
-    task_tracking = load_file("task_tracking.pkl")
-    print("testing")
-    washing = task_tracking.get_task("washing")
+    # task_tracking = load_file("task_tracking.pkl")
+    # print("testing")
+    # washing = task_tracking.get_task("washing")
+    # print(task_tracking.all_tasks)
+    # task_tracking.set_display_task(washing)
+    # print("ran name == main")
     print(task_tracking.all_tasks)
-    task_tracking.set_display_task(washing)
-    print("ran name == main")
+
     
 
 

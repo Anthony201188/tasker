@@ -12,7 +12,7 @@ class ClickableLinkLabel(ctk.CTkLabel):
         webbrowser.open_new(self.link)
 
 
-# Usage example
+# testing
 if __name__ == "__main__":
     root = ctk.CTk()
 
