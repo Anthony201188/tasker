@@ -6,6 +6,7 @@ import time
 import calendar
 import os
 from link_click import ClickableLinkLabel
+from algo import main as algo
 
 
 ########################################  UTILS #####################################
@@ -52,6 +53,29 @@ def on_close():
     app.my_frame.save_duration(app.my_frame.get_current_duration())
     
     app.destroy()  # Close the CTKinter app
+
+
+# TODO - make this generic and use it in all task list widgets.
+""" def populate_task_list(self, task_stack):
+        ''' populates the task list with all relevant, takes the task_stack(obj) as arg '''
+
+    # Insert task names
+        print("task_stack type:", type(task_stack))
+        print("TESTING WORKING")
+        task_names = task_stack.return_stack_names()
+
+        if task_names:
+            for task_name in task_names:
+                self.textbox.insert("end", task_name, "\n")
+            self.textbox.configure(state="disabled")
+            print("Tasks text successfully inserted")
+        else:
+            # Insert alt text into box
+            self.textbox.insert("0.0", "Task list is empty. No tasks to display.")
+            self.textbox.configure(state="disabled")
+        
+        # set up the recursive
+        self.after(1000,self.populate_task_list(class_def.task_tracking.non_urgent_task_stack)) """
 
 
 #####################################################################################
@@ -398,10 +422,10 @@ class MyFrame2(ctk.CTkFrame):
         self.button_set = ctk.CTkButton(self, text="set",command=self.set_entries_callback, height=28, width=50 ) 
         self.button_set.grid(row=2, column=3, padx=5)
 
-        self.button_sort = ctk.CTkButton(self, text="sort all tasks", height=28, width=45 ) 
+        self.button_sort = ctk.CTkButton(self, text="sort all tasks",command= lambda:(self.sort_all_tasks(),MyFrame5.populate_task_list(app.my_frame5, class_def.task_tracking.non_urgent_task_stack)), height=28, width=45 ) 
         self.button_sort.grid(row=1, column=3, padx=20)
         
-        self.button_clear = ctk.CTkButton(self, text="clear all",command=lambda:(self.toggle_set_entry_var(),self.reset_clear()), height=28, width=45 ) 
+        self.button_clear = ctk.CTkButton(self, text="clear all",fg_color="light blue",command=lambda:(self.toggle_set_entry_var(),self.reset_clear()), height=28, width=45 ) 
         self.button_clear.grid(row=3, column=3, padx=20)
 
 
@@ -662,7 +686,7 @@ class MyFrame2(ctk.CTkFrame):
 
     def sort_all_tasks(self):
         """ sorts all tasks using the sorting methods from 'algo.py' """
-        #TODO - w method.
+        algo()
 
 
     #suggest tasks function
@@ -862,6 +886,7 @@ class MyFrame3(ctk.CTkFrame):
 
     def sort_all_tasks(self):
         """ sorts all tasks using the sorting methods from 'algo.py' """
+        algo()
 
 
 
@@ -926,7 +951,7 @@ class MyFrame4(ctk.CTkFrame):
 
 
         #Buttons
-        self.button_create_new_task = ctk.CTkButton(self, text="Create new task", height=28, width=45 ) 
+        self.button_create_new_task = ctk.CTkButton(self, text="Create new task",command=self.create_task, height=28, width=45 ) 
         self.button_create_new_task.place(x=330, y=235)
 
         self.button_edit_selected_task = ctk.CTkButton(self, text="Edit selected task", height=28, width=45 ) 
@@ -934,6 +959,9 @@ class MyFrame4(ctk.CTkFrame):
 
         self.button_archive_task = ctk.CTkButton(self, text="Archive selected task", height=28, width=45 ) 
         self.button_archive_task.place(x=330, y=305)
+
+        self.button_clear_entries = ctk.CTkButton(self, text="Clear",fg_color="grey",command=self.clear_entries, height=28, width=28 ) 
+        self.button_clear_entries.place(x=440, y=235)
 
         # switch
         self.switch_var = ctk.BooleanVar(value=False)
@@ -971,6 +999,15 @@ class MyFrame4(ctk.CTkFrame):
         
         self.entry_task_due_date = ctk.CTkEntry(self,placeholder_text="Due date", width=180)
         self.entry_task_due_date.place(x=330,y=200) 
+
+        self.all_entries = [
+            self.entry_task_name,
+            self.entry_task_description,
+            self.entry_task_urgency,
+            self.entry_task_importance,
+            self.entry_task_catagory,
+            self.entry_task_due_date
+            ]
         
 
         #checkbox
@@ -991,13 +1028,38 @@ class MyFrame4(ctk.CTkFrame):
         ########## on start-up logic ###########
         
         #get and format task names into strings for all tasks to be displayed
+        # self.textbox2.insert("2.0", "\n")
+        # self.tasks = class_def.task_tracking.string_list_all_tasks() 
+        # self.formatted_tasks = "\n".join([f"- {task}" for task in self.tasks])
+        # for task in self.formatted_tasks:
+        #     self.textbox2.insert("end",task )
+        
+        #keep running updates for changes made during runtime
+        self.update_textbox()
+
+
+    ####### methods ###########
+
+    def clear_entries(self):
+        """ clear all entries """
+
+        #delete the contents of all entreis in the entry widget list
+        for entry in self.all_entries:
+            entry.delete(0, "end")
+
+    def update_textbox(self):
+        self.textbox2.delete("2.0", "end")
         self.textbox2.insert("2.0", "\n")
         self.tasks = class_def.task_tracking.string_list_all_tasks() 
         self.formatted_tasks = "\n".join([f"- {task}" for task in self.tasks])
+        
         for task in self.formatted_tasks:
-            self.textbox2.insert("end",task )
+            self.textbox2.insert("end",task )        
+        
+        # Schedule the function to run again after a specific time (in milliseconds)
+        self.after(1000, self.update_textbox)  # 1000 milliseconds = 1 second
 
-    ####### methods ###########
+
     def toggle_single_all_task_view(self):
 
         self.switch_state = self.switch_var.get()
@@ -1020,6 +1082,33 @@ class MyFrame4(ctk.CTkFrame):
             
         else:
             self.dropdown_parent_project.place_forget()
+    
+    def create_task(self):
+        #call get_all_entries then pass it to the create task from task manager
+        #use this function for a clalback but be careful of circular
+        self.task_name = self.entry_task_name.get()
+        self.task_description = self.entry_task_description.get()
+        self.task_urgency = self.entry_task_urgency.get()
+        self.task_importance = self.entry_task_importance.get()
+        self.task_catagory = self.entry_task_catagory.get()
+        self.task_due_date = self.entry_task_due_date.get()
+
+        # TODO - add constraints and error handling for task creation here
+        #date format YY-MM-DD (string)
+
+
+        class_def.task_tracking.create_task(
+            self.task_name,
+            self.task_description,
+            int(self.task_urgency),
+            int(self.task_importance),
+            self.task_catagory,
+            self.task_due_date
+            )
+        
+        #prints name of task and list of all tasks for testing
+        print(f"Task {self.task_name} created")
+        class_def.task_tracking.string_list_all_tasks()
     
 
 
@@ -1045,7 +1134,7 @@ class MyFrame5(ctk.CTkFrame):
         self.textbox = ctk.CTkTextbox(self,height=500, width=250, corner_radius=3 )
         self.textbox.grid(row=0, column=0)
         #self.textbox.insert("0.0", "Some example text!\n" * 50) #
-        #self.textbox.configure(state="disabled")
+        #self.textbox.configure(state="disable")
         
         ########## on-start control logic #########
         
@@ -1053,23 +1142,34 @@ class MyFrame5(ctk.CTkFrame):
         # testing to show whats in the stack
         class_def.task_tracking.non_urgent_task_stack.print_task_stack()
 
+        #update list after every 1000 milliseconds (1s)
+        #self.after(1000,lambda:self.populate_task_list(class_def.task_tracking.non_urgent_task_stack))
 
 ################ methods ######################
     def populate_task_list(self, task_stack):
         """ populates the task list with all relevant, takes the task_stack(obj) as arg """
 
-        #insert task names
-        print("task_stack type:",type(task_stack))
+    # Insert task names
+        print("task_stack type:", type(task_stack))
+        print("TESTING WORKING")
+        class_def.task_tracking.non_urgent_task_stack.print_task_stack()
         task_names = task_stack.return_stack_names()
-        for task_name in task_names:
-            self.textbox.insert("end", task_name, "\n")
-            self.textbox.configure(state="disabled")
-            print("Tasks text successfully inserted")
+        print("task_names:",task_names)
 
+        if task_names:
+            print("inside populate task list for loop")
+            self.textbox.configure(state="normal")
+            self.textbox.delete("1.0", "end")
+            for task_name in task_names:
+                self.textbox.insert("end",f"{task_name}\n")
+            #self.textbox.configure(state="disabled")
+            print("Tasks text successfully inserted")
         else:
-            #insert alt text into box
-            self.textbox.insert("0.0", "Task list empty no tasks to display")
+            # Insert alt text into box
+            print("inside populate task list else block")
+            self.textbox.insert("0.0", "Task list is empty. No tasks to display.")
             self.textbox.configure(state="disabled")
+        
 
 
 
