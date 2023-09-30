@@ -16,7 +16,7 @@ def within_7_days_or_past(date_str):
         time_delta = input_date - current_date
 
         # Check if the timedelta is within the next 7 days or past todays date
-        return (0 <= time_delta.days <= 7) or (current_date.date() == input_date.date()) #effectivley a compound condition that will only return true ig both condtions are met at the same time
+        return (time_delta.days <= 0 and time_delta.days <= 7) or (current_date.date() == input_date.date()) #effectivley a compound condition that will only return true ig both condtions are met at the same time
    
     except ValueError as e:
         # If there's an error in parsing the string
@@ -24,9 +24,9 @@ def within_7_days_or_past(date_str):
         return False
 
 #### testing
-# date_str = "20-11-88"  # Replace this with your desired date string
-# is_within_7_days = is_within_next_seven_days(date_str)
-# print("Is within next 7 days:", is_within_7_days)
+# print(within_7_days_or_past('30-09-23')) #true
+# print(within_7_days_or_past('09-10-23')) #false
+# print(within_7_days_or_past('21-09-23')) #true
 ####
 
 
@@ -202,8 +202,9 @@ def shuffle_with_ratio(list1, list2):
 
 # sorting
 def custom_sort_key(task):
-    # Return a tuple of ( importance, urgency,due_date,) for sorting
+    # Return a tuple of ( importance, urgency,due_date,) for sorting - passes each task in the list to get the attributes and then sorts accordingly
     return ( int(task.importance), int(task.urgency)) # TODO = ,task.due_date should be implemented but globally the data format needs to be changed to yy-mm-dd so that it can be numerially accuratley sorted
+
 
 ## full task sorting algo
 def task_sort(task_list, focus1, focus2):
@@ -320,10 +321,10 @@ def main():
         class_def.Task("Task 14", "Description 14", 4, 2, "Category 3", "14-08-23"),
         class_def.Task("Task 15", "Description 15", 5, 3, "Category 10", "15-08-23"),
         class_def.Task("Task 16", "Description 16", 6, 2, "Category 1", "16-08-23"),
-        class_def.Task("Task 17", "Description 17", 7, 5, "Category 11", "17-08-23"),
-        class_def.Task("Task 18", "Description 18", 8, 4, "Category 12", "18-08-23"),
-        class_def.Task("Task 19", "Description 19", 5, 3, "Category 2", "19-08-23"),
-        class_def.Task("Task 20", "Description 20", 6, 2, "Category 13", "20-08-23"),
+        class_def.Task("Task 17", "Description 17", 7, 5, "Category 11", "10-10-23"),
+        class_def.Task("Task 18", "Description 18", 8, 4, "Category 12", "10-10-23"),
+        class_def.Task("Task 19", "Description 19", 5, 3, "Category 2", "10-10-23"),
+        class_def.Task("Task 20", "Description 20", 6, 2, "Category 13", "10-10-23"),
     ]
 
     focus1 = "Category 1"
@@ -367,6 +368,8 @@ def main():
     print("'post-sort'class_def.urgent_task_stack",class_def.task_tracking.urgent_stack.return_stack_names())
     print("'post-sort'class_def.non_urgent_task_stack",class_def.task_tracking.non_urgent_task_stack.return_stack_names())
     print("'post-sort'class_def.project_task_stack",class_def.task_tracking.project_stack.return_stack_names())
+
+
         
 
 

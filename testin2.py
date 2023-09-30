@@ -170,7 +170,7 @@ create_button = tk.Button(root, text="Create Product", command=create_product)
 
 root.mainloop() """
 
-import customtkinter 
+""" import customtkinter 
 def switch_event():
     print("switch toggled, current value:", switch_var.get())
 
@@ -178,4 +178,27 @@ switch_var = customtkinter.StringVar(value="on")
 switch = customtkinter.CTkSwitch(root, text="CTkSwitch", command=switch_event,
                                  variable=switch_var, onvalue="on", offvalue="off")
 
-root.mainloop()
+root.mainloop() """
+from datetime import datetime
+def within_7_days_or_past(date_str):
+    try:
+        # Parse the input date string into a datetime object
+        input_date = datetime.strptime(date_str, '%d-%m-%y')
+        
+        # Get the current date
+        current_date = datetime.now()
+        
+        # Calculate the timedelta between the input date and the current date
+        time_delta = input_date - current_date
+
+        # Check if the timedelta is within the next 7 days or past todays date
+        return (time_delta.days <= 0 and time_delta.days <= 7) or (current_date.date() == input_date.date()) #effectivley a compound condition that will only return true ig both condtions are met at the same time
+   
+    except ValueError as e:
+        # If there's an error in parsing the string
+        print(f"Error:{type(e).__name__} - {e}")
+        return False
+
+print(within_7_days_or_past('30-09-23')) #true
+print(within_7_days_or_past('09-10-23')) #false
+print(within_7_days_or_past('21-09-23')) #true

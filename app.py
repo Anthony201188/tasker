@@ -7,7 +7,7 @@ import calendar
 import os
 from link_click import ClickableLinkLabel
 from algo import main as algo
-
+from urgent_algo import sort_urgent_tasks
 
 ########################################  UTILS #####################################
 """ file persistance used to save load and update stored data on opening of app """
@@ -422,7 +422,7 @@ class MyFrame2(ctk.CTkFrame):
         self.button_set = ctk.CTkButton(self, text="set",command=self.set_entries_callback, height=28, width=50 ) 
         self.button_set.grid(row=2, column=3, padx=5)
 
-        self.button_sort = ctk.CTkButton(self, text="sort all tasks",command= lambda:(self.sort_all_tasks(),MyFrame5.populate_task_list(app.my_frame5, class_def.task_tracking.non_urgent_task_stack)), height=28, width=45 ) 
+        self.button_sort = ctk.CTkButton(self, text="sort all tasks",command= lambda:(self.sort_all_tasks(),MyFrame5.populate_task_list(app.my_frame5, class_def.task_tracking.non_urgent_task_stack),MyFrame5.populate_task_list(app.my_frame5v3, class_def.task_tracking.urgent_stack)), height=28, width=45 ) # need to shorten the lamda function here by combining the updating of all funcitions somehwere!
         self.button_sort.grid(row=1, column=3, padx=20)
         
         self.button_clear = ctk.CTkButton(self, text="clear all",fg_color="light blue",command=lambda:(self.toggle_set_entry_var(),self.reset_clear()), height=28, width=45 ) 
@@ -1152,7 +1152,7 @@ class MyFrame5(ctk.CTkFrame):
     # Insert task names
         print("task_stack type:", type(task_stack))
         print("TESTING WORKING")
-        class_def.task_tracking.non_urgent_task_stack.print_task_stack()
+        task_stack.print_task_stack()
         task_names = task_stack.return_stack_names()
         print("task_names:",task_names)
 
@@ -1198,6 +1198,7 @@ class MyFrame5V2(ctk.CTkFrame):
         self.populate_task_list()
     
 ################ methods ######################
+# TODO - clean up the duplication here with the poulation of lists, try either a global function in utils or call the one from Myframe 5 and pass the textbox to populate as an arg rember to pass the instance of this class
     def populate_task_list(self):
         """ populates the task list with all the project tasks. """
         this_months_project = self.get_project_set_for_this_month()
