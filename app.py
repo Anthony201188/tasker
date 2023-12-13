@@ -934,10 +934,10 @@ class MyFrame4(ctk.CTkFrame):
         class_def.task_tracking.create_task("washing", "do the washing", 8, 4, "household","20-11-88")
         class_def.task_tracking.create_task("cleaning", "clean the house", 6, 2, "household","20-11-88")
 
-        washing = class_def.task_tracking.get_task("washing")
-        class_def.task_tracking.set_display_task(washing)
-        display = class_def.task_tracking.get_display_task()
-        print(display)
+        # washing = class_def.task_tracking.get_task("washing")
+        # class_def.task_tracking.set_display_task(washing)
+        # display = class_def.task_tracking.get_display_task()
+        # print(display)
 
         #Textbox single task
         self.textbox = ctk.CTkTextbox(self, width=300,height=310, corner_radius=3 ) 
@@ -961,7 +961,11 @@ class MyFrame4(ctk.CTkFrame):
         self.button_archive_task.place(x=330, y=305)
 
         self.button_clear_entries = ctk.CTkButton(self, text="Clear",fg_color="grey",command=self.clear_entries, height=28, width=28 ) 
-        self.button_clear_entries.place(x=440, y=235)
+        self.button_clear_entries.place(x=448, y=270)
+
+        self.button_select_task = ctk.CTkButton(self , text="Select Task", fg_color="dark blue", command=self.select_task,height=28, width=20 ) 
+        self.button_select_task.place(x=440, y=235)
+
 
         # switch
         self.switch_var = ctk.BooleanVar(value=False)
@@ -1035,7 +1039,7 @@ class MyFrame4(ctk.CTkFrame):
         #     self.textbox2.insert("end",task )
         
         #keep running updates for changes made during runtime
-        self.update_textbox()
+        self.update_textbox2()
 
 
     ####### methods ###########
@@ -1048,7 +1052,14 @@ class MyFrame4(ctk.CTkFrame):
             entry.delete(0, "end")
 
     def update_textbox(self):
-        self.textbox2.delete("2.0", "end")
+        self.textbox.delete("2.0", "end")
+        self.textbox.insert("2.0", class_def.task_tracking.display_task)
+
+
+
+    # TODO - stop this from running every second and just update after you change the text using callbacks
+    def update_textbox2(self):
+        self.textbox2.delete("2.0", "end") #"2.0" = "line2.charachter 0"
         self.textbox2.insert("2.0", "\n")
         self.tasks = class_def.task_tracking.string_list_all_tasks() 
         self.formatted_tasks = "\n".join([f"- {task}" for task in self.tasks])
@@ -1057,7 +1068,7 @@ class MyFrame4(ctk.CTkFrame):
             self.textbox2.insert("end",task )        
         
         # Schedule the function to run again after a specific time (in milliseconds)
-        self.after(1000, self.update_textbox)  # 1000 milliseconds = 1 second
+        self.after(1000, self.update_textbox2)  # 1000 milliseconds = 1 second
 
 
     def toggle_single_all_task_view(self):
@@ -1109,6 +1120,31 @@ class MyFrame4(ctk.CTkFrame):
         #prints name of task and list of all tasks for testing
         print(f"Task {self.task_name} created")
         class_def.task_tracking.string_list_all_tasks()
+
+    def select_task(self):
+        self.task_name = self.entry_task_name.get()
+        print("test point 1") #testing
+        print(f"self.task_name = {self.task_name}") #testing
+        print(f"self.task_name type = {type(self.task_name)}")
+        if not self.task_name:
+            print("Please enter the name of the task you wish to view in the 'task_name' entry")
+        
+        self.selected_task = class_def.task_tracking.get_task(self.task_name)
+        print("test point 2") #testing
+        print(f"self.selected_task = {self.selected_task}") #testing
+        print(f"self.selected_task type = {type(self.selected_task)}")
+
+        if not self.selected_task:
+            print("No tasks match that name please enter the exact name of the task")
+
+        else: class_def.task_tracking.set_display_task(self.selected_task); print("penultimate test point") 
+        print("Testing display task",class_def.task_tracking.get_display_task())
+        self.update_textbox() #<- doesnt seem to work check this
+        print("test point end") #testing
+
+    #seems to be collecting and setting the displau task no problems but not rendering it in the text box        
+            
+
     
 
 
@@ -1284,7 +1320,7 @@ class App(ctk.CTk):
         self.my_frame3.grid(row=0, column=2, padx=10, pady=10 )
 
         #Task manager
-        self.my_frame4 = MyFrame4(self,"Task Manager",500, 400)
+        self.my_frame4 = MyFrame4(self,"Task Manager",515, 600)
         self.my_frame4.grid(row=1, column=0, padx=10, pady=10) 
 
         #Task list

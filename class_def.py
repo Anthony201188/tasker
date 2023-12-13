@@ -85,6 +85,8 @@ class Stack:
     def task_exists(self, task)->bool:
         """ Checks if a task exists in the stack """
         return task in self.stack
+    
+    #might need to put a task obj getter here
         
 class ArchiveStack(Stack):
     def __init__(self,name):
@@ -120,10 +122,19 @@ class TaskTracking:
         self.display_task = ""
 
         #pass the var names as args to easily retrieve var names via instance attributes - good alternative to dict of instances
+        #might have to use a dict actually due to need an iterable with all the stacks in.
         self.task_archive = ArchiveStack("task_archive") 
         self.urgent_stack = Stack("non_urgent")
         self.non_urgent_task_stack = Stack("non_urgent_task_stack")
         self.project_stack = Stack("project_task_stack") 
+
+        # needed for the getter for selected task callback function can clean this up by jusing a dict of instaces above
+        self.all_stacks = [
+            self.task_archive,
+            self.urgent_stack,
+            self.non_urgent_task_stack,
+            self.project_stack
+        ]
 
     def create_id(self, task)-> int:
         """ creates an id number and returns it """
@@ -148,6 +159,14 @@ class TaskTracking:
                 return task
             else:
                 print(task_name,"not currently in all_tasks list")
+        
+        for stack in self.all_stacks:
+            for task in stack:
+                if task.name == task_name:
+                    print(f"[{task.name}] found and returned")
+                    return task
+                else:
+                    print(task_name,"not currently in all_stacks list")
     
     def no_of_total_tasks(self)->int:
         return len(self.all_tasks)

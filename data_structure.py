@@ -211,3 +211,86 @@ def save_entries(entries_to_save, entry_contents, set_flags, done_flags):
 # entries_to_save = ["entry1", "entry2"]
 # entry_contents = ["content for entry1", "content for entry2"]
 # save_entries(entries_to_save, entry_contents)
+
+
+############################# EXAMPLE OF SWAPPING OVER TO SQL #######################
+#####################################################################################
+
+########################## CREATE THE DATABASE ON START
+import sqlite3
+
+def create_entries_table():
+    """
+    Create the 'entries' table in the SQLite database.
+    """
+    conn = sqlite3.connect("entries.db")
+    cursor = conn.cursor()
+
+    # Create 'entries' table
+    cursor.execute(
+        """
+        CREATE TABLE IF NOT EXISTS entries (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            entry TEXT,
+            content TEXT,
+            set_flag BOOLEAN,
+            done_flag BOOLEAN,
+            timestamp DATETIME
+        )
+        """
+    )
+
+    # Commit the changes and close the connection
+    conn.commit()
+    conn.close()
+
+# Call the function to create the table
+create_entries_table()
+
+############################ SAVE THE ENTRIES (replace the current save function in the datastructure.py)
+import sqlite3
+from datetime import datetime
+
+def save_entries_to_sqlite(entries_to_save, entry_contents, set_flags, done_flags):
+    """
+    Save entries and their corresponding content to an SQLite database.
+
+    Args:
+        entries_to_save (list): List of entry names to be saved.
+        entry_contents (list): Corresponding list of content for each entry.
+        set_flags (list): List of flags indicating whether entries are "set."
+        done_flags (list): List of flags indicating whether entries are done.
+    """
+    timestamp = get_current_time()
+
+    # Connect to SQLite database (creates a new one if it doesn't exist)
+    conn = sqlite3.connect("entries.db")
+    cursor = conn.cursor()
+
+    for entry, content, set_flag, done_flag in zip(entries_to_save, entry_contents, set_flags, done_flags):
+        set_info = f"S,{timestamp}" if set_flag else ""
+        done_info = f"D,{timestamp}" if done_flag else ""
+        entry_line = f"{entry}|content:\"{content}\"|{set_info}|{done_info}"
+
+        # Insert data into the database
+        cursor.execute(
+            """
+            INSERT INTO entries (entry, content, set_flag, done_flag, timestamp)
+            VALUES (?, ?, ?, ?, ?)
+            """,
+            (entry, content, set_flag, done_flag, timestamp),
+        )
+
+        print(f"Entry line successfully saved to SQLite: {entry_line}")
+
+    # Commit the changes and close the connection
+    conn.commit()
+    conn.close()
+
+# Example usage
+entries_to_save = ["entry1", "entry2", "entry3"]
+entry_contents = ["Content 1", "Content 2", "Content 3"]
+set_flags = [True, False, True]
+done_flags = [False, True, True]
+
+save_entries_to_sqlite(entries_to_save, entry_contents, set_flags, done_flags)

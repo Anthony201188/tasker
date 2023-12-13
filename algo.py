@@ -306,14 +306,14 @@ def main():
     #create mock main task list
     test_data = [
         class_def.Task("Task 1", "Description 1", 8, 4, "Category 1", "03-08-23",done=True), #add this to check filtering ->,done=True
-        class_def.Task("Task 2", "Description 2", 5, 2, "Category 2", "25-09-23"), # this one is now urgent
-        class_def.Task("Task 3", "Description 3", 6, 3, "Category 1", "01-08-23"),
-        class_def.Task("Task 4", "Description 4", 7, 5, "Category 3", "04-08-23"),
-        class_def.Task("Task 5", "Description 5", 9, 2, "Category 2", "05-08-23"),
-        class_def.Task("Task 6", "Description 6", 4, 1, "Category 4", "06-08-23"),
-        class_def.Task("Task 7", "Description 7", 5, 3, "Category 5", "07-08-23"),
-        class_def.Task("Task 8", "Description 8", 7, 4, "Category 1", "08-08-23"),
-        class_def.Task("Task 9", "Description 9", 6, 2, "Category 6", "09-08-23"),
+        class_def.Task("Task 2", "Description 2", 5, 2, "Category 2", "25-09-24"), # this one is now urgent
+        class_def.Task("Task 3", "Description 3", 6, 3, "Category 1", "01-08-24"),
+        class_def.Task("Task 4", "Description 4", 7, 5, "Category 3", "04-08-24"),
+        class_def.Task("Task 5", "Description 5", 9, 2, "Category 2", "05-08-24"),
+        class_def.Task("Task 6", "Description 6", 4, 1, "Category 4", "06-08-24"),
+        class_def.Task("Task 7", "Description 7", 5, 3, "Category 5", "07-08-24"),
+        class_def.Task("Task 8", "Description 8", 7, 4, "Category 1", "08-08-24"),
+        class_def.Task("Task 9", "Description 9", 6, 2, "Category 6", "09-08-24"),
         class_def.Task("Task 10", "Description 10", 8, 5, "Category 7", "10-08-23"),
         class_def.Task("Task 11", "Description 11", 5, 3, "Category 2", "11-08-23"),
         class_def.Task("Task 12", "Description 12", 6, 1, "Category 8", "12-08-23"),

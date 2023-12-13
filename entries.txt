@@ -124,3 +124,10 @@ entry2|content:"Some example text!"|S,23-08-2023,21:48:28|
 entry3|content:"Some example text!"|S,23-08-2023,21:48:28|
 entry4|content:"Some example text!"|S,23-08-2023,21:48:28|
 entry5|content:"Some example text!"|S,23-08-2023,21:48:28|
+habit1|content:"habit1"|S,28-11-2023,16:18:19|
+habit2|content:"habit2"|S,28-11-2023,16:18:19|
+entry1|content:"Some example text!"|S,28-11-2023,16:18:19|
+entry2|content:"Some example text!"|S,28-11-2023,16:18:19|
+entry3|content:"Some example text!"|S,28-11-2023,16:18:19|
+entry4|content:"Some example text!"|S,28-11-2023,16:18:19|
+entry5|content:"Some example text!"|S,28-11-2023,16:18:19|
