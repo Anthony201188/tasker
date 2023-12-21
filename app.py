@@ -784,11 +784,15 @@ class MyFrame3(ctk.CTkFrame):
         #TODO - show option only on zero count something along the lines of:
         #if remain days == 0: combobox.pack/grid()
 
-        self.dropdown_options = class_def.task_tracking.project_stack.return_stack_names()
+        self.dropdown_options = class_def.task_tracking.return_all_parent_project_names()
         self.dropdown_options.insert(0,"Select a project")
-        self.dropdown = ctk.CTkComboBox(self,state="readonly", values=self.dropdown_options,command=None)
+        self.dropdown = ctk.CTkComboBox(self, values=self.dropdown_options,command=None)
         self.dropdown.set("Select a project")
         self.dropdown.grid(row=1, column=0, padx=10, pady=5)
+
+            
+        # Bind the event to the update function
+        self.dropdown.bind("<ButtonRelease-1>", self.update_combobox_options)
 
 
         #Entries
@@ -869,8 +873,22 @@ class MyFrame3(ctk.CTkFrame):
 
         return self.remaining_days
     
-    def combobox_callback(self, choice):
-        print("combobox dropdown clicked:", choice) #<- TODO
+    #TODO - copied function from my fram for make the one in myframe for more universal and replace use "dropdownnamevarnamehere = self.dropdown["values"] = updated option"
+    def update_combobox_options(self, event):
+        """ update the list of options based on the project tasks in memorey """
+        print("test")
+
+        updated_options = class_def.task_tracking.return_all_parent_project_names()
+        print("updated_options",updated_options)
+        updated_options.insert(-1, "None")
+
+        # Update the Combobox options
+        self.dropdown['values'] = updated_options
+        print("successfully updated the combobox options", updated_options)
+
+        # Update the display
+        self.dropdown.update()
+    
 
 ################ methods2 ######################
     def suggest_non_urgent(self):
@@ -933,6 +951,8 @@ class MyFrame4(ctk.CTkFrame):
         # TODO - create two new tasks (factory and callbacks later for this)
         class_def.task_tracking.create_task("washing", "do the washing", 8, 4, "household","20-11-88")
         class_def.task_tracking.create_task("cleaning", "clean the house", 6, 2, "household","20-11-88")
+        class_def.task_tracking.create_task("Project1", "testing projects", 8, 8, "testing","10-10-2025",isproject=True,isparent=True)
+        
 
         # washing = class_def.task_tracking.get_task("washing")
         # class_def.task_tracking.set_display_task(washing)
@@ -978,11 +998,15 @@ class MyFrame4(ctk.CTkFrame):
         self.switch_label.place()
 
         #Combobox
-        self.dropdown_options = class_def.task_tracking.project_stack.return_stack_names()
-        self.dropdown_options.insert(0,"Select a project parent")
-        self.dropdown_options.insert(-1,"None")
-        self.dropdown_parent_project = ctk.CTkComboBox(self,state="readonly", values=self.dropdown_options,command=None)
-        self.dropdown_parent_project.set("Select a project")
+        self.dropdown_options = class_def.task_tracking.return_all_parent_project_names()
+        print("self.dropdown_options",self.dropdown_options)
+        self.dropdown_options.insert(-1, "None")
+        self.dropdown_parent_project = ctk.CTkComboBox(self, width=350, values=self.dropdown_options, command=None)
+        self.dropdown_parent_project.set("Select a Parent project")
+
+    
+        # Bind the event to the update function
+        self.dropdown_parent_project.bind("<ButtonRelease-1>", self.update_combobox_options)
 
 
         #Entries
@@ -1015,9 +1039,9 @@ class MyFrame4(ctk.CTkFrame):
         
 
         #checkbox
-        self.check_var = ctk.StringVar(value="off")  
-        self.check = ctk.CTkCheckBox(self, text="Is a project", variable=self.check_var,command=lambda event=None: self.is_project_toggle(event), onvalue="on", offvalue="off") #"command=checkbox_event," needs to be added to the end 
-        self.check.place(x=10,y=360)
+        self.isproject_check_var = ctk.BooleanVar(value=False)  #change the name of this to is_project_check_var
+        self.check = ctk.CTkCheckBox(self, text="Is a project", variable=self.isproject_check_var,command=lambda event=None: self.is_project_toggle(event), onvalue=True, offvalue=False) #"command=checkbox_event," needs to be added to the end 
+        self.check.place(x=10,y=380)
         
         # bind the function on button release aswell
         self.check.bind("<ButtonRelease-1>", self.is_project_toggle)
@@ -1050,6 +1074,18 @@ class MyFrame4(ctk.CTkFrame):
         #delete the contents of all entreis in the entry widget list
         for entry in self.all_entries:
             entry.delete(0, "end")
+
+    def update_combobox_options(self, event):
+        """ update the list of options based on the project tasks in memorey """
+        print("test")
+
+        updated_options = class_def.task_tracking.return_all_parent_project_names()
+        print("updated_options",updated_options)
+        updated_options.insert(-1, "None")
+
+        # Update the Combobox options
+        self.dropdown_parent_project['values'] = updated_options
+        print("successfully updated the combobox options", updated_options)
 
     def update_textbox(self):
         self.textbox.delete("2.0", "end")
@@ -1085,28 +1121,37 @@ class MyFrame4(ctk.CTkFrame):
     
     def is_project_toggle(self, event):
 
-        self.check_var_state = self.check_var.get()
-        print("toggle is project state:changed")
+        self.check_var_state = self.isproject_check_var.get()
+        print("toggle is project state:changed") 
 
-        if self.check_var_state == "on" :
-            self.dropdown_parent_project.place(x=140, y=360)
+        if self.check_var_state == True :
+            self.dropdown_parent_project.place(x=140, y=380)
             
         else:
             self.dropdown_parent_project.place_forget()
     
+    def get_isparent(self)->bool:
+        return self.dropdown_parent_project != "None"
+    # TODO - needs error handling
+
+    
     def create_task(self):
-        #call get_all_entries then pass it to the create task from task manager
-        #use this function for a clalback but be careful of circular
+        """ Collect all entry data and create a task instance  """
+        
         self.task_name = self.entry_task_name.get()
         self.task_description = self.entry_task_description.get()
         self.task_urgency = self.entry_task_urgency.get()
         self.task_importance = self.entry_task_importance.get()
         self.task_catagory = self.entry_task_catagory.get()
         self.task_due_date = self.entry_task_due_date.get()
+        self.isproject = self.isproject_check_var.get()
+        self.isparent = self.get_isparent()
+
 
         # TODO - add constraints and error handling for task creation here
         #date format YY-MM-DD (string)
 
+        # sudo code
 
         class_def.task_tracking.create_task(
             self.task_name,
@@ -1114,7 +1159,9 @@ class MyFrame4(ctk.CTkFrame):
             int(self.task_urgency),
             int(self.task_importance),
             self.task_catagory,
-            self.task_due_date
+            self.task_due_date,
+            self.isproject,
+            self.isparent
             )
         
         #prints name of task and list of all tasks for testing
@@ -1130,19 +1177,15 @@ class MyFrame4(ctk.CTkFrame):
             print("Please enter the name of the task you wish to view in the 'task_name' entry")
         
         self.selected_task = class_def.task_tracking.get_task(self.task_name)
-        print("test point 2") #testing
         print(f"self.selected_task = {self.selected_task}") #testing
-        print(f"self.selected_task type = {type(self.selected_task)}")
 
         if not self.selected_task:
             print("No tasks match that name please enter the exact name of the task")
 
-        else: class_def.task_tracking.set_display_task(self.selected_task); print("penultimate test point") 
+        else: class_def.task_tracking.set_display_task(self.selected_task)
         print("Testing display task",class_def.task_tracking.get_display_task())
-        self.update_textbox() #<- doesnt seem to work check this
-        print("test point end") #testing
+        self.update_textbox()
 
-    #seems to be collecting and setting the displau task no problems but not rendering it in the text box        
             
 
     

@@ -76,6 +76,8 @@ class Stack:
         """ returns a list of all task names as type(str) """
         stack_names = [x.name for x in self.stack]
         return stack_names
+    
+
 
     def print_task_stack(self):
         print(self.name ,self.stack)
@@ -144,9 +146,11 @@ class TaskTracking:
         print("id_ counter:", self.id_counter)
         return self.id_counter
     
-    def create_task(self, name, description, urgency, importance, category, due_date, project=False, done=False):
-        if project:
-            task = Project(name, description, urgency, importance, category, due_date, done=done)
+    def create_task(self, name, description, urgency, importance, category, due_date, isproject=False, isparent=False, done=False):
+        if isproject and isparent:
+            task = Project(name, description, urgency, importance, category, due_date, done=done) #<- need to add parent task here?
+        elif isproject:
+            task = Project.create_subtask(self, name, description, urgency, importance, category, due_date, parent_project, isproject=True, done=False)#<- needs filtering on the other drop down so sub tasks dont show up there
         else:
             task = Task(name, description, urgency, importance, category, due_date, done=done)
         return task
@@ -157,16 +161,16 @@ class TaskTracking:
             if task.name == task_name:
                 print(f"[{task.name}] found and returned")
                 return task
-            else:
-                print(task_name,"not currently in all_tasks list")
+        else:
+            print(task_name,"not currently in all_tasks list")
         
         for stack in self.all_stacks:
-            for task in stack:
+            for task in stack.stack:
                 if task.name == task_name:
                     print(f"[{task.name}] found and returned")
                     return task
-                else:
-                    print(task_name,"not currently in all_stacks list")
+        else:
+            print(task_name,"not currently in all_stacks list")
     
     def no_of_total_tasks(self)->int:
         return len(self.all_tasks)
@@ -192,6 +196,22 @@ class TaskTracking:
 
     def get_display_task(self):
         return self.display_task
+    
+    def return_all_parent_project_names(self):
+        """Returns names of all parent projects in all_stacks and all_tasks."""
+        project_task_names = []
+
+        for task in self.all_tasks:
+            if task.isproject:
+                project_task_names.append(task.name)
+
+        for stack in self.all_stacks:
+            for task in stack.stack:
+                if task.isproject:
+                    project_task_names.append(task.name)
+        print("testing project_task_names",project_task_names)
+        return project_task_names
+
 
 ###############################
 task_tracking = TaskTracking()
@@ -205,7 +225,7 @@ task_tracking = TaskTracking()
 ######  TASK CLASSES ########
 class Task:
 
-    def __init__(self,name ,description,urgency,importance,category,due_date, project=False, done=False ):
+    def __init__(self,name ,description,urgency,importance,category,due_date, isproject=False, done=False ):
         
         
         self.name = name
@@ -214,7 +234,7 @@ class Task:
         self.importance = importance
         self.category = category
         self.due_date = due_date
-        self.project = project
+        self.isproject = isproject
         self.done = done 
 
         self.id_ = task_tracking.create_id(self)
@@ -231,28 +251,31 @@ class Task:
                 Task catagory:[{self.category}]
                 Task due date:[{self.due_date}]
                 Task status:Done=[{self.done}]
-                Task is a project:[{self.project}]
+                Task is a project:[{self.isproject}]
+                Task is a parent [{isinstance(self, Project)}]
+                Task is a sub task [{isinstance(self, ProjectSubTask)}]
                 Task id_:[{self.id_}]
                 """)
 
 class Project(Task):
     """ this class is used only if the task is a project it inherits from the project class but allows the adding of sub tasks within that project task """
     # thinking about using a list or stack here that contains all the sub tasks for this project and a class ProjectSubtask
-    def __init__(self, name, description, urgency, importance, category, due_date, set_for_this_month=False, project=True, done=False):
-        super().__init__(name, description, urgency, importance, category, due_date, project, done)
+    def __init__(self, name, description, urgency, importance, category, due_date, isproject=True,isparent=True, done=False): # replace all "isproject" "isparent" with "isinstance(self, Project)" or "isinstance(self, ProjectSubTask)"
+        super().__init__(name, description, urgency, importance, category, due_date, isproject, done)
 
         self.all_subtasks = {}#<- going to try dict of instaces here, other option is using a getter method that takes names as strings.
+        self.isparent = isparent#<- can probs remove this and do this implicitly later
     
     def create_subtask(self, name, description, urgency, importance, category, due_date, done=False):
-        subtask = ProjectSubtask(name, description, urgency, importance, category, due_date, done=done, parent_project=self)
+        subtask = ProjectSubTask(name, description, urgency, importance, category, due_date, done=done, parent_project=self)
         self.all_subtasks[name] = subtask #<- add instance with name as key
         subtask.id_ = task_tracking.create_id(subtask)  # Call the create_id method to update all_tasks and create an ID
         return subtask
     
-class ProjectSubtask(Task):
-    def __init__(self, name, description, urgency, importance, category, due_date,parent_task, project=True, done=False):
-        super().__init__(name, description, urgency, importance, category, due_date, project, done)
-        self.parent_project_task_inst = parent_task #<- may need this for sorting/browsing may not
+class ProjectSubTask(Task):
+    def __init__(self, name, description, urgency, importance, category, due_date, parent_project , isproject=True, done=False):
+        super().__init__(name, description, urgency, importance, category, due_date, isproject, done)
+        self.parent_project_task_inst = parent_project #<- may need this for sorting/browsing may not
 
 
 
