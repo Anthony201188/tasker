@@ -781,7 +781,8 @@ class MyFrame3(ctk.CTkFrame):
         # TODO - self population by listing all "projects" only availible when monthly focus "not-set"
         #Combobox
         
-        #TODO - show option only on zero count something along the lines of:
+        class_def.task_tracking.create_task("Project2", "testing projects", 8, 8, "testing","10-10-2025",isproject=True,isparent=True)
+
         #if remain days == 0: combobox.pack/grid()
 
         self.dropdown_options = class_def.task_tracking.return_all_parent_project_names()
@@ -792,7 +793,11 @@ class MyFrame3(ctk.CTkFrame):
 
             
         # Bind the event to the update function
-        self.dropdown.bind("<ButtonRelease-1>", self.update_combobox_options)
+        self.dropdown.bind("<FocusIn>",self.update_combobox_options)
+
+        self.button_update_dropdown = ctk.CTkButton(self, text="Update project list",fg_color="light blue",command=self.update_combobox_options, height=28, width=30 ) # "command=button_event" needs to be added and function created and tied to it 
+        self.button_update_dropdown.place(x=235, y=105)
+
 
 
         #Entries
@@ -874,20 +879,27 @@ class MyFrame3(ctk.CTkFrame):
         return self.remaining_days
     
     #TODO - copied function from my fram for make the one in myframe for more universal and replace use "dropdownnamevarnamehere = self.dropdown["values"] = updated option"
-    def update_combobox_options(self, event):
-        """ update the list of options based on the project tasks in memorey """
-        print("test")
-
+    #note to self with the below function that there is the verion of the widget in the class and then the version in the app instance.
+    #so the one in the class is the one first shown and then we destory it and create a new one in the app instance with the updated version
+    #note add "event" as arg to this function to go back to binding other triggers
+    def update_combobox_options(self):
         updated_options = class_def.task_tracking.return_all_parent_project_names()
-        print("updated_options",updated_options)
-        updated_options.insert(-1, "None")
+        updated_options.insert(0, "None")
+    
+        # Destroy the existing ComboBox widget
+        app.my_frame3.dropdown.destroy()
+    
+        # Recreate the ComboBox with the updated options
+        app.my_frame3.dropdown = ctk.CTkComboBox(app.my_frame3, values=updated_options)
+        app.my_frame3.dropdown.set("Select a project")
+        app.my_frame3.dropdown.grid(row=1, column=0, padx=10, pady=5)
 
-        # Update the Combobox options
-        self.dropdown['values'] = updated_options
-        print("successfully updated the combobox options", updated_options)
+        app.my_frame3.dropdown.bind("<FocusIn>",self.update_combobox_options)
 
-        # Update the display
-        self.dropdown.update()
+    
+        print("Successfully updated the combobox options:", updated_options)
+
+
     
 
 ################ methods2 ######################
@@ -980,11 +992,14 @@ class MyFrame4(ctk.CTkFrame):
         self.button_archive_task = ctk.CTkButton(self, text="Archive selected task", height=28, width=45 ) 
         self.button_archive_task.place(x=330, y=305)
 
-        self.button_clear_entries = ctk.CTkButton(self, text="Clear",fg_color="grey",command=self.clear_entries, height=28, width=28 ) 
+        self.button_clear_entries = ctk.CTkButton(self, text="Clear",fg_color="light blue",command=self.clear_entries, height=28, width=28 ) 
         self.button_clear_entries.place(x=448, y=270)
 
         self.button_select_task = ctk.CTkButton(self , text="Select Task", fg_color="dark blue", command=self.select_task,height=28, width=20 ) 
         self.button_select_task.place(x=440, y=235)
+
+        self.button_update_dropdown = ctk.CTkButton(self, text="Update project list",fg_color="light blue",command=self.update_combobox_options, height=28, width=30 )
+        self.button_update_dropdown.place(x=10, y=410)
 
 
         # switch
@@ -1002,12 +1017,14 @@ class MyFrame4(ctk.CTkFrame):
         print("self.dropdown_options",self.dropdown_options)
         self.dropdown_options.insert(-1, "None")
         self.dropdown_parent_project = ctk.CTkComboBox(self, width=350, values=self.dropdown_options, command=None)
-        self.dropdown_parent_project.set("Select a Parent project")
+        self.dropdown_parent_project.set("None")
+        #postion self.dropdown_parent_project.place(x=140, y=380)
+
+        #label for combobox
+        self.dropdown_options_label = ctk.CTkLabel(self,text="Select a parent project and for new parent projects select 'None'" )
 
     
-        # Bind the event to the update function
-        self.dropdown_parent_project.bind("<ButtonRelease-1>", self.update_combobox_options)
-
+        
 
         #Entries
         self.entry_task_name = ctk.CTkEntry(self,placeholder_text="Task name", width=180)
@@ -1028,6 +1045,7 @@ class MyFrame4(ctk.CTkFrame):
         self.entry_task_due_date = ctk.CTkEntry(self,placeholder_text="Due date", width=180)
         self.entry_task_due_date.place(x=330,y=200) 
 
+
         self.all_entries = [
             self.entry_task_name,
             self.entry_task_description,
@@ -1044,7 +1062,13 @@ class MyFrame4(ctk.CTkFrame):
         self.check.place(x=10,y=380)
         
         # bind the function on button release aswell
-        self.check.bind("<ButtonRelease-1>", self.is_project_toggle)
+        self.check.bind("<Button-1>", self.is_project_toggle)
+
+        #Button
+
+        # Bind the event to the update function
+        #self.check.bind("<Button-1>", self.update_combobox_options)
+
         
 
 
@@ -1075,17 +1099,23 @@ class MyFrame4(ctk.CTkFrame):
         for entry in self.all_entries:
             entry.delete(0, "end")
 
-    def update_combobox_options(self, event):
+    def update_combobox_options(self):
         """ update the list of options based on the project tasks in memorey """
         print("test")
 
-        updated_options = class_def.task_tracking.return_all_parent_project_names()
-        print("updated_options",updated_options)
-        updated_options.insert(-1, "None")
+        self.updated_options = class_def.task_tracking.return_all_parent_project_names()
+        print("updated_options",self.updated_options)
+        self.updated_options.insert(-1, "None")
 
-        # Update the Combobox options
-        self.dropdown_parent_project['values'] = updated_options
-        print("successfully updated the combobox options", updated_options)
+        #update values
+        self.dropdown_parent_project.destroy()
+
+        # redraw the combobox
+        if self.isproject_check_var:
+            self.dropdown_parent_project = ctk.CTkComboBox(self, width=350, values=self.updated_options, command=None)
+            self.dropdown_parent_project.set("None")
+            self.dropdown_parent_project.place(x=140, y=380)
+
 
     def update_textbox(self):
         self.textbox.delete("2.0", "end")
@@ -1093,7 +1123,7 @@ class MyFrame4(ctk.CTkFrame):
 
 
 
-    # TODO - stop this from running every second and just update after you change the text using callbacks
+    # TODO - stop this from running every second and just update after you change the text using callback
     def update_textbox2(self):
         self.textbox2.delete("2.0", "end") #"2.0" = "line2.charachter 0"
         self.textbox2.insert("2.0", "\n")
@@ -1126,9 +1156,12 @@ class MyFrame4(ctk.CTkFrame):
 
         if self.check_var_state == True :
             self.dropdown_parent_project.place(x=140, y=380)
+            self.dropdown_options_label.place(x=140, y=410)
+
             
         else:
             self.dropdown_parent_project.place_forget()
+            self.dropdown_options_label.place_forget()
     
     def get_isparent(self)->bool:
         return self.dropdown_parent_project != "None"
