@@ -147,13 +147,17 @@ class TaskTracking:
         return self.id_counter
     
     def create_task(self, name, description, urgency, importance, category, due_date, isproject=False, isparent=False, done=False):
+        """ Creation of task instances """
+        #TODO - add validation and error handling including strong type checking.
+
         if isproject and isparent:
             task = Project(name, description, urgency, importance, category, due_date, done=done) #<- need to add parent task here?
         elif isproject:
-            task = Project.create_subtask(self, name, description, urgency, importance, category, due_date, parent_project, isproject=True, done=False)#<- needs filtering on the other drop down so sub tasks dont show up there
+            task = Project.create_subtask(self, name, description, urgency, importance, category, due_date, isproject=True, done=False)#<- needs filtering on the other drop down so sub tasks dont show up there
         else:
             task = Task(name, description, urgency, importance, category, due_date, done=done)
         return task
+    
     
     def get_task(self,task_name):
         """ pass task name as a string to return that task from the all_task list as an obj """
@@ -181,6 +185,7 @@ class TaskTracking:
     
     def delete_task(self,task):
         """ type(arg) == obj  """
+        #TODO - Include find and remove for "all_task_stacks"
         print("delete_task()","task",task)#<-testing
         print(self.string_list_all_tasks())#<-testing
         self.all_tasks.remove(task)
@@ -256,6 +261,21 @@ class Task:
                 Task is a sub task [{isinstance(self, ProjectSubTask)}]
                 Task id_:[{self.id_}]
                 """)
+    
+    def update_attributes(self, **kwargs):
+        """ set any number of attributes for task instance objects similtaiously
+            use: 'obj.update_attributes(attribute1=20)'
+        """
+        for key, value in kwargs.items():
+            setattr(self, key, value)
+
+        #print updated attributes and values 
+        print(f"Task [{self.name}] the following attributes have been successfully updated:")
+        if not kwargs:
+            print("update_attributes **kwargs empty",kwargs)
+        for key, value in kwargs.items():
+            print(f"  {key}: {value}")
+
 
 class Project(Task):
     """ this class is used only if the task is a project it inherits from the project class but allows the adding of sub tasks within that project task """
@@ -265,7 +285,9 @@ class Project(Task):
 
         self.all_subtasks = {}#<- going to try dict of instaces here, other option is using a getter method that takes names as strings.
         self.isparent = isparent#<- can probs remove this and do this implicitly later
-    
+
+
+    #the method below should I just pass it an instance of Project class and then inherit all the attributes and the parent_project would = the instance of the Project class instance
     def create_subtask(self, name, description, urgency, importance, category, due_date, done=False):
         subtask = ProjectSubTask(name, description, urgency, importance, category, due_date, done=done, parent_project=self)
         self.all_subtasks[name] = subtask #<- add instance with name as key

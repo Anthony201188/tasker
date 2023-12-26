@@ -986,14 +986,14 @@ class MyFrame4(ctk.CTkFrame):
         self.button_create_new_task = ctk.CTkButton(self, text="Create new task",command=self.create_task, height=28, width=45 ) 
         self.button_create_new_task.place(x=330, y=235)
 
-        self.button_edit_selected_task = ctk.CTkButton(self, text="Edit selected task", height=28, width=45 ) 
-        self.button_edit_selected_task.place(x=330, y=270)
+        self.button_update_selected_task = ctk.CTkButton(self, text="Update selected task",command=self.update_selected_task, height=28, width=45 ) 
+        self.button_update_selected_task.place(x=330, y=270)
 
         self.button_archive_task = ctk.CTkButton(self, text="Archive selected task", height=28, width=45 ) 
         self.button_archive_task.place(x=330, y=305)
 
         self.button_clear_entries = ctk.CTkButton(self, text="Clear",fg_color="light blue",command=self.clear_entries, height=28, width=28 ) 
-        self.button_clear_entries.place(x=448, y=270)
+        self.button_clear_entries.place(x=468, y=270)
 
         self.button_select_task = ctk.CTkButton(self , text="Select Task", fg_color="dark blue", command=self.select_task,height=28, width=20 ) 
         self.button_select_task.place(x=440, y=235)
@@ -1167,6 +1167,21 @@ class MyFrame4(ctk.CTkFrame):
         return self.dropdown_parent_project != "None"
     # TODO - needs error handling
 
+    def get_all_entries(self):
+        """ return the contents of all entries as a dict  """
+        all_entries = {}
+
+        all_entries['name'] = self.task_name = self.entry_task_name.get()
+        all_entries['description'] = self.task_description = self.entry_task_description.get()
+        all_entries['urgency'] = self.task_urgency = self.entry_task_urgency.get()
+        all_entries['importance'] = self.task_importance = self.entry_task_importance.get()
+        all_entries['catagory'] = self.task_catagory = self.entry_task_catagory.get()
+        all_entries['due_date'] = self.task_due_date = self.entry_task_due_date.get()
+        all_entries['isproject'] = self.isproject = self.isproject_check_var.get()
+        all_entries['isparent'] = self.isparent = self.get_isparent()
+
+        return all_entries
+
     
     def create_task(self):
         """ Collect all entry data and create a task instance  """
@@ -1180,11 +1195,10 @@ class MyFrame4(ctk.CTkFrame):
         self.isproject = self.isproject_check_var.get()
         self.isparent = self.get_isparent()
 
-
+        #TODO - update the above so that I can use the get all entries method instead
         # TODO - add constraints and error handling for task creation here
         #date format YY-MM-DD (string)
 
-        # sudo code
 
         class_def.task_tracking.create_task(
             self.task_name,
@@ -1200,6 +1214,53 @@ class MyFrame4(ctk.CTkFrame):
         #prints name of task and list of all tasks for testing
         print(f"Task {self.task_name} created")
         class_def.task_tracking.string_list_all_tasks()
+
+    def update_selected_task(self):
+        """ takes the task name as a string and any attributes to update """
+        #TODO - currently this will update any task using the task name as a string I should update this so its only the currently selected task
+        print("update_selected_task() was called")#<-testing
+       
+        #get the new entry conents
+        entry_contents = self.get_all_entries() 
+        print("entry_contents",entry_contents)#<-testing
+
+        #get the task instance
+        task_inst = class_def.task_tracking.get_task(entry_contents['name'])# THINK THIS MIGHT BE THE PROBLEM
+
+        print(f"Before update - Task ID: {task_inst.id_}")
+        print(f"Selected task to update [{task_inst.name}]")
+
+
+
+        #compare the values and create a dict of the difference
+        self.difference = {}
+
+        for key, value in entry_contents.items(): #<- note to self dict methods - .items (all), .keys (keys), .values(values)
+            if (key, value) not in vars(task_inst).items():
+                self.difference.update({key: value})
+        
+        print("self.difference:",self.difference)#<- testing
+
+        #update the different values
+        task_inst.update_attributes(**self.difference)
+
+        #print the updated instance attr
+        print(f"task instance [{task_inst.name}] has been updated: {task_inst.__str__()}")
+
+        #set the updated task to the display
+        class_def.task_tracking.set_display_task(task_inst)
+
+        #checking the task has been updated
+        updated_display_task = class_def.task_tracking.get_display_task()
+
+        print ("updated display task:", updated_display_task)
+
+        print(f"Before after - Task ID: {task_inst.id_}")
+
+        #updated the textbox
+        self.update_textbox()
+
+
 
     def select_task(self):
         self.task_name = self.entry_task_name.get()
