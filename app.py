@@ -989,7 +989,7 @@ class MyFrame4(ctk.CTkFrame):
         self.button_update_selected_task = ctk.CTkButton(self, text="Update selected task",command=self.update_selected_task, height=28, width=45 ) 
         self.button_update_selected_task.place(x=330, y=270)
 
-        self.button_archive_task = ctk.CTkButton(self, text="Archive selected task", height=28, width=45 ) 
+        self.button_archive_task = ctk.CTkButton(self, text="Delete selected task",command=self.delete_selected_task ,height=28, width=45 ) 
         self.button_archive_task.place(x=330, y=305)
 
         self.button_clear_entries = ctk.CTkButton(self, text="Clear",fg_color="light blue",command=self.clear_entries, height=28, width=28 ) 
@@ -997,6 +997,7 @@ class MyFrame4(ctk.CTkFrame):
 
         self.button_select_task = ctk.CTkButton(self , text="Select Task", fg_color="dark blue", command=self.select_task,height=28, width=20 ) 
         self.button_select_task.place(x=440, y=235)
+
 
         self.button_update_dropdown = ctk.CTkButton(self, text="Update project list",fg_color="light blue",command=self.update_combobox_options, height=28, width=30 )
         self.button_update_dropdown.place(x=10, y=410)
@@ -1029,6 +1030,18 @@ class MyFrame4(ctk.CTkFrame):
         #Entries
         self.entry_task_name = ctk.CTkEntry(self,placeholder_text="Task name", width=180)
         self.entry_task_name.place(x=330,y=25)
+        
+        #add an event listner for the enter button to select the task in the entry
+        self.entry_task_name.bind("<Return>",self.select_task)
+
+        #add an event listern for ctr + d and delete 
+        self.entry_task_name.bind("<Control-d>",self.delete_selected_task)
+
+
+        #add an event listener for ctrl + u to update
+        self.entry_task_name.bind("<Control-u>",self.update_selected_task)
+
+
 
         self.entry_task_description = ctk.CTkEntry(self,placeholder_text="Task description", width=180)
         self.entry_task_description.place(x=330,y=60) 
@@ -1215,7 +1228,7 @@ class MyFrame4(ctk.CTkFrame):
         print(f"Task {self.task_name} created")
         class_def.task_tracking.string_list_all_tasks()
 
-    def update_selected_task(self):
+    def update_selected_task(self, event=None):
         """ takes the task name as a string and any attributes to update """
         #TODO - currently this will update any task using the task name as a string I should update this so its only the currently selected task
         print("update_selected_task() was called")#<-testing
@@ -1260,9 +1273,30 @@ class MyFrame4(ctk.CTkFrame):
         #updated the textbox
         self.update_textbox()
 
+    def delete_selected_task(self, event=None):
+        """ callback function for the delete button"""
+
+        #get the selected task name
+        selected_task = class_def.task_tracking.get_display_task()
+
+        print("stack",class_def.task_tracking.task_archive.stack) #this seems to work but after running the rest of the method this stack is empty
+
+        #add task to the archive stack and remove from task_tracking.all_tasks and all_stacks
+        class_def.task_tracking.task_archive.archive_task(selected_task)
+
+        #empty the display_task
+        class_def.task_tracking.set_display_task('')
+
+        #update both textboxes
+        self.update_textbox()
+        self.update_textbox2()
+
+        #check the contents of the task stack
+        print(f"names of tasks in 'task_archive':{class_def.task_tracking.task_archive.print_task_stack()}")
+        print("deletion finished")
 
 
-    def select_task(self):
+    def select_task(self, event=None):
         self.task_name = self.entry_task_name.get()
         print("test point 1") #testing
         print(f"self.task_name = {self.task_name}") #testing

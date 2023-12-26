@@ -38,7 +38,7 @@ class Stack:
     def add_task_from_main(self,task, position=None):
         """
         Adds task obj to stack, Can take an optional third argument to add it at a certain position
-        IMPORTANTLY removes stack from tasktracking.all_tasks
+        IMPORTANT removes stack from tasktracking.all_tasks
         """
         if position is not None:
             self.stack.insert(position, task)
@@ -78,7 +78,6 @@ class Stack:
         return stack_names
     
 
-
     def print_task_stack(self):
         print(self.name ,self.stack)
         for task in self.stack:
@@ -93,22 +92,42 @@ class Stack:
 class ArchiveStack(Stack):
     def __init__(self,name):
         super().__init__(name)
+        self.stack = []
     
 
     def remove_from_all_stacks(self, task):
         """ Checks for duplicate tasks and removes task from all_stacks list upon adding to the archive stack """
+       #TODO - check that all of these take obj not strings as args
         #list of all stacks
-        all_stacks = [task_tracking.task_archive, task_tracking.urgent_stack, task_tracking.non_urgent_task_stack, task_tracking.project_stack, task_tracking]
+        self.all_stacks = [ task_tracking.urgent_stack, task_tracking.non_urgent_task_stack, task_tracking.project_stack, task_tracking]
         
         #while loop to remove them, using task_exists membership method from Stack and Tasktracking classes.
-        while any(stack.task_exists(task) for stack in all_stacks):
-            for stack in all_stacks:
+        while True:
+            found_in_any_stack = any(stack.task_exists(task) for stack in self.all_stacks)
+
+            for stack in self.all_stacks:
                 if stack.task_exists(task):
-                    stack.stack.remove(task)
+                    stack.remove_task(task.name)
+
+            if not found_in_any_stack:
+                print(f"all instances of task {task.name} found and deleted from all_tacks ")
+                break
+
+
+    
             
-    def add_task_from_main(self,task):
-        super().add_task_from_main(task)
-        #self.remove_from_all_stacks(task)
+    def archive_task(self,task):
+        #print the contents of the archive stack before
+        print(f"Contents of the Archive stack before:{self.stack}")
+
+        #add task to the archive stack whilst removing it from the task_tracking.all_tasks
+        self.add_task_from_main(task)
+
+        #remove the tasks from all_stacks
+        self.remove_from_all_stacks(task)
+
+        #print the new archive stack and confirmation
+        print(f"Contents of the Archive stack after:{self.stack}")
         print(f"{task.name} completley removed from all stacks and moved to the archive stack")
 
 ####### TASK MANAGEMENT ###########
