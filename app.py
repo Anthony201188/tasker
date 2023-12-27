@@ -415,24 +415,31 @@ class MyFrame2(ctk.CTkFrame):
         self.all_set_entry_vars = [self.entry_set_var, self.entry2_set_var, self.entry3_set_var, self.entry4_set_var, self.entry5_set_var]
 
 
-        #Buttons
-        self.button_suggest = ctk.CTkButton(self, text="suggest",command=self.suggest_todays_tasks, height=28, width=28 ) 
-        self.button_suggest.grid(row=0, column=3, padx=20)    
 
+
+        #Buttons
+        self.button_suggest = ctk.CTkButton(self, text="Easy day toggle",command=None, height=28, width=28, fg_color="dark blue" ) 
+        self.button_suggest.grid(row=0, column=3, padx=20)  
+        
+        self.button_suggest = ctk.CTkButton(self, text="suggest",command=self.suggest_todays_tasks, height=28, width=28 ) 
+        self.button_suggest.place(x=460, y=80)    
+          
         self.button_set = ctk.CTkButton(self, text="set",command=self.set_entries_callback, height=28, width=50 ) 
         self.button_set.grid(row=2, column=3, padx=5)
 
         self.button_sort = ctk.CTkButton(self, text="sort all tasks",command= lambda:(self.sort_all_tasks(),MyFrame5.populate_task_list(app.my_frame5, class_def.task_tracking.non_urgent_task_stack),MyFrame5.populate_task_list(app.my_frame5v3, class_def.task_tracking.urgent_stack)), height=28, width=45 ) # need to shorten the lamda function here by combining the updating of all funcitions somehwere!
         self.button_sort.grid(row=1, column=3, padx=20)
+        #self.button_sort.lift(aboveThis=self.urgent2_remedial_switch)
         
         self.button_clear = ctk.CTkButton(self, text="clear all",fg_color="light blue",command=lambda:(self.toggle_set_entry_var(),self.reset_clear()), height=28, width=45 ) 
         self.button_clear.grid(row=3, column=3, padx=20)
 
 
-        #Checkboxes
+        #Checkboxes 
         self.project_check_var = ctk.BooleanVar(value=False) 
         self.check = ctk.CTkCheckBox(self, text="Done", variable=self.project_check_var,fg_color="green",border_color="green", onvalue=True, offvalue=False) #"command=checkbox_event," needs to be added to the end 
         self.check.grid(row=0, column=2)
+        
 
         self.urgent_check1_var = ctk.BooleanVar(value=False)  
         self.urgent_check1 = ctk.CTkCheckBox(self, text="Done", variable=self.urgent_check1_var, onvalue=True,fg_color="red", border_color="red", offvalue=False) #"command=checkbox_event," needs to be added to the end 
@@ -449,6 +456,30 @@ class MyFrame2(ctk.CTkFrame):
         self.non_urgent_check2_var = ctk.BooleanVar(value=False)  
         self.non_urgent_check2 = ctk.CTkCheckBox(self, text="Done", variable=self.non_urgent_check2_var, onvalue=True, fg_color="black",offvalue=False) #"command=checkbox_event," needs to be added to the end 
         self.non_urgent_check2.grid(row=4, column=2) 
+
+
+        #Remedial work switches 
+        self.project_remedial_switch_var = ctk.BooleanVar(value=False)
+        self.project_remedial_switch = ctk.CTkSwitch(self,variable=self.project_remedial_switch_var,onvalue=True, offvalue=False ,fg_color="green", text=None)
+        self.project_remedial_switch.place(x=350,y=43)
+
+        self.urgent1_remedial_switch_var = ctk.BooleanVar(value=False)
+        self.urgent1_remedial_switch = ctk.CTkSwitch(self,variable=self.urgent1_remedial_switch_var,onvalue=True, offvalue=False ,fg_color="red", text=None)
+        self.urgent1_remedial_switch.place(x=350,y=120)
+
+        self.urgent2_remedial_switch_var = ctk.BooleanVar(value=False)
+        self.urgent2_remedial_switch = ctk.CTkSwitch(self,variable=self.urgent2_remedial_switch_var,onvalue=True, offvalue=False ,fg_color="red", text=None)
+        self.urgent2_remedial_switch.place(x=350,y=170)
+
+        self.non_urgent1_remedial_switch_var = ctk.BooleanVar(value=False)
+        self.non_urgent1_remedial_switch = ctk.CTkSwitch(self,variable=self.non_urgent1_remedial_switch_var,onvalue=True, offvalue=False ,fg_color="grey", text=None)
+        self.non_urgent1_remedial_switch.place(x=350,y=220)        
+        
+        self.non_urgent2_remedial_switch_var = ctk.BooleanVar(value=False)
+        self.non_urgent2_remedial_switch = ctk.CTkSwitch(self,variable=self.non_urgent2_remedial_switch_var,onvalue=True, offvalue=False ,fg_color="grey", text=None)
+        self.non_urgent2_remedial_switch.place(x=350,y=270)   
+
+
 
         #define a set var for Todays tasks
         self.daily_tasks_set = False   
@@ -1483,7 +1514,7 @@ class App(ctk.CTk):
         """ MyFrame2 Uses dependacy injection to share data  instance to another class. 
         essentially linking the two via pointing so I can get data from the instance of my_frame2 here in the App class """
 
-        self.my_frame2 = MyFrame2(self, "Today's Tasks", 200, 90,self) #<- second self passes instance to 'app_instance' in MyFrame2 
+        self.my_frame2 = MyFrame2(self, "Today's Tasks", 300, 90,self) #<- second self passes instance to 'app_instance' in MyFrame2 
         self.my_frame2.grid(row=0, column=1, padx=10, pady=10 )
 
         #Monthly Focus Frame
