@@ -117,7 +117,7 @@ class MyFrame(ctk.CTkFrame):
         self.entry_habit2.grid(row=2, column=0, padx=10, pady=10)
 
         self.entry_duration = ctk.CTkEntry(self, placeholder_text="Duration",width=70)
-        self.entry_duration.grid(row=3, column=3, padx=10, pady=10)
+        self.entry_duration.place(x=350,y=100)
 
         #Buttons
         self.button = ctk.CTkButton(self, text="set habits and duration",command=lambda:(self.toggle_habits_set(),self.set_habits_and_duration()) ,height=28, width=28 ) 
@@ -422,10 +422,10 @@ class MyFrame2(ctk.CTkFrame):
 
 
         #Buttons
-        self.button_suggest = ctk.CTkButton(self, text="Easy day toggle",command=None, height=28, width=28, fg_color="dark blue" ) 
+        self.button_suggest = ctk.CTkButton(self, text="Easy day toggle",command=None, height=28, width=28 ) 
         self.button_suggest.place(x=405, y=33)
         
-        self.button_sort = ctk.CTkButton(self, text="sort all tasks",command= lambda:(self.sort_all_tasks(),MyFrame5.populate_task_list(app.my_frame5, class_def.task_tracking.non_urgent_task_stack),MyFrame5.populate_task_list(app.my_frame5v3, class_def.task_tracking.urgent_stack)), height=28, width=45 ) # need to shorten the lamda function here by combining the updating of all funcitions somehwere!
+        self.button_sort = ctk.CTkButton(self, text="sort all tasks",fg_color="dark blue",command= lambda:(self.sort_all_tasks(),MyFrame5.populate_task_list(app.my_frame5, class_def.task_tracking.non_urgent_task_stack),MyFrame5.populate_task_list(app.my_frame5v3, class_def.task_tracking.urgent_stack)), height=28, width=45 ) # need to shorten the lamda function here by combining the updating of all funcitions somehwere!
         self.button_sort.place(x=405, y=65)
 
         self.button_suggest = ctk.CTkButton(self, text="suggest",command=self.suggest_todays_tasks, height=28, width=28 ) 
@@ -884,9 +884,13 @@ class MyFrame3(ctk.CTkFrame):
         #Button
         self.button = ctk.CTkButton(self, text="Set focus",command=self.set_month_focus, height=28, width=28 ) # "command=button_event" needs to be added and function created and tied to it 
         self.button.grid(row=9, column=3, padx=20)
+
+        self.button = ctk.CTkButton(self, text="testing\ntoggle set",command=self.toggle_set, height=28, width=28 ) # "command=button_event" needs to be added and function created and tied to it 
+        self.button.grid(row=5, column=3, padx=20)
         
 
         ################# on-start logic ######################
+        self.set = None
 
         # Call the function and get the remaining days
         self.remaining_days = self.get_remaining_days_of_month()
@@ -901,26 +905,49 @@ class MyFrame3(ctk.CTkFrame):
         #Load the month focus on start
         self.load_month_focus()
 
+        #set the 'set' attribute
+        self.set = load_file("focus_set.pkl")
+        self.toggle_set(self.set)
+
 
 
 ################ methods ######################
 
     #TODO - reset month focus entries.
     #TODO - doc strings for all these functions
+        
+    def toggle_set(self, force_bool=None):
+       """Toggles the bools var and takes an optional second bool parameter
+          of True or False to force the toggle on or off; else, it will just toggle 
+          the opposite of what it already is."""
+    
+       if force_bool is not None:
+           self.set = force_bool
+       else:
+           self.set = not self.set
+
+       if self.set:
+           self.entry_focus1.configure(state="disabled", border_width=3, border_color="black")
+           self.entry_focus2.configure(state="disabled", border_width=3, border_color="black")
+       else:
+           self.entry_focus1.configure(state="normal", border_width=1)
+           self.entry_focus2.configure(state="normal", border_width=1)
+
 
     def set_month_focus(self):
-        if self.remaining_days == 0:
+
+        if self.remaining_days == 0 or not self.set:
             #Get content of entries
             self.focus1 = self.entry_focus1.get()
             self.focus2 = self.entry_focus2.get()
             
             #'set' the entries
-            self.entry_focus1.configure(state="disabled", border_width=3, border_color="black")
-            self.entry_focus1.configure(state="disabled", border_width=3, border_color="black")
+            self.toggle_set(True)
            
             #save the files
             save_file("focus1.pkl", self.focus1)
             save_file("focus2.pkl", self.focus2)
+            save_file("focus_set.pkl",self.set)
 
         else:
             print("Please wait the remaining days until reset to set a new focus")
@@ -932,9 +959,10 @@ class MyFrame3(ctk.CTkFrame):
         self.entry_focus1.insert(0,self.focus1)
         self.entry_focus2.insert(0,self.focus2)
 
-        if self.remaining_days != 0:
-            self.entry_focus1.configure(state="disabled", border_width=3, border_color="black")
-            self.entry_focus2.configure(state="disabled", border_width=3, border_color="black")
+        if not self.set or self.remaining_days != 0:
+            self.toggle_set(False)
+        else:
+            self.toggle_set(True)
 
 
     def get_remaining_days_of_month(self):
@@ -956,6 +984,7 @@ class MyFrame3(ctk.CTkFrame):
     #note to self with the below function that there is the verion of the widget in the class and then the version in the app instance.
     #so the one in the class is the one first shown and then we destory it and create a new one in the app instance with the updated version
     #note add "event" as arg to this function to go back to binding other triggers
+   
     def update_combobox_options(self):
         updated_options = class_def.task_tracking.return_all_parent_project_names()
         updated_options.insert(0, "None")
@@ -977,6 +1006,7 @@ class MyFrame3(ctk.CTkFrame):
     
 
 ################ methods2 ######################
+        # TODO - use these methods to clear up the mega long lamda functions in the button widgets !!
     def suggest_non_urgent(self):
         """ takes the top two tasks from the non-urgent task list and puts them into the entries """
         #######testing insert_tasks
