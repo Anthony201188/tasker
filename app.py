@@ -422,7 +422,7 @@ class MyFrame2(ctk.CTkFrame):
 
 
         #Buttons
-        self.button_suggest = ctk.CTkButton(self, text="Easy day toggle",command=None, height=28, width=28 ) 
+        self.button_suggest = ctk.CTkButton(self, text="Easy day toggle",command=self.easy_day_toggle, height=28, width=28 ) 
         self.button_suggest.place(x=405, y=33)
         
         self.button_sort = ctk.CTkButton(self, text="sort all tasks",fg_color="dark blue",command= lambda:(self.sort_all_tasks(),MyFrame5.populate_task_list(app.my_frame5, class_def.task_tracking.non_urgent_task_stack),MyFrame5.populate_task_list(app.my_frame5v3, class_def.task_tracking.urgent_stack)), height=28, width=45 ) # need to shorten the lamda function here by combining the updating of all funcitions somehwere!
@@ -484,9 +484,28 @@ class MyFrame2(ctk.CTkFrame):
         self.non_urgent2_remedial_switch = ctk.CTkSwitch(self,variable=self.non_urgent2_remedial_switch_var,onvalue=True, offvalue=False ,command=lambda :self.toggle_colour(self.non_urgent2_remedial_switch_var,(self.entry5, self.non_urgent_check2),"blue","light blue"),fg_color="blue", text=None)
         self.non_urgent2_remedial_switch.place(x=350,y=193)   
 
+        #dict of widgets to toggle and there place locations as vals
+        self.easy_day_widgets_to_toggle = {
+            #switches
+            self.project_remedial_switch:"350,35",
+            self.urgent2_remedial_switch:"350,185",
+            self.non_urgent2_remedial_switch:"350,120",
+            #checkboxes
+            self.check:"295,35",
+            self.urgent_check2:"295,120",
+            self.non_urgent_check2:"295,193",
+            #entries
+            self.entry:"10,35",
+            self.entry3:"10,118",
+            self.entry5:"10,193"
+
+        }
 
         #define a set var for Todays tasks
         self.daily_tasks_set = False   
+
+        #define a toggle var for easy day
+        self.easy_day_toggle_var = False
 
         ############ on-start control logic ###########
         #TODO - some file peristance for the entries onces they are set to save on clos
@@ -571,6 +590,24 @@ class MyFrame2(ctk.CTkFrame):
                     item.configure(border_color=original_colour)
                 else:
                     item.configure(border_color=original_colour, text_color=original_colour)
+
+    
+    def easy_day_toggle(self):
+        #toggle the var to the opposite bool 
+        self.easy_day_toggle_var = not self.easy_day_toggle_var
+
+        if self.easy_day_toggle_var:
+             for key in self.easy_day_widgets_to_toggle.keys():
+                key.place_forget()
+            
+        else:
+            #place all said widgets here
+            for key, value in self.easy_day_widgets_to_toggle.items():
+                # Splitting the string into x and y coordinates
+                x, y = map(int, value.split(','))
+
+                # Placing the widget using the extracted coordinates
+                key.place(x=x, y=y)
 
 
 
@@ -873,7 +910,6 @@ class MyFrame3(ctk.CTkFrame):
         self.button_update_dropdown.place(x=235, y=105)
 
 
-
         #Entries
         self.entry_focus1 = ctk.CTkEntry(self,placeholder_text="Month Focus1",width=180)
         self.entry_focus1.grid(row=7, column=0, padx=10, pady=20)
@@ -929,9 +965,11 @@ class MyFrame3(ctk.CTkFrame):
        if self.set:
            self.entry_focus1.configure(state="disabled", border_width=3, border_color="black")
            self.entry_focus2.configure(state="disabled", border_width=3, border_color="black")
+           self.dropdown.configure(state="disabled", border_width=3, border_color="black")
        else:
            self.entry_focus1.configure(state="normal", border_width=1)
            self.entry_focus2.configure(state="normal", border_width=1)
+           self.dropdown.configure(state="normal", border_width=1)
 
 
     def set_month_focus(self):
