@@ -26,6 +26,25 @@ to reset all of the ids
 ## check line 168 in app.py for an example
   """
 
+## swtich capture 
+
+    #     self.remedial_content_dict = {}
+    #     self.updated_entries_dict = {}
+    #    #sleep incase theres any lag on switch update
+    #     sleep(1)
+    #     print("original-> self.entries_dict",self.entries_dict)
+
+    #     #update the dict
+    #     for entry, bool_var in self.entries_dict.items():
+    #         self.updated_entries_dict[entry.get()] = bool_var.get()
+    #         print("updated -> self.entries dict returned from function", self.entries_dict)
+        
+    #     for entry, bool_var in self.entries_dict.items():
+    #         # Check if the boolean value is True and entry has non-empty content
+    #         if entry and bool_var is not None and entry != "":
+    #             print("entry",entry.get())
+    #             print("bool_val", bool_var.get())
+    #             self.remedial_content_dict[entry] = entry.get()
 
 
 

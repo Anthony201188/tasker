@@ -135,3 +135,17 @@ habit1|content:"habit1"|S,27-12-2023,09:52:40|
 habit2|content:"habit2"|S,27-12-2023,09:52:40|
 habit1|content:"habit1"|S,27-12-2023,09:53:47|
 habit2|content:"habit2"|S,27-12-2023,09:53:47|
+habit1|content:"habit1"|S,30-12-2023,15:17:00|D,30-12-2023,15:17:00
+habit2|content:"habit2"|S,30-12-2023,15:17:00|D,30-12-2023,15:17:00
+entry1|content:"Some example text!"|S,30-12-2023,15:17:00|D,30-12-2023,15:17:00
+entry2|content:"Some example text!"|S,30-12-2023,15:17:00|D,30-12-2023,15:17:00
+entry3|content:"Some example text!"|S,30-12-2023,15:17:00|
+entry4|content:"Some example text!"|S,30-12-2023,15:17:00|
+entry5|content:"Some example text!"|S,30-12-2023,15:17:00|
+habit1|content:"habit1"|S,30-12-2023,15:17:02|D,30-12-2023,15:17:02
+habit2|content:"habit2"|S,30-12-2023,15:17:02|D,30-12-2023,15:17:02
+entry1|content:"Some example text!"|S,30-12-2023,15:17:02|D,30-12-2023,15:17:02
+entry2|content:"Some example text!"|S,30-12-2023,15:17:02|D,30-12-2023,15:17:02
+entry3|content:"Some example text!"|S,30-12-2023,15:17:02|
+entry4|content:"Some example text!"|S,30-12-2023,15:17:02|
+entry5|content:"Some example text!"|S,30-12-2023,15:17:02|

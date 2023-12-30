@@ -5,9 +5,11 @@ import customtkinter as ctk
 import time
 import calendar
 import os
+from time import sleep
 from link_click import ClickableLinkLabel
 from algo import main as algo
 from urgent_algo import sort_urgent_tasks
+
 
 ########################################  UTILS #####################################
 """ file persistance used to save load and update stored data on opening of app """
@@ -465,7 +467,7 @@ class MyFrame2(ctk.CTkFrame):
 
         #Remedial work switches 
         self.project_remedial_switch_var = ctk.BooleanVar(value=False)
-        self.project_remedial_switch = ctk.CTkSwitch(self,variable=self.project_remedial_switch_var,onvalue=True, offvalue=False ,fg_color="green",command=lambda :self.toggle_colour(self.project_remedial_switch_var,(self.entry, self.check),"green","light green"), text=None)
+        self.project_remedial_switch = ctk.CTkSwitch(self,variable=self.project_remedial_switch_var,onvalue=True, offvalue=False ,fg_color="green",command=lambda :(self.toggle_colour(self.project_remedial_switch_var,(self.entry, self.check),"green","light green"),self.update_remedial_original_entry_content()), text=None)
         self.project_remedial_switch.place(x=350,y=35)
 
         self.urgent1_remedial_switch_var = ctk.BooleanVar(value=False)
@@ -473,7 +475,7 @@ class MyFrame2(ctk.CTkFrame):
         self.urgent1_remedial_switch.place(x=350,y=85)
 
         self.urgent2_remedial_switch_var = ctk.BooleanVar(value=False)
-        self.urgent2_remedial_switch = ctk.CTkSwitch(self,variable=self.urgent2_remedial_switch_var,onvalue=True, offvalue=False,command=lambda :self.toggle_colour(self.urgent2_remedial_switch_var,(self.entry3, self.urgent_check2),"red","pink") ,fg_color="red", text=None)
+        self.urgent2_remedial_switch = ctk.CTkSwitch(self,variable=self.urgent2_remedial_switch_var,onvalue=True, offvalue=False,command=lambda :(self.toggle_colour(self.urgent2_remedial_switch_var,(self.entry3, self.urgent_check2),"red","pink"),self.update_remedial_original_entry_content()) ,fg_color="red", text=None)
         self.urgent2_remedial_switch.place(x=350,y=120)
 
         self.non_urgent1_remedial_switch_var = ctk.BooleanVar(value=False)
@@ -501,6 +503,12 @@ class MyFrame2(ctk.CTkFrame):
 
         }
 
+        # varible for all entreis and corresponding switch vars
+        self.entries_and_switch_vars_dict = {}
+
+        #define a dict for the remeidal tasks original content 
+        self.original_remedial_content = None
+
         #define a set var for Todays tasks
         self.daily_tasks_set = False   
 
@@ -518,9 +526,9 @@ class MyFrame2(ctk.CTkFrame):
         daily_task_entry_lst = load_file("daily_task_entry_lst.pkl")
 
         #select entry dicts to pseudo-load, shouldnt  as only truthy values should be stored in file double filtering not bad.
-        for dict in daily_task_entry_lst:
-            if dict["load_on_start"]: #checks if entry dict "load_on_start" value is truthy 
-                self.loaded_entries.append(dict)
+        for dict_obj in daily_task_entry_lst:
+            if dict_obj["load_on_start"]: #checks if entry dict "load_on_start" value is truthy 
+                self.loaded_entries.append(dict_obj)
 
         print(f"Daily task entries successfully loaded: {self.loaded_entries}")
 
@@ -561,6 +569,85 @@ class MyFrame2(ctk.CTkFrame):
 #TODO -  check on start if the task_done=True then unlock and empty that entry only, will need to modify the set and suggest function to check if single empties are empty
 #TODO - modify suggest fuction to check if entries are empty and suggest only empty entries, modify entries_empty function to take entries single or list as args
 
+
+#the problem with this is it really needs to take a dictionary and not two lists
+#but I dont want to have to change the data_structure.saveentries function to take dicts
+    
+    def get_entry_name(self,entry):
+        """ returns the name of an entry """
+      
+        entry_names = {
+            self.entry:"project",
+            self.entry2:"urgent1",
+            self.entry3:"urgent2",
+            self.entry4:"nonurgent1",
+            self.entry5:"nonurgent2",
+        }
+        
+        return entry_names[entry]
+
+    
+    
+    def remedial_switch_capture(self,entries)->dict:
+        """ takes a dict of entries and bool vars, if bool id truthy, 
+        returns the same but with their contents and not the values
+        takse e.g {entry2:True}
+        returns e.g {entry2:"some text here"}
+        """
+
+        captured_entries = {}
+
+        #key and value both objects #  delete this adfter testing
+        print("original-entries",entries)
+
+        for entry, bool_var in entries.items():
+            if entry and bool_var:
+                #if you want obj not string name swap below
+                #captured_entries[entry] = entry.get()
+                captured_entries[self.get_entry_name(entry)] = entry.get()
+
+        #this returns obj, content
+        print("original_entry_content returned from function", captured_entries)
+
+        return captured_entries
+    
+    def update_entries_dict(self):
+        """ update the 'self.entries_and_switch_var' dict """
+       #incase of any lag
+        sleep(1)
+
+        self.entries_and_switch_vars_dict= {
+            self.entry:self.project_remedial_switch_var.get(),
+            self.entry2:self.urgent1_remedial_switch.get(),
+            self.entry3:self.urgent2_remedial_switch_var.get(),
+            self.entry4:self.non_urgent1_remedial_switch_var.get(),
+            self.entry5:self.non_urgent2_remedial_switch_var.get()
+        }
+    
+
+        print("updated-> self.entries dict ",self.entries_and_switch_vars_dict)
+        
+        return self.entries_and_switch_vars_dict
+
+
+
+
+    
+    def update_remedial_original_entry_content(self):
+        """ updates the variable original_remedial_content each time a switch is switched! """
+
+        #update the entries dict
+        self.update_entries_dict()
+    
+        #[ass the updated entries_dict to remedial_switch_capture
+        self.original_remedial_content = self.remedial_switch_capture(self.entries_and_switch_vars_dict)
+        
+        print("global var - self.original_remedial_content", self.original_remedial_content)
+
+        return self.original_remedial_content
+
+
+    
     def toggle_colour(self,toggle_var, widgets, original_colour, new_colour):
         """ Toggles the colour of switches and entries between original and new colours.
             Switches must be every second value in the tuple e.g (entry, switch, entry, switch).

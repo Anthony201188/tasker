@@ -192,6 +192,9 @@ def save_entries(entries_to_save, entry_contents, set_flags, done_flags):
 
     Timestamps are generated using the get_current_time() function.
     """
+    # need to add a remedial line 
+    #format like this “Entrycontenthere-R-Remedialtaskhere-timestamp”
+    #entryname|content:"originalcontenthere"|R-content:"Remedialcontenthere",date,time,
     entry_lines = []
 
     timestamp = get_current_time()
@@ -201,6 +204,7 @@ def save_entries(entries_to_save, entry_contents, set_flags, done_flags):
         done_info = f"D,{timestamp}" if done_flag else ""
         entry_line = f"{entry}|content:\"{content}\"|{set_info}|{done_info}"
         entry_lines.append(entry_line)
+        #add extra string content here
 
     with open("entries.txt", "a") as file:
         for entry_line in entry_lines:
