@@ -471,7 +471,7 @@ class MyFrame2(ctk.CTkFrame):
         self.project_remedial_switch.place(x=350,y=35)
 
         self.urgent1_remedial_switch_var = ctk.BooleanVar(value=False)
-        self.urgent1_remedial_switch = ctk.CTkSwitch(self,variable=self.urgent1_remedial_switch_var,onvalue=True, offvalue=False ,command=lambda :self.toggle_colour(self.urgent1_remedial_switch_var,(self.entry2, self.urgent_check1),"red","pink"),fg_color="red", text=None)
+        self.urgent1_remedial_switch = ctk.CTkSwitch(self,variable=self.urgent1_remedial_switch_var,onvalue=True, offvalue=False ,command=lambda :(self.toggle_colour(self.urgent1_remedial_switch_var,(self.entry2, self.urgent_check1),"red","pink"),self.update_remedial_original_entry_content()),fg_color="red", text=None)
         self.urgent1_remedial_switch.place(x=350,y=85)
 
         self.urgent2_remedial_switch_var = ctk.BooleanVar(value=False)
@@ -479,11 +479,11 @@ class MyFrame2(ctk.CTkFrame):
         self.urgent2_remedial_switch.place(x=350,y=120)
 
         self.non_urgent1_remedial_switch_var = ctk.BooleanVar(value=False)
-        self.non_urgent1_remedial_switch = ctk.CTkSwitch(self,variable=self.non_urgent1_remedial_switch_var,onvalue=True, offvalue=False ,command=lambda :self.toggle_colour(self.non_urgent1_remedial_switch_var,(self.entry4, self.non_urgent_check1),"blue","light blue"),fg_color="blue", text=None)
+        self.non_urgent1_remedial_switch = ctk.CTkSwitch(self,variable=self.non_urgent1_remedial_switch_var,onvalue=True, offvalue=False ,command=lambda :(self.toggle_colour(self.non_urgent1_remedial_switch_var,(self.entry4, self.non_urgent_check1),"blue","light blue"),self.update_remedial_original_entry_content()),fg_color="blue", text=None)
         self.non_urgent1_remedial_switch.place(x=350,y=160)        
         
         self.non_urgent2_remedial_switch_var = ctk.BooleanVar(value=False)
-        self.non_urgent2_remedial_switch = ctk.CTkSwitch(self,variable=self.non_urgent2_remedial_switch_var,onvalue=True, offvalue=False ,command=lambda :self.toggle_colour(self.non_urgent2_remedial_switch_var,(self.entry5, self.non_urgent_check2),"blue","light blue"),fg_color="blue", text=None)
+        self.non_urgent2_remedial_switch = ctk.CTkSwitch(self,variable=self.non_urgent2_remedial_switch_var,onvalue=True, offvalue=False ,command=lambda :(self.toggle_colour(self.non_urgent2_remedial_switch_var,(self.entry5, self.non_urgent_check2),"blue","light blue"),self.update_remedial_original_entry_content()),fg_color="blue", text=None)
         self.non_urgent2_remedial_switch.place(x=350,y=193)   
 
         #dict of widgets to toggle and there place locations as vals
@@ -614,8 +614,6 @@ class MyFrame2(ctk.CTkFrame):
     
     def update_entries_dict(self):
         """ update the 'self.entries_and_switch_var' dict """
-       #incase of any lag
-        sleep(1)
 
         self.entries_and_switch_vars_dict= {
             self.entry:self.project_remedial_switch_var.get(),
