@@ -178,7 +178,7 @@ def save_entries(entries_to_save, entry_contents):
     #         print(f"Entry line successfully saved: {entry_line}")
 
 ##### SAVE ENTRY V2.0 #### 
-def save_entries(entries_to_save,original_content, set_flags, done_flags,remedial_flags=None,entry_contents=None):
+def save_entries(entries_to_save,original_content, set_flags, done_flags,remedial_flags=[],entry_contents=[]):
     """
     Save entries and their corresponding content to a text file.
 
@@ -202,11 +202,11 @@ def save_entries(entries_to_save,original_content, set_flags, done_flags,remedia
 
     timestamp = get_current_time()
 
-    for entry, content, original_content,set_flag, done_flag, remedial_flag in zip(entries_to_save, entry_contents,original_content, set_flags, done_flags, remedial_flags):
+    for entry, content, original_content,set_flag, done_flag, remedial_flag in zip(entries_to_save,original_content, set_flags, done_flags, remedial_flags,entry_contents):
         set_info = f"S,{timestamp}" if set_flag else ""
         done_info = f"D,{timestamp}" if done_flag else ""
         #entry_line = f"{entry}|content:\"{content}\"|{set_info}|{done_info}" 
-        entry_line =  f"{entry}|content:\"{content}\"|{set_info}|{done_info}" if not remedial_flag else f"{entry}|original content:\"{original_content}\"|R-content{content}|{set_info}|{done_info}" 
+        entry_line =  f"{entry}|content:\"{content}\"|{set_info}|{done_info}" if not remedial_flag else f"{entry}|original content:\"{original_content}\"|RemedialTask-content:{content}|{set_info}|{done_info}" 
 
         entry_lines.append(entry_line)
         #add extra string content here
