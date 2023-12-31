@@ -1,4 +1,5 @@
 
+
 """ 
 DATASTRUCTURE - using the datastructure below in a text file to record the set and done times of all the entries 
 entry1|content:"content goes here"|S,18-08-2023,10:00:00|D,21-08-2023,15:30:00
@@ -177,15 +178,17 @@ def save_entries(entries_to_save, entry_contents):
     #         print(f"Entry line successfully saved: {entry_line}")
 
 ##### SAVE ENTRY V2.0 ####
-def save_entries(entries_to_save, entry_contents, set_flags, done_flags):
+def save_entries(entries_to_save,original_content, set_flags, done_flags,remedial_flags=None,entry_contents=None):
     """
     Save entries and their corresponding content to a text file.
 
     Args:
         entries_to_save lst(str): List of entry names to be saved.
-        entry_contents lst(str): Corresponding list of content for each entry.
+        entry_contents lst(str): Corresponding list of content for each entry both no remedial and post remedial content.
+        original_content lst(str):Original entry content prior to remeidal switch avtivation.
         set_flags lst(bool): List of flags indicating whether entries are "set."
         done_flags lst(bool): List of flags indicating whether entries are done.
+        remeidal_flags lst(bool): List of flags indicating if the tasks are remdial i.e remeidal siwtch == True.
 
     Adds timestamps to each entry and its content, formats them, and saves them
     to a specified text file in the specified format.
@@ -199,10 +202,12 @@ def save_entries(entries_to_save, entry_contents, set_flags, done_flags):
 
     timestamp = get_current_time()
 
-    for entry, content, set_flag, done_flag in zip(entries_to_save, entry_contents, set_flags, done_flags):
+    for entry, content, original_content,set_flag, done_flag, remedial_flag in zip(entries_to_save, entry_contents,original_content, set_flags, done_flags, remedial_flags):
         set_info = f"S,{timestamp}" if set_flag else ""
         done_info = f"D,{timestamp}" if done_flag else ""
-        entry_line = f"{entry}|content:\"{content}\"|{set_info}|{done_info}"
+        #entry_line = f"{entry}|content:\"{content}\"|{set_info}|{done_info}" 
+        entry_line =  f"{entry}|content:\"{content}\"|{set_info}|{done_info}" if not remedial_flag else f"{entry}|original content:\"{original_content}\"|R-content{content}|{set_info}|{done_info}" 
+
         entry_lines.append(entry_line)
         #add extra string content here
 

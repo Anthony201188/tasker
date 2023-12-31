@@ -572,7 +572,6 @@ class MyFrame2(ctk.CTkFrame):
 
 #the problem with this is it really needs to take a dictionary and not two lists
 #but I dont want to have to change the data_structure.saveentries function to take dicts
-    
     def get_entry_name(self,entry):
         """ returns the name of an entry """
       
@@ -610,6 +609,8 @@ class MyFrame2(ctk.CTkFrame):
         print("original_entry_content returned from function", captured_entries)
 
         return captured_entries
+   
+
     
     def update_entries_dict(self):
         """ update the 'self.entries_and_switch_var' dict """
@@ -1790,21 +1791,41 @@ class App(ctk.CTk):
         print("done_flags",self.done_flags)#<-testing
 
         return self.done_flags
+    
+    def get_remedial_flags(self):
+        """ return the remeidal flags a list of bools """
+
+        self.remedial_flags_dict =self.my_frame2.update_entries_dict()#<- CHECK WHAT THE CONTENTS OF THIS DICT LOOKS LIKE AND WRITE IT IN THE DOC STRING
+        self.remedial_flags = list(self.remedial_flags_dict.values())
+        print("remedial_flags",self.remedial_flags)
+        
+        return self.remedial_flags
+    
+    def get_original_content(self):
+        """ return the orignal content for the remdial tasks as lst(str) """
+
+        self.original_content_dict = self.my_frame2.remedial_switch_capture()
+        self.original_content = list(self.original_content_dict.values())
+
+        return self.original_content
 
     
     #callback Finish for the day button
     def finish_for_day(self):
         """ callback function that gets all the required data to save """
         
+        remedial_flags = self.get_remedial_flags()
         done_flags = self.get_done_flags()
         set_flags = self.get_set_flags()
+        original_content = self.get_original_content()
+
 
         print("Set flags:",set_flags)
 
         habit_names, habits =self.my_frame.get_habits_names()
         task_names, tasks = self.my_frame2.get_daily_tasks()
         data_structure.save_entries(habit_names,habits, set_flags, done_flags)
-        data_structure.save_entries(task_names,tasks,set_flags, done_flags)
+        data_structure.save_entries(task_names,tasks,set_flags, done_flags,remedial_flags,original_content)
         print("Everything saved!")   
 
 
