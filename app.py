@@ -588,7 +588,7 @@ class MyFrame2(ctk.CTkFrame):
     
     
     def remedial_switch_capture(self,entries)->dict:
-        """ takes a dict of entries and bool vars, if bool id truthy, 
+        """ takes a dict of entries and bool vars, if bool is truthy, 
         returns the same but with their contents and not the values
         takse e.g {entry2:True}
         returns e.g {entry2:"some text here"}
@@ -1802,7 +1802,9 @@ class App(ctk.CTk):
     def get_original_content(self):
         """ return the orignal content for the remdial tasks as lst(str) """
 
-        self.original_content_dict = self.my_frame2.remedial_switch_capture()
+
+        #update the vars and switches dict
+        self.original_content_dict = self.my_frame2.remedial_switch_capture(self.my_frame2.update_entries_dict())
         self.original_content = list(self.original_content_dict.values())
 
         return self.original_content
