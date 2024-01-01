@@ -178,43 +178,53 @@ def save_entries(entries_to_save, entry_contents):
     #         print(f"Entry line successfully saved: {entry_line}")
 
 ##### SAVE ENTRY V2.0 #### 
-def save_entries(entries_to_save,original_content, set_flags, done_flags,remedial_flags=[],entry_contents=[]):
+def save_entries(entries_to_save, entry_contents, set_flags, done_flags,duration=None):
     """
     Save entries and their corresponding content to a text file.
 
     Args:
         entries_to_save lst(str): List of entry names to be saved.
-        entry_contents lst(str): Corresponding list of content for each entry both no remedial and post remedial content.
-        original_content lst(str):Original entry content prior to remeidal switch avtivation.
+        entry_contents lst(str): Corresponding list of content for each entry.
         set_flags lst(bool): List of flags indicating whether entries are "set."
         done_flags lst(bool): List of flags indicating whether entries are done.
-        remeidal_flags lst(bool): List of flags indicating if the tasks are remdial i.e remeidal siwtch == True.
 
     Adds timestamps to each entry and its content, formats them, and saves them
     to a specified text file in the specified format.
 
     Timestamps are generated using the get_current_time() function.
     """
-    # need to add a remedial line 
-    #format like this “Entrycontenthere-R-Remedialtaskhere-timestamp”
-    #entryname|content:"originalcontenthere"|R-content:"Remedialcontenthere",date,time,
     entry_lines = []
 
     timestamp = get_current_time()
 
-    for entry, content, original_content,set_flag, done_flag, remedial_flag in zip(entries_to_save,original_content, set_flags, done_flags, remedial_flags,entry_contents):
-        set_info = f"S,{timestamp}" if set_flag else ""
-        done_info = f"D,{timestamp}" if done_flag else ""
-        #entry_line = f"{entry}|content:\"{content}\"|{set_info}|{done_info}" 
-        entry_line =  f"{entry}|content:\"{content}\"|{set_info}|{done_info}" if not remedial_flag else f"{entry}|original content:\"{original_content}\"|RemedialTask-content:{content}|{set_info}|{done_info}" 
+    print("duration inside save_entries()",duration)
 
+    recorded_duration = None
+
+    if duration is not None:
+        recorded_duration = duration
+
+    print("duration inside save_entries point 2",)
+    
+
+    for entry, content, set_flag, done_flag in zip(entries_to_save, entry_contents, set_flags, done_flags):
+        set_info_habits = f"S,{timestamp}|Rem.D:{recorded_duration}" if set_flag else ""
+        set_info_dailies = f"S,{timestamp},{recorded_duration}" if set_flag else ""
+        done_info = f"D,{timestamp}" if done_flag else ""
+        
+        if duration:
+            entry_line = f"{entry}|content:\"{content}\"|{set_info_habits}|{done_info}"
+        else:
+            entry_line = f"{entry}|content:\"{content}\"|{set_info_dailies}|{done_info}"
         entry_lines.append(entry_line)
-        #add extra string content here
 
     with open("entries.txt", "a") as file:
         for entry_line in entry_lines:
             file.write(entry_line + "\n")
             print(f"Entry line successfully saved: {entry_line}")
+
+
+
 
             
 # testing

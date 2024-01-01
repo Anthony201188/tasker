@@ -121,6 +121,9 @@ class MyFrame(ctk.CTkFrame):
         self.entry_duration = ctk.CTkEntry(self, placeholder_text="Duration",width=70)
         self.entry_duration.place(x=350,y=100)
 
+        self.all_habit_boolvars = [self.habit1_set_var, self.habit2_set_var]
+
+
         #Buttons
         self.button = ctk.CTkButton(self, text="set habits and duration",command=lambda:(self.toggle_habits_set(),self.set_habits_and_duration()) ,height=28, width=28 ) 
         self.button.grid(row=1, column=3, padx=20)
@@ -138,6 +141,7 @@ class MyFrame(ctk.CTkFrame):
         self.habit2_check_var2 = ctk.BooleanVar(value=False)  
         self.habit2_check2 = ctk.CTkCheckBox(self, text="Done", variable=self.habit2_check_var2,fg_color="black", onvalue=True, offvalue=False) 
         self.habit2_check2.grid(row=2, column=2)
+
 
         #TODO - remove - Load the habits
         #self.habit1 =load_file("habit1.pkl")
@@ -202,6 +206,10 @@ class MyFrame(ctk.CTkFrame):
         self.entry_habit1.configure(state="disabled", border_width=3, border_color="black")
         self.entry_habit2.configure(state="disabled", border_width=3, border_color="black")
 
+        #toggle the habits
+        #self.toggle_habits_set()
+        print("habit setting completed!")
+
     def save_habits(self):
         """ saves whatever text is currently in the habit1/2 entries and saves it in a serial .pkl file locally """
 
@@ -233,19 +241,28 @@ class MyFrame(ctk.CTkFrame):
         return self.entry_names, self.entry_content 
     
     def toggle_habits_set(self):
-        #gets habits to only set if they are truthy
-        habit1, habit2 = self.get_habits()
+        """ toggle the bool_vars indicating if either of the habit entries have been set """
 
-        # Toggles the set BooleanVars for each entry and prints the
-        if habit1:
-            new_value = not self.habit1_set_var.get()
-            self.habit1_set_var.set(new_value)
-            print(f"Habit1 set = {new_value}")
+        #check if either of the set vars are truthy
+        #indicating the habits have been set to check for toggling values when already set
+        if self.habit1_set_var.get() or self.habit2_set_var.get():
+            pass
+        
 
-        if habit2:
-            new_value = not self.habit2_set_var.get()
-            self.habit2_set_var.set(new_value)
-            print(f"Habit2 set = {new_value}")
+        else:
+            #gets habits to only set if they are truthy
+            habit1, habit2 = self.get_habits()
+
+            # Toggles the set BooleanVars for each entry and prints the
+            if habit1:
+                new_value = not self.habit1_set_var.get()
+                self.habit1_set_var.set(new_value)
+                print(f"Habit1 set = {new_value}")
+
+            if habit2:
+                new_value = not self.habit2_set_var.get()
+                self.habit2_set_var.set(new_value)
+                print(f"Habit2 set = {new_value}")
 
 
 
@@ -793,7 +810,7 @@ class MyFrame2(ctk.CTkFrame):
                 if self.single_entry_empty(entry_attr):
                     entry_names.append(entry) #<- check for attribute or TKinter obj here
 
-            #get all entry content
+            #get all entry contente
             for entry in self.all_entries:
                 content = entry.get()
                 entry_content.append(content)
@@ -1761,17 +1778,29 @@ class App(ctk.CTk):
     
     ########## methods  ##############
     def get_set_flags(self)->list:
-        """ returns a list of all set_flags """
-        self.set_flags = []
+        """ returns two lists one of the daily habits set flags
+         and one of the daily tasks set flags type=lst(bool) """
+        self.habit_set_flags = []
+        self.daily_set_flags = []
         print("testing get_set_flags()")
 
+        for habit_set_var in self.my_frame.all_habit_boolvars:
+            value = habit_set_var.get()
+            self.habit_set_flags.append(value)
+        
+        #this only does the daily task entries
         for set_var in self.my_frame2.all_set_entry_vars:
             new_value = set_var.get()
-            self.set_flags.append(new_value)
-        
+            self.daily_set_flags.append(new_value)
+
         #testing
-        print(f"set_flags{self.set_flags}")
-        return self.set_flags
+        print(f"habit set flags:{self.habit_set_flags} daily_set_flags:{self.daily_set_flags}")
+
+        #extend the habit_set_flags list in place 
+        self.habit_set_flags.extend(self.daily_set_flags)
+
+        return self.habit_set_flags 
+
 
     def get_done_flags(self)->list:
         """ returns a list of all done_flags """
@@ -1800,12 +1829,14 @@ class App(ctk.CTk):
         return self.remedial_flags
     
     def get_original_content(self):
-        """ return the orignal content for the remdial tasks as lst(str) """
+        """ return the orignal content for the remedial tasks as lst(str) """
 
 
         #update the vars and switches dict
         self.original_content_dict = self.my_frame2.remedial_switch_capture(self.my_frame2.update_entries_dict())
         self.original_content = list(self.original_content_dict.values())
+
+        print("TESTING SELF.ORIGINAL_CONTENT",self.original_content)
 
         return self.original_content
 
@@ -1818,14 +1849,15 @@ class App(ctk.CTk):
         done_flags = self.get_done_flags()
         set_flags = self.get_set_flags()
         original_content = self.get_original_content()
-
-
+        duration_to_record = app.my_frame.get_current_duration()
+        
+        print("duration_to_record",duration_to_record)
         print("Set flags:",set_flags)
 
         habit_names, habits =self.my_frame.get_habits_names()
         task_names, tasks = self.my_frame2.get_daily_tasks()
-        data_structure.save_entries(habit_names,habits, set_flags, done_flags)
-        data_structure.save_entries(task_names,tasks,set_flags, done_flags,remedial_flags,original_content)
+        data_structure.save_entries(habit_names,habits, set_flags, done_flags,duration=duration_to_record)
+        data_structure.save_entries(task_names,tasks,set_flags, done_flags)#remedial_flags,original_content
         print("Everything saved!")   
 
 
