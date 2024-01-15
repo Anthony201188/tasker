@@ -1186,7 +1186,7 @@ class MyFrame3(ctk.CTkFrame):
     #     for args in strings:
     #         for self.entry in insert_entries:
     #             self.entry.insert(0, args)
-
+        
 
 #Task manager
 class MyFrame4(ctk.CTkFrame):
@@ -1725,6 +1725,98 @@ class MyFrame5V3(ctk.CTkFrame):
 ## NOTE - change the instantiation of this class using the line below
 #'self.my_frame5 = MyFrame6(self,"Non Urgent Task List",320, 650)'
         
+#Additional info
+class MyFrame6(ctk.CTkFrame):
+    def __init__(self, master,text, width, height):
+        super().__init__(master, width, height)
+        self.val = text
+        self.val2 = width
+        self.val3 = height
+
+        #Label for the frame
+        self.label = ctk.CTkLabel(self,anchor=ctk.N, text=self.val,width=self.val2 , height=self.val3)
+        self.label.grid(row=0, column=0, padx=10, pady=5)
+
+        #gratitide entries (x5)
+        #used a dict of instances here incase names of the instances are needed.
+        self.gratitude_entries_dict = {
+            'gratitude_entry': ctk.CTkEntry(self, placeholder_text="Gratitude 1", width=180),
+            'gratitude_entry2': ctk.CTkEntry(self, placeholder_text="Gratitude 2", width=180),
+            'gratitude_entry3': ctk.CTkEntry(self, placeholder_text="Gratitude 3", width=180),
+            'gratitude_entry4': ctk.CTkEntry(self, placeholder_text="Gratitude 4", width=180),
+            'gratitude_entry5': ctk.CTkEntry(self, placeholder_text="Gratitude 5", width=180)
+        }
+
+        # Place the entries
+        self.gratitude_entries_dict['gratitude_entry'].place(x=20, y=60)
+        self.gratitude_entries_dict['gratitude_entry2'].place(x=20, y=95)
+        self.gratitude_entries_dict['gratitude_entry3'].place(x=20, y=130)
+        self.gratitude_entries_dict['gratitude_entry4'].place(x=20, y=165)
+        self.gratitude_entries_dict['gratitude_entry5'].place(x=20, y=200)
+
+
+        #gratitude done flags
+        self.done_boxes_dict = {
+        'done_box1': ctk.CTkCheckBox(self, text="Done 1"),
+        'done_box2': ctk.CTkCheckBox(self, text="Done 2"),
+        'done_box3': ctk.CTkCheckBox(self, text="Done 3"),
+        'done_box4': ctk.CTkCheckBox(self, text="Done 4"),
+        'done_box5': ctk.CTkCheckBox(self, text="Done 5")
+        }
+
+        # Place the tick boxes
+        self.done_boxes_dict['done_box1'].place(x=220, y=60)
+        self.done_boxes_dict['done_box2'].place(x=220, y=95)
+        self.done_boxes_dict['done_box3'].place(x=220, y=130)
+        self.done_boxes_dict['done_box4'].place(x=220, y=165)
+        self.done_boxes_dict['done_box5'].place(x=220, y=200)
+
+        #divider
+        self.divider = ctk.CTKSeperator
+
+        # Fitness entries
+        self.fitness_entries_dict = {
+            'fitness_entry1': ctk.CTkEntry(self, placeholder_text="Fitness 1", width=180),
+            'fitness_entry2': ctk.CTkEntry(self, placeholder_text="Fitness 2", width=180)
+        }
+
+        # Place the fitness entries
+        self.fitness_entries_dict['fitness_entry1'].place(x=20, y=240)
+        self.fitness_entries_dict['fitness_entry2'].place(x=20, y=275)
+
+        # Matching "done" tick boxes for fitness entries
+        self.fitness_done_boxes_dict = {
+            'fitness_done_box1': ctk.CTkCheckBox(self, text="Done Fitness 1"),
+            'fitness_done_box2': ctk.CTkCheckBox(self, text="Done Fitness 2")
+        }
+
+        # Place the "done" tick boxes for fitness entries
+        self.fitness_done_boxes_dict['fitness_done_box1'].place(x=220, y=240)
+        self.fitness_done_boxes_dict['fitness_done_box2'].place(x=220, y=275)
+
+        #how you feel 1-10 entry type(int)0-12 only
+        self.how_you_feel_label = ctk.CTkLabel(self,text="How you feel 1-10")
+        self.how_you_feel_entry = ctk.CTkEntry(self,placeholder_text="1-10",width=35)
+
+
+        #place how you feel widgets
+        self.how_you_feel_label.place(x=20, y=305)
+        self.how_you_feel_entry.place(x=20, y=330)
+
+
+        #Notes textbox
+        self.notes_textbox_label = ctk.CTkLabel(self, text="Notes")
+        self.notes_textbox = ctk.CTkTextbox(self, width=300,height=310, corner_radius=3)
+
+        #place Notes widgets
+        self.notes_textbox_label.place(x=20, y=375)
+        self.notes_textbox.place(x=20, y=410)
+
+
+
+         ######## on start logic ########
+    
+    #### methods ######
 
 
 
@@ -1760,19 +1852,27 @@ class App(ctk.CTk):
 
         #Task list
         self.my_frame5 = MyFrame5(self,"Non Urgent Task List",280, 550)
-        self.my_frame5.grid(row=1, column=1, padx=2, pady=10) 
+        #self.my_frame5.grid(row=1, column=1, padx=2, pady=10) 
+        self.my_frame5.place(x=580, y=380)
 
         #Project task list
         self.my_frame5v2 = MyFrame5V2(self,"Project Task List",280, 550)
-        self.my_frame5v2.grid(row=1, column=2, padx=2, pady=10) 
+        #self.my_frame5v2.grid(row=1, column=2, padx=2, pady=10) 
+        self.my_frame5v2.place(x=900, y=380)
 
         #Urgent Task list
         self.my_frame5v3 = MyFrame5V3(self,"Urgent Task List",280, 550)
-        self.my_frame5v3.grid(row=1, column=3, padx=2, pady=10,)
+        #self.my_frame5v3.grid(row=1, column=3, padx=2, pady=10,)
+        self.my_frame5v3.place(x=1200, y=380)
 
+        #finish for the day button (remove once finished testing and save on close or similar)
         self.button_finish = ctk.CTkButton(self, text="Finish for the day \n Save All",command=self.finish_for_day, height=60, width=85 ) 
         self.button_finish.grid(row=0, column=3, padx=20)
 
+        #Additional info frame
+        self.my_frame6 = MyFrame6(self,"Addtional info", 360, 800)
+        #self.my_frame6.grid(row=1,column=3, padx=20)
+        self.my_frame6.place(x=1500, y=80)
 
         
     
