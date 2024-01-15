@@ -216,6 +216,7 @@ def save_entries(entries_to_save, entry_contents, set_flags, done_flags,duration
             entry_line = f"{entry}|content:\"{content}\"|{set_info_habits}|{done_info}"
         else:
             entry_line = f"{entry}|content:\"{content}\"|{set_info_dailies}|{done_info}"
+        
         entry_lines.append(entry_line)
 
     with open("entries.txt", "a") as file:

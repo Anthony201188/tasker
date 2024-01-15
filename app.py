@@ -327,7 +327,7 @@ class MyFrame(ctk.CTkFrame):
 
         # set updated duration
         print("Current loaded duration:", loaded_duration)
-        if loaded_duration <= 0: #<- should account for accidental minus durations (shouldnt occur anyway)
+        if loaded_duration <= 0 or self.whole_elapsed_days - loaded_duration <= 0: #<-updated this again to account for differences in loaded and elapsed days that are negative                                                    
             updated_duration = 0
         else:
             updated_duration = loaded_duration - self.whole_elapsed_days
