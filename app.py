@@ -327,7 +327,7 @@ class MyFrame(ctk.CTkFrame):
 
         # set updated duration
         print("Current loaded duration:", loaded_duration)
-        if loaded_duration <= 0 or self.whole_elapsed_days - loaded_duration <= 0: #<-updated this again to account for differences in loaded and elapsed days that are negative                                                    
+        if loaded_duration < 0 or (loaded_duration - self.whole_elapsed_days) < 0: #<-updated this again to account for differences in loaded and elapsed days that are negative                                                    
             updated_duration = 0
         else:
             updated_duration = loaded_duration - self.whole_elapsed_days
@@ -439,6 +439,8 @@ class MyFrame2(ctk.CTkFrame):
         self.all_entries = [self.entry, self.entry2, self.entry3, self.entry4, self.entry5]
         self.all_set_entry_vars = [self.entry_set_var, self.entry2_set_var, self.entry3_set_var, self.entry4_set_var, self.entry5_set_var]
 
+        #dict of all entries and set vars
+        self.entry_var_dict = dict(zip(self.all_entries, self.all_set_entry_vars))
 
         #Buttons
         self.button_suggest = ctk.CTkButton(self, text="Easy day toggle",command=self.easy_day_toggle, height=28, width=28 ) 
@@ -621,6 +623,8 @@ class MyFrame2(ctk.CTkFrame):
                 #if you want obj not string name swap below
                 #captured_entries[entry] = entry.get()
                 captured_entries[self.get_entry_name(entry)] = entry.get()
+                #unset entry and bool var here
+                self.unset_unlock(entry)
 
         #this returns obj, content
         print("original_entry_content returned from function", captured_entries)
@@ -711,12 +715,6 @@ class MyFrame2(ctk.CTkFrame):
 
                 # Placing the widget using the extracted coordinates
                 key.place(x=x, y=y)
-
-
-
-    
-                
-
 
     
     def suggest_non_urgent(self):
@@ -956,6 +954,22 @@ class MyFrame2(ctk.CTkFrame):
             entry_attr = getattr(self, entry_name)
             entry_attr.delete(0, "end")
             entry_attr.insert(0, string)
+        
+    def unset_unlock(self, entry):
+        """ Takes an entry obj as an arg and unlocks that entry, toggling the corresponding set boolvar """
+
+        if entry in self.entry_var_dict:
+            entry.configure(state="normal", border_width=1)
+            bool_var = self.entry_var_dict[entry]
+
+            bool_var.set(not bool_var.get())
+
+            print(f"Toggled [{self.get_entry_name(entry)}] bool var now set to:", bool_var.get())
+        else:
+            print("Error: Entry not in entry_var_dict, therefore, doesn't exist or cannot be set")
+
+        
+
 
 
 

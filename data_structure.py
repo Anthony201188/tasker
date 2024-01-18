@@ -177,7 +177,7 @@ def save_entries(entries_to_save, entry_contents):
     #         file.write(entry_line + "\n")
     #         print(f"Entry line successfully saved: {entry_line}")
 
-##### SAVE ENTRY V2.0 #### 
+##### SAVE ENTRY V2.0 #### SEPERATE A SAVE ENTRIES FUNCTION FOR EACH OF THE FRAMES
 def save_entries(entries_to_save, entry_contents, set_flags, done_flags,duration=None):
     """
     Save entries and their corresponding content to a text file.
@@ -206,9 +206,9 @@ def save_entries(entries_to_save, entry_contents, set_flags, done_flags,duration
 
     print("duration inside save_entries point 2",)
     
-
+    #zipping this many things together is a recipe for disaster seperate the functions per frame so conditions are easier to edit
     for entry, content, set_flag, done_flag in zip(entries_to_save, entry_contents, set_flags, done_flags):
-        set_info_habits = f"S,{timestamp}|Rem.D:{recorded_duration}" if set_flag else ""
+        set_info_habits = f"S,{timestamp}|Remaining:{recorded_duration}" if set_flag else ""
         set_info_dailies = f"S,{timestamp},{recorded_duration}" if set_flag else ""
         done_info = f"D,{timestamp}" if done_flag else ""
         
@@ -223,6 +223,41 @@ def save_entries(entries_to_save, entry_contents, set_flags, done_flags,duration
         for entry_line in entry_lines:
             file.write(entry_line + "\n")
             print(f"Entry line successfully saved: {entry_line}")
+
+
+
+#daily habits recording function
+            
+#todays tasks recording function
+            
+#monthly focus recording function
+            
+#additional info recording function 
+            
+#combined single record function for button callback
+            
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

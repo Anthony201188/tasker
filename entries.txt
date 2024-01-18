@@ -246,3 +246,145 @@ habit2|content:""||
 entry1|content:"To display project tasks please select a "|S,01-01-2024,20:42:34,None|D,01-01-2024,20:42:34
 entry2|content:"Task list is empty. No tasks to display."||
 entry3|content:"Task list is empty. No tasks to display."|S,01-01-2024,20:42:34,None|
+testing starts here ....
+habit1|content:"habit1"||
+habit2|content:"habit2"||
+entry1|content:"To display project tasks please select a "||
+entry2|content:"Task list is empty. No tasks to display."||
+entry3|content:"Task list is empty. No tasks to display."|S,18-01-2024,20:06:07,None|
+next test starts here...
+habit1|content:"habit1"|S,18-01-2024,20:09:11|Rem.D:1|
+habit2|content:"habit2"|S,18-01-2024,20:09:11|Rem.D:1|
+entry1|content:"project 1"|S,18-01-2024,20:09:11,None|
+entry2|content:"urgent 1"|S,18-01-2024,20:09:11,None|
+entry3|content:"non urgent 1"|S,18-01-2024,20:09:11,None|
+stage 3 testing....
+
+habit1|content:"habit1"|S,18-01-2024,20:11:21|Rem.D:1|
+habit2|content:"habit2"|S,18-01-2024,20:11:21|Rem.D:1|
+entry1|content:"project 1"|S,18-01-2024,20:11:21,None|
+entry2|content:"urgent 1"|S,18-01-2024,20:11:21,None|
+entry3|content:"non urgent 1"|S,18-01-2024,20:11:21,None|D,18-01-2024,20:11:21
+habit1|content:"habit1"||
+habit2|content:"habit2"||
+entry1|content:"project 1"||
+entry2|content:"urgent 1"||
+entry3|content:"non urgent 1 remedial words"|S,18-01-2024,21:45:25,None|
+habit1|content:"habit1"||
+habit2|content:"habit2"||
+entry1|content:"project 1"||
+entry2|content:"urgent 1"||
+entry3|content:"non urgent 1 remedial words"|S,18-01-2024,21:55:14,None|
+habit1|content:"habit1"||
+habit2|content:"habit2"||
+entry1|content:"project 1"||
+entry2|content:"urgent 1"||
+entry3|content:"non urgent 1 remedial words"|S,18-01-2024,21:55:38,None|
+
+habit1|content:"habit1"||
+
+habit2|content:"habit2"||
+
+entry1|content:"project 1"||
+
+entry2|content:"urgent 1"||
+
+entry3|content:"stuff"|S,18-01-2024,21:59:06,None|
+
+habit1|content:"habit1"||
+
+habit2|content:"habit2"||
+
+entry1|content:"project 1"||
+
+entry2|content:"urgent 1"||
+
+entry3|content:"stuff"|S,18-01-2024,22:04:46,None|
+
+habit1|content:"habit1"||
+
+habit2|content:"habit2"||
+
+entry1|content:"project 1"||
+
+entry2|content:"urgent 1"||
+
+entry3|content:"stuff"|S,18-01-2024,22:05:27,None|
+
+habit1|content:"habit1"||
+
+habit2|content:"habit2"||
+
+entry1|content:"project 1"||
+
+entry2|content:"urgent 1 remdial"||
+
+entry3|content:"stuff"|S,18-01-2024,22:05:51,None|
+
+habit1|content:"habit1"||
+
+habit2|content:"habit2"||
+
+entry1|content:"project 1"||
+
+entry2|content:"urgent 1 remdial"||
+
+entry3|content:"stuff"|S,18-01-2024,22:06:03,None|D,18-01-2024,22:06:03
+
+habit1|content:"habit1"||
+
+habit2|content:"habit2"||
+
+entry1|content:"project 1"||
+
+entry2|content:"urgent 1 remdial"||
+
+entry3|content:"stuff"|S,18-01-2024,22:06:04,None|D,18-01-2024,22:06:04
+
+habit1|content:"habit1"||
+
+habit2|content:"habit2"||
+
+entry1|content:"project 1"||
+
+entry2|content:"urgent 1 remdial"||
+
+entry3|content:"stuff"|S,18-01-2024,22:06:05,None|D,18-01-2024,22:06:05
+
+habit1|content:"habit1"||
+habit2|content:"habit2"||
+
+entry1|content:"project 1"||
+entry2|content:"urgent 1 remdial"||
+entry3|content:"stuff"|S,18-01-2024,22:08:25,None|
+
+habit1|content:"habit1"||
+habit2|content:"habit2"||
+
+entry1|content:"project 1"||
+entry2|content:"urgent 1 remdial"||
+entry3|content:"stuff"|S,18-01-2024,22:08:26,None|
+        file.write("\n")
+
+habit1|content:"habit1"||
+habit2|content:"habit2"||
+
+entry1|content:"project 1"||
+entry2|content:"urgent 1 remdial"||
+entry3|content:"stuff"|S,18-01-2024,22:08:26,None|
+
+
+habit1|content:"habit1"||
+habit2|content:"habit2"||
+
+
+entry1|content:"project 1"||
+entry2|content:"urgent 1 remdial"||
+entry3|content:"stuff"|S,18-01-2024,22:10:18,None|
+###########
+habit1|content:"habit1"||
+habit2|content:"habit2"||
+###########
+entry1|content:"project 1"||
+entry2|content:"urgent 1 remdial"||
+entry3|content:"stuff"|S,18-01-2024,22:11:12,None|
