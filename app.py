@@ -971,61 +971,56 @@ class MyFrame3(ctk.CTkFrame):
         self.grid_rowconfigure(10, weight=1)  # configure grid system
         self.grid_columnconfigure(3, weight=1)
 
-        ### Add widgets onto the frame
+
         #Label for the frame
         self.label = ctk.CTkLabel(self,anchor=ctk.N, text=self.val,width=self.val2 , height=self.val3)
         self.label.grid(row=0, column=0, padx=10, pady=10)
         
         #remaining days label
         self.label2 = ctk.CTkLabel(self,anchor=ctk.S, text="Remaing days untill reset",width=60, height=60)
-        self.label2.grid(row=10, column=0, padx=1, pady=5)
+        self.label2.place(x=80,y=200)
 
         #number of days
         self.label3 = ctk.CTkLabel(self,anchor=ctk.S, text="6",width=60, height=60)
-        self.label3.grid(row=10, column=3, padx=10, pady=5)
+        self.label3.place(x=300,y=200)
 
         #custom clickable link class from tkinter
         self.label_text = 'Click here to see Trello "focus" board'
         self.link = "https://trello.com/b/EVzPMpFs/focus-by-calander"
         self.clickable_label = ClickableLinkLabel(self, text=self.label_text, link=self.link) #<- implemented own widget class based on tkinter
-        self.clickable_label.grid(row=0, column=0, padx=10, pady=20)
+        self.clickable_label.place(x=20, y=50)
 
-        # TODO  add custom clicakble link for google calander as well
-
-        # TODO - self population by listing all "projects" only availible when monthly focus "not-set"
-        #Combobox
-        
+        # Testing remove once completed
         class_def.task_tracking.create_task("Project2", "testing projects", 8, 8, "testing","10-10-2025",isproject=True,isparent=True)
 
-        #if remain days == 0: combobox.pack/grid()
-
+        #Combobox select a project 
         self.dropdown_options = class_def.task_tracking.return_all_parent_project_names()
         self.dropdown_options.insert(0,"Select a project")
-        self.dropdown = ctk.CTkComboBox(self, values=self.dropdown_options,command=None)
+        self.dropdown = ctk.CTkComboBox(self, values=self.dropdown_options,command=None, width=220)
         self.dropdown.set("Select a project")
-        self.dropdown.grid(row=1, column=0, padx=10, pady=5)
-
+        self.dropdown.place(x=50, y=90)
             
-        # Bind the event to the update function
-        self.dropdown.bind("<FocusIn>",self.update_combobox_options)
-
-        self.button_update_dropdown = ctk.CTkButton(self, text="Update project list",fg_color="light blue",command=self.update_combobox_options, height=28, width=30 ) # "command=button_event" needs to be added and function created and tied to it 
-        self.button_update_dropdown.place(x=235, y=105)
-
+        # Bind the event to the update function this didnt work so well was meant to update the combobox options with projects on focus or hover but continually kep redrawing and was a nightmare so for prototype swtiched to button
+        #self.dropdown.bind("<FocusIn>",self.update_combobox_options)
 
         #Entries
-        self.entry_focus1 = ctk.CTkEntry(self,placeholder_text="Month Focus1",width=180)
-        self.entry_focus1.grid(row=7, column=0, padx=10, pady=20)
+        self.entry_focus1 = ctk.CTkEntry(self,placeholder_text="Month Focus1",width=220)
+        self.entry_focus1.place(x=50 , y=140)
 
-        self.entry_focus2= ctk.CTkEntry(self,placeholder_text="Month Focus2",width=180)
-        self.entry_focus2.grid(row=9, column=0, padx=10, pady=1)
+        self.entry_focus2= ctk.CTkEntry(self,placeholder_text="Month Focus2",width=220)
+        self.entry_focus2.place(x=50 , y=180)
 
-        #Button
+        #Buttons
         self.button = ctk.CTkButton(self, text="Set focus",command=self.set_month_focus, height=28, width=28 ) # "command=button_event" needs to be added and function created and tied to it 
-        self.button.grid(row=9, column=3, padx=20)
-
+        self.button.place(x=290,y=180)
+        
+        # Testing remove once completed
         self.button = ctk.CTkButton(self, text="testing\ntoggle set",command=self.toggle_set, height=28, width=28 ) # "command=button_event" needs to be added and function created and tied to it 
-        self.button.grid(row=5, column=3, padx=20)
+        self.button.place(x=320, y=10)
+
+        #update projects combobox
+        self.button_update_dropdown = ctk.CTkButton(self, text="Update \n project list",fg_color="light blue",command=self.update_combobox_options, height=28, width=30 ) # "command=button_event" needs to be added and function created and tied to it 
+        self.button_update_dropdown.place(x=290, y=90)
         
 
         ################# on-start logic ######################
@@ -1134,9 +1129,9 @@ class MyFrame3(ctk.CTkFrame):
         app.my_frame3.dropdown.destroy()
     
         # Recreate the ComboBox with the updated options
-        app.my_frame3.dropdown = ctk.CTkComboBox(app.my_frame3, values=updated_options)
+        app.my_frame3.dropdown = ctk.CTkComboBox(app.my_frame3, values=updated_options, width=220)
         app.my_frame3.dropdown.set("Select a project")
-        app.my_frame3.dropdown.grid(row=1, column=0, padx=10, pady=5)
+        app.my_frame3.dropdown.place(x=50, y=90)
 
         app.my_frame3.dropdown.bind("<FocusIn>",self.update_combobox_options)
 
@@ -1583,7 +1578,7 @@ class MyFrame5(ctk.CTkFrame):
         self.label.grid(row=0, column=0, padx=10, pady=5)
 
         #Textbox
-        self.textbox = ctk.CTkTextbox(self,height=500, width=250, corner_radius=3 )
+        self.textbox = ctk.CTkTextbox(self,height=500, width=250, corner_radius=3, text_color="blue" )
         self.textbox.grid(row=0, column=0)
         #self.textbox.insert("0.0", "Some example text!\n" * 50) #
         #self.textbox.configure(state="disable")
@@ -1737,76 +1732,56 @@ class MyFrame6(ctk.CTkFrame):
         self.label = ctk.CTkLabel(self,anchor=ctk.N, text=self.val,width=self.val2 , height=self.val3)
         self.label.grid(row=0, column=0, padx=10, pady=5)
 
+        #gratitude
+        #label
+        self.gratitude_label = ctk.CTkLabel(self, text="5 Things you're thankful for")
+        self.gratitude_label.place(x=20,y=25)
+
         #gratitide entries (x5)
         #used a dict of instances here incase names of the instances are needed.
         self.gratitude_entries_dict = {
-            'gratitude_entry': ctk.CTkEntry(self, placeholder_text="Gratitude 1", width=180),
-            'gratitude_entry2': ctk.CTkEntry(self, placeholder_text="Gratitude 2", width=180),
-            'gratitude_entry3': ctk.CTkEntry(self, placeholder_text="Gratitude 3", width=180),
-            'gratitude_entry4': ctk.CTkEntry(self, placeholder_text="Gratitude 4", width=180),
-            'gratitude_entry5': ctk.CTkEntry(self, placeholder_text="Gratitude 5", width=180)
+            'gratitude_entry': ctk.CTkEntry(self, placeholder_text="Gratitude 1", width=220),
+            'gratitude_entry2': ctk.CTkEntry(self, placeholder_text="Gratitude 2", width=220),
+            'gratitude_entry3': ctk.CTkEntry(self, placeholder_text="Gratitude 3", width=220),
+            'gratitude_entry4': ctk.CTkEntry(self, placeholder_text="Gratitude 4", width=220),
+            'gratitude_entry5': ctk.CTkEntry(self, placeholder_text="Gratitude 5", width=220)
         }
 
         # Place the entries
-        self.gratitude_entries_dict['gratitude_entry'].place(x=20, y=60)
-        self.gratitude_entries_dict['gratitude_entry2'].place(x=20, y=95)
-        self.gratitude_entries_dict['gratitude_entry3'].place(x=20, y=130)
-        self.gratitude_entries_dict['gratitude_entry4'].place(x=20, y=165)
-        self.gratitude_entries_dict['gratitude_entry5'].place(x=20, y=200)
-
-
-        #gratitude done flags
-        self.done_boxes_dict = {
-        'done_box1': ctk.CTkCheckBox(self, text="Done 1"),
-        'done_box2': ctk.CTkCheckBox(self, text="Done 2"),
-        'done_box3': ctk.CTkCheckBox(self, text="Done 3"),
-        'done_box4': ctk.CTkCheckBox(self, text="Done 4"),
-        'done_box5': ctk.CTkCheckBox(self, text="Done 5")
-        }
-
-        # Place the tick boxes
-        self.done_boxes_dict['done_box1'].place(x=220, y=60)
-        self.done_boxes_dict['done_box2'].place(x=220, y=95)
-        self.done_boxes_dict['done_box3'].place(x=220, y=130)
-        self.done_boxes_dict['done_box4'].place(x=220, y=165)
-        self.done_boxes_dict['done_box5'].place(x=220, y=200)
+        self.gratitude_entries_dict['gratitude_entry'].place(x=20, y=50)
+        self.gratitude_entries_dict['gratitude_entry2'].place(x=20, y=85)
+        self.gratitude_entries_dict['gratitude_entry3'].place(x=20, y=120)
+        self.gratitude_entries_dict['gratitude_entry4'].place(x=20, y=155)
+        self.gratitude_entries_dict['gratitude_entry5'].place(x=20, y=190)
 
         #divider
-        self.divider = ctk.CTKSeperator
+        #self.divider = ctk.CTKSeperator
+
+        #Fitness label
+        self.fitness_label = ctk.CTkLabel(self, text="Fitness")
+        self.fitness_label.place(x=20,y=218)
 
         # Fitness entries
         self.fitness_entries_dict = {
-            'fitness_entry1': ctk.CTkEntry(self, placeholder_text="Fitness 1", width=180),
-            'fitness_entry2': ctk.CTkEntry(self, placeholder_text="Fitness 2", width=180)
+            'fitness_entry1': ctk.CTkEntry(self, placeholder_text="Fitness 1", width=220),
+            'fitness_entry2': ctk.CTkEntry(self, placeholder_text="Fitness 2", width=220)
         }
 
         # Place the fitness entries
         self.fitness_entries_dict['fitness_entry1'].place(x=20, y=240)
         self.fitness_entries_dict['fitness_entry2'].place(x=20, y=275)
 
-        # Matching "done" tick boxes for fitness entries
-        self.fitness_done_boxes_dict = {
-            'fitness_done_box1': ctk.CTkCheckBox(self, text="Done Fitness 1"),
-            'fitness_done_box2': ctk.CTkCheckBox(self, text="Done Fitness 2")
-        }
-
-        # Place the "done" tick boxes for fitness entries
-        self.fitness_done_boxes_dict['fitness_done_box1'].place(x=220, y=240)
-        self.fitness_done_boxes_dict['fitness_done_box2'].place(x=220, y=275)
-
         #how you feel 1-10 entry type(int)0-12 only
-        self.how_you_feel_label = ctk.CTkLabel(self,text="How you feel 1-10")
-        self.how_you_feel_entry = ctk.CTkEntry(self,placeholder_text="1-10",width=35)
-
+        self.how_you_feel_label = ctk.CTkLabel(self,text="How you feel?")
+        self.how_you_feel_entry = ctk.CTkEntry(self,placeholder_text="1-10",width=40)
 
         #place how you feel widgets
-        self.how_you_feel_label.place(x=20, y=305)
-        self.how_you_feel_entry.place(x=20, y=330)
-
+        self.how_you_feel_label.place(x=20, y=308)
+        self.how_you_feel_entry.place(x=20, y=333)
 
         #Notes textbox
         self.notes_textbox_label = ctk.CTkLabel(self, text="Notes")
-        self.notes_textbox = ctk.CTkTextbox(self, width=300,height=310, corner_radius=3)
+        self.notes_textbox = ctk.CTkTextbox(self, width=290,height=310, corner_radius=3)
 
         #place Notes widgets
         self.notes_textbox_label.place(x=20, y=375)
@@ -1843,7 +1818,7 @@ class App(ctk.CTk):
         self.my_frame2.grid(row=0, column=1, padx=10, pady=10 )
 
         #Monthly Focus Frame
-        self.my_frame3 = MyFrame3(self,"Monthly Focus",300, 80)
+        self.my_frame3 = MyFrame3(self,"Monthly Focus",380, 250)
         self.my_frame3.grid(row=0, column=2, padx=10, pady=10 )
 
         #Task manager
@@ -1867,12 +1842,11 @@ class App(ctk.CTk):
 
         #finish for the day button (remove once finished testing and save on close or similar)
         self.button_finish = ctk.CTkButton(self, text="Finish for the day \n Save All",command=self.finish_for_day, height=60, width=85 ) 
-        self.button_finish.grid(row=0, column=3, padx=20)
+        self.button_finish.place(x=1650, y=40)
 
         #Additional info frame
-        self.my_frame6 = MyFrame6(self,"Addtional info", 360, 800)
-        #self.my_frame6.grid(row=1,column=3, padx=20)
-        self.my_frame6.place(x=1500, y=80)
+        self.my_frame6 = MyFrame6(self,"Addtional info", 340, 750)
+        self.my_frame6.place(x=1530, y=200)
 
         
     
