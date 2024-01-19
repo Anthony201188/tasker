@@ -224,16 +224,47 @@ def save_entries(entries_to_save, entry_contents, set_flags, done_flags,duration
             file.write(entry_line + "\n")
             print(f"Entry line successfully saved: {entry_line}")
 
-
+pass
+## note: all daily entry recording should have the same number of lines so empty records should be recoded this is to make it easy on the eye
 
 #daily habits recording function
+#1# 'habit1|content:""||' -  condition: empty entry not set
+#2# 'habit1|content:"habit1"||' - condition: entry has contents but not set
+#3# 'habit1|content:"habit1"|S,18-01-2024,20:11:21|Remaining:1|' - condition:entry set with 1 day remaining duration
+#4# 'habit1|content:"habit1"|S,18-01-2024,20:11:21|Remaining:1|D,01-01-2024,20:42:34'- condition entry set 1 remaining day habit completed for the day tickbox checked
             
 #todays tasks recording function
-            
+#1# 'entry1|content:""||' - condition: emtpy entry not set          
+#2# 'entry1|content:"Project1"||' - condition: entry has contents but not set        
+#3# 'entry1|content:"Project1"|S,18-01-2024,20:06:07|'- condition: entry has contents and is set
+#4# 'entry1|content:"Project1"|S,18-01-2024,20:06:07|D,18-01-2024,20:11:21' - condition: entry task done
+#5# 'entry1|original content:"Project1 "|Remedial-content:"Project1 remedial task1 "|'- condition: entry has contents and remedial work not set        
+#6# 'entry1|original content:"Project1"|Remedial-content:"Project1 remedial task1 "|S,01-01-2024,18:46:54|'- condition: entry has contents and remedial work set        
+#7# 'entry1|original content:"Project1"|Remedial-content:"Project1 remedial task1 "|S,01-01-2024,18:46:54|D,18-01-2024,20:11:21'- condition: entry has contents and remedial done       
+#8# 'entry1|original content:"Project1 "|Remedial-content:"Project1 remedial task2 "|- condition: more remedial work required not set (remedial switch still set, done recorded then new contents entered then set.(SAME AS #5#))
+#9# 'entry1|original content:"Project1"|Remedial-content:"Project1 remedial task2 "|S,01-01-2024,18:46:54|- condition: more remedial work required set (SAME AS #6#)
+#10# 'entry1|content:"Project1"|S,18-01-2024,20:06:07|- condition: all remedial work done back to original contents (SAME AS #3#)
+#11# 'entry1|content:"Project1"|S,18-01-2024,20:06:07| - condition: finally original contents recorded as done and everything unlocked and rest back to state #1# (SAME AS ##)   
+
 #monthly focus recording function
+#0# 'S,18-01-2024,20:06:07|Remaining:10|'
+#1# 'ParentProjectname|catagory|
+#2# 'Focus1|content:"monthly focus1"'
+#3# 'Focus2|content:"monthly focus2"'
             
 #additional info recording function 
+#0# 'Gratitude1|content:"Gratitude entry contetns1"'
+#1# 'Gratitude2|content:"Gratitude entry contetns2"'
+#2# 'Gratitude3|content:"Gratitude entry contetns3"'
+#3# 'Gratitude4|content:"Gratitude entry contetns4"'
+#4# 'Gratitude5|content:"Gratitude entry contetns5"'
+#5# 'Fitness1|content:"Fitness entry contetns1"'
+#6# 'Fitness2|content:"Fitness entry contetns2"'
+#7# 'How you feel|content:"1-10"'
+#8# 'Notes|content:"Long format notes here could be 250 charachters or more long
+#8a#  more content more content more content etc... extends over multiple lines max char length 120 for readability"'
             
+
 #combined single record function for button callback
             
 
