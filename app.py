@@ -1768,8 +1768,6 @@ class MyFrame6(ctk.CTkFrame):
         self.gratitude_entries_dict['gratitude_entry4'].place(x=20, y=155)
         self.gratitude_entries_dict['gratitude_entry5'].place(x=20, y=190)
 
-        #divider
-        #self.divider = ctk.CTKSeperator
 
         #Fitness label
         self.fitness_label = ctk.CTkLabel(self, text="Fitness")
@@ -1798,10 +1796,22 @@ class MyFrame6(ctk.CTkFrame):
         self.notes_textbox = ctk.CTkTextbox(self, width=290,height=310, corner_radius=3)
 
         #place Notes widgets
-        self.notes_textbox_label.place(x=20, y=375)
-        self.notes_textbox.place(x=20, y=410)
+        self.notes_textbox_label.place(x=20, y=370)
+        self.notes_textbox.place(x=20, y=400)
 
+        #Desire label
+        self.fitness_label = ctk.CTkLabel(self, text="What do you most desire?")
+        self.fitness_label.place(x=20,y=720)
 
+        #Desire entries dict
+        self.desire_entries_dict = {
+            'desire_entry': ctk.CTkEntry(self, placeholder_text="Desire 1", width=220),
+            'desire_entry2': ctk.CTkEntry(self, placeholder_text="Desire 2", width=220),
+        }
+
+        #Place the entries
+        self.desire_entries_dict['desire_entry'].place(x=20, y=744)
+        self.desire_entries_dict['desire_entry2'].place(x=20, y=780)
 
          ######## on start logic ########
     
@@ -1859,8 +1869,8 @@ class App(ctk.CTk):
         self.button_finish.place(x=1650, y=40)
 
         #Additional info frame
-        self.my_frame6 = MyFrame6(self,"Addtional info", 340, 750)
-        self.my_frame6.place(x=1530, y=200)
+        self.my_frame6 = MyFrame6(self,"Addtional info", 340, 825)
+        self.my_frame6.place(x=1530, y=130)
 
         
     

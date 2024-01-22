@@ -309,9 +309,9 @@ class Recorder:
         
         # Construct the column definitions dynamically based on the number of entries
 
-        #Dynamic entry name and entry contents
+        #Dynamic entry name and entry contents - join elements from list with ', ' as seperator
         dynamic_entry_and_contents = ', '.join([
-        f'{entry_names[i]} TEXT NULL, content{i} TEXT NULL ' for i in range(self.num_entries ) #<- think the contetns might need removing from this otherwise youl have too many columns
+        f'{entry_names[i]} TEXT NULL, content{i} TEXT NULL ' for i in range(self.num_entries ) 
         ])
 
         #Dynamic done flags
@@ -466,7 +466,7 @@ class Recorder:
 
 
         #create addional info table
-        self.create_table("additional_info", "MyFrame6", 7, ["Gratitude1", "Gratitude2", "Gratitude3", "Gratitude4", "Gratitude5","Fitness1","Fitness2"])
+        self.create_table("additional_info", "MyFrame6", 9, ["Gratitude1", "Gratitude2", "Gratitude3", "Gratitude4", "Gratitude5","Fitness1","Fitness2","Desire","Desire"])
 
 
     ################CREATE ALL TABLES#########################
