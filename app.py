@@ -1806,12 +1806,12 @@ class MyFrame6(ctk.CTkFrame):
         #Desire entries dict
         self.desire_entries_dict = {
             'desire_entry': ctk.CTkEntry(self, placeholder_text="Desire 1", width=220),
-            'desire_entry2': ctk.CTkEntry(self, placeholder_text="Desire 2", width=220),
+            #'desire_entry2': ctk.CTkEntry(self, placeholder_text="Desire 2", width=220),
         }
 
         #Place the entries
         self.desire_entries_dict['desire_entry'].place(x=20, y=744)
-        self.desire_entries_dict['desire_entry2'].place(x=20, y=780)
+        #self.desire_entries_dict['desire_entry2'].place(x=20, y=780)
 
          ######## on start logic ########
     

@@ -278,120 +278,169 @@ import sqlite3
 from datetime import datetime
 
 class FramesMixin:
-    """ creates sql entries for each frame """
+    def get_sql_query(frame_name):
 
-    def create_entry_sql(self):
-    # creates th required sql entry to pass to the database
-        pass
-
-    def todays_tasks_entry_query(self, tuples):
-        """Return the SQL query string for inserting values into the 'todays_tasks' table in the Records.db
+        """
+        creates fixed sql entries for each frame 
+        args: frame_name(string)
+        retunrs: sql_query(string)
+        """
         
-        args:'tuples' is a tuple containing 6x nested tuples all with 5 elements each - tuple()
-            - entry is a tuple of 5x string values to represent the entry name: (entry1,entry2,entry3,entry4,entry5)
-            - contents is a tuple of 5x string values to represent corresponding the entry contents: ('content1','content2','content3','content4','content5') 
-            - done_flags is a tuple of 5x 0/1 integers to represent boolean values if tasks are done(sqlite doesnt support BOOL): '(0,1,0,0,1)'
-            - set_flags is a tuple of 5x 0/1 integers to represent boolean values if tasks are done(sqlite doesnt support BOOL): '(0,1,0,0,1)'
-            - remedial_set_flags is a tuple of 5x 0/1 integers to represent boolean values if tasks are done(sqlite doesnt support BOOL): '(0,1,0,0,1)'
-            - remedial_content is a tuple of 5x strings: ('content1', 'content2', 'content3', 'content4', 'content5')
-
-
-        signiture:tuples = 
-        (('entry1', 'entry2', 'entry3', 'entry4', 'entry5'),
-        ('content1', 'content2', 'content3', 'content4', 'content5'),
-        (0, 1, 0, 0, 1),
-        (0, 1, 0, 0, 1),
-        (0, 1, 0, 0, 1),
-        '("contetns1","contetns2","contetns3","contetns4","contetns5")'
-
-        example of packing tuples using packing:
+        todays_tasks_query = """
+        INSERT INTO MyFrame2 (
+        entry1, entry2, entry3, entry4, entry5,
+        content1, content2, content3, content4, content5,
+        done_flag1, done_flag2, done_flag3, done_flag4, done_flag5,
+        set_flag1, set_flag2, set_flag3, set_flag4, set_flag5,
+        remedial_set1, remedial_set2, remedial_set3, remedial_set4, remedial_set5,
+        remedial_content1, remedial_content2, remedial_content3, remedial_content4, remedial_content5,
+        recording_instance
+        ) VALUES (?, ?, ?, ?, ? ,?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?, ?, ?, ?, ?, CURRENT_TIMESTAMP);
+        """
+        #sample VALUES data
+        """ 
+        #Sample data for testing
         entry = ('entry1', 'entry2', 'entry3', 'entry4', 'entry5')
         contents = ('content1', 'content2', 'content3', 'content4', 'content5')
-        done_flags = (0, 1, 0, 0, 1)
-        set_flags = (0, 1, 0, 0, 1)
-        remedial_set_flags = (0, 1, 0, 0, 1)
-        remedial_content_flags = (0, 1, 0, 0, 1)
-
-        tuples = entry, contents, done_flags, set_flags, remedial_set_flags, remedial_content_flags
-
-        returns: string type sql query
-        
+        done_flags = ('1','0','0','1','1')
+        set_flags = ('0', '1', '0', '0', '1')
+        remedial_set_flags = ('0', '1', '0', '0', '1')
+        remedial_contents = ('content1', 'content2', 'content3', 'content4', 'content5')
         """
-        try:
-            # Assuming tuples is a tuple containing 6 nested tuples
-            if len(tuples) != 6 or not all(isinstance(inner_tuple, tuple) for inner_tuple in tuples):
-                raise ValueError("Input format is not as expected should be tuple(inner_tuple x6)")
+        #sample save
+        """
+        test_data = entry + contents + done_flags + set_flags + remedial_set_flags + remedial_contents
+        instanceofDatabaseMixin.save_entry_to_database(query,data)
+        """
 
-            # Unpack tuples
-            entry_name_tuple, contents_tuple, done_flags_tuple, set_flags_tuple, remedial_set_tuple, remedial_content_tuple = tuples
+        monthly_focus_query = """
+        INSERT INTO MyFrame3 (
+        project,
+        monthly_focus1, 
+        monthly_focus2, 
+        recording_instance
+        ) VALUES (?, ?, ?, CURRENT_TIMESTAMP);
+        """
+        #sample VALUES  data
+        """ 
+        project = ('project name',)
+        monthly_focus1 = ('monthly focus1',)
+        monthly_focus2 = ('monthly focus2',) 
+        test_data = project + monthly_focus1 + monthly_focus2
+        """
 
-            # Check if the length of each nested tuple is the same
-            tuple_lengths = [
-                len(inner_tuple) for inner_tuple in 
-                (entry_name_tuple, contents_tuple,
-                done_flags_tuple, set_flags_tuple,
-                remedial_set_tuple,
-                remedial_content_tuple)
-                ]
-            
-            #Check for tuple length difference and pass to error
-            if len(set(tuple_lengths)) != 1:
-                
-                different_lengths = [len(inner_tuple) for inner_tuple, length in zip(
-                    (entry_name_tuple,
-                    contents_tuple,
-                    done_flags_tuple,
-                    set_flags_tuple,
-                    remedial_set_tuple,
-                    remedial_content_tuple),
-                    tuple_lengths) 
-                    if length != tuple_lengths[0]]
-                
-                raise ValueError(f"All nested tuples must have the same length. Found different lengths in tuple: {different_lengths}")
 
-            # Construct the main query
-            query = f"""
-            INSERT INTO MyFrame2 (
-                {', '.join([f'{entry_name}' for entry_name in entry_name_tuple])},
-                {', '.join([f'{content}' for content in contents_tuple])},
-                {', '.join([f'done_flag{i}' for i in range(1, len(done_flags_tuple) + 1)])},
-                {', '.join([f'set_flag{i}' for i in range(1, len(set_flags_tuple) + 1)])},
-                {', '.join([f'remedial_set{i}' for i in range(1, len(remedial_set_tuple) + 1)])},
-                {', '.join([f'remedial_content{i}' for i in range(1, len(remedial_content_tuple) + 1)])}
-            ) VALUES ({', '.join(['?' for _ in range(len(entry_name_tuple) * 5)])})
-            """
-            return query
+        daily_habits_query = """
+        INSERT INTO MyFrame (
+        project,content1,
+        urgent1,content2,
+        urgent2,content3,
+        non_urgent1,content4,
+        non_urgent2,content5,
+        duration,
+        done_flag1, done_flag2, done_flag3, done_flag4, done_flag5,
+        set_on,
+        days_remaining,
+        recording_instance
+        ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,CURRENT_TIMESTAMP);
+        """
+        # sample VALUES data
+        """
+        project = ('project_name','project content')
+        urgent1 = ('urgent1_name','urgent1 content')
+        urgent2 = ('urgent1_name','urgent1 content')
+        non_urgent1 = ('non_urgent_name','non_urgent1 content')
+        non_urgent2 = ('non_urgent_name','non_urgent2 content')
+        duration = ('10',)
+        done_flags = ('done_flag1','done_flag2','done_flag3','done_flag4','done_flag5')
+        set_on = ('2024-01-24 12:34:56',)# (Year-Month-Day Hour:Minute:Second)
+        days_remaining = ('3',)
+        test_data = project + urgent1 + urgent2 + non_urgent1 + non_urgent2 + duration + done_flags + set_on + days_remaining
+        """
 
-        #if error occurs then return None
-        except Exception as e:
-            print(f"Error: {e}")
+        additional_info_query = """
+        INSERT INTO MyFrame6 (
+        Gratitude1,content1,
+        Gratitude2,content2,
+        Gratitude3,content3,
+        Gratitude4,content4,
+        Gratitude5,content5,
+        Fitness1,content6,
+        Fitness2,content7,
+        Desire,content8,
+        how_you_feel,
+        notes,
+        recording_instance
+        ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,CURRENT_TIMESTAMP);
+        """
+        #sample VALUES data
+        """ 
+        Gratitude1 = ('Gratitude1','Gratitude1 content')
+        Gratitude2 = ('Gratitude2','Gratitude2 content')
+        Gratitude3 = ('Gratitude3','Gratitude3 content')
+        Gratitude4 = ('Gratitude4','Gratitude4 content')
+        Gratitude5 = ('Gratitude5','Gratitude5 content')
+        Fitness1 = ('Fitness1','Fitness1 content')
+        Fitness2 = ('Fitness2','Fitness2 content')
+        desire =('Desire1', 'destire content')
+        how_you_feel = ('10',)
+        notes = ('up to 250 characters of notes here as a single string',)
+        test_data = Gratitude1 + Gratitude2 + Gratitude3 + Gratitude4 + Gratitude5 + Fitness1 + Fitness2 + desire + how_you_feel + notes
+        print(f"len test_data:{len(test_data)}") 
+        """
+
+
+        frame_names = ["todays_tasks", "monthly_focus", "daily_habits", "additional_info"]
+
+        if frame_name == "todays_tasks":
+            sql_query = todays_tasks_query
+        elif frame_name == "monthly_focus":
+            sql_query = monthly_focus_query
+        elif frame_name == "daily_habits":
+            sql_query = daily_habits_query
+        elif frame_name == "additional_info":
+            sql_query = additional_info_query
+        else:
+            print(f"Error: frame name[{frame_name}] not found in {frame_names}. Please check and try again")
             return None
 
-    def monthly_focus_entry(self):
-        pass
-    def daily_habits_entry(self, values):
-        pass
-
-    def additional_info_entry(self):
-        pass
-    def recording_instance_entry(self):
-        pass
+        return sql_query
 
 class DatabaseMixin:
     """ Handles database operations """
+    # TODO - need to add a way to link the recording insance to all the other entryies so it ties time all together and its easy to seach by date.
 
-    def save_entry_to_database(self, sql):
-        # Implementation to save entry to the database
-        # This could involve executing the SQL statement against the database
-        print(f"Executing SQL: {sql}")
-        # Placeholder logic for database interaction
+    def save_entry_to_database(query,data, dbpath='/home/dci-student/Desktop/python/personal/tasker/records.db'):
+        """ 
+        attemptes to save data VALUES to database
+        args: data in tuple(string,string, xnumber of place holders in query)
+        returns:none
+        """
+       
+        # creates th required sql entry to pass to the database
+        conn= sqlite3.connect(dbpath)
+
+        try:
+            cursor = conn.cursor()
+            cursor.execute(query,data)
+            conn.commit()
+            print("Data inserted successfully!")
+
+        except sqlite3.Error as e:
+            print(f"Error inserting data: {e}")
+
+        finally:
+            # Close the connection
+            conn.close()
+            print("Connection successfully closed")
+
 
 
 class RecordFrame(FramesMixin, DatabaseMixin):
     """ Uses mixins to create the entries and pass them to the database """
     def create_entry(self):
-        sql = self.create_entry_sql()
-        self.save_entry_to_database(sql)
+        sql = self.get_sql_query(self.frame_name)
+        self.save_entry_to_database(data,self.frame_name)
 
 ##########TESTING#################
 
@@ -591,7 +640,10 @@ class CreateRecordsDB:
 
     ################CREATE ALL TABLES#########################
 #instantiate the Recorder class creating all tables as required via contructor
-recorder = CreateRecordsDB()    
+#recorder = CreateRecordsDB()    
+        
+#######################RECORD RECORDS ########################
+
      
 
 
