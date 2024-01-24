@@ -277,7 +277,129 @@ def save_entries(entries_to_save, entry_contents):
 import sqlite3
 from datetime import datetime
 
-class Recorder:
+class FramesMixin:
+    """ creates sql entries for each frame """
+
+    def create_entry_sql(self):
+    # creates th required sql entry to pass to the database
+        pass
+
+    def todays_tasks_entry_query(self, tuples):
+        """Return the SQL query string for inserting values into the 'todays_tasks' table in the Records.db
+        
+        args:'tuples' is a tuple containing 6x nested tuples all with 5 elements each - tuple()
+            - entry is a tuple of 5x string values to represent the entry name: (entry1,entry2,entry3,entry4,entry5)
+            - contents is a tuple of 5x string values to represent corresponding the entry contents: ('content1','content2','content3','content4','content5') 
+            - done_flags is a tuple of 5x 0/1 integers to represent boolean values if tasks are done(sqlite doesnt support BOOL): '(0,1,0,0,1)'
+            - set_flags is a tuple of 5x 0/1 integers to represent boolean values if tasks are done(sqlite doesnt support BOOL): '(0,1,0,0,1)'
+            - remedial_set_flags is a tuple of 5x 0/1 integers to represent boolean values if tasks are done(sqlite doesnt support BOOL): '(0,1,0,0,1)'
+            - remedial_content is a tuple of 5x strings: ('content1', 'content2', 'content3', 'content4', 'content5')
+
+
+        signiture:tuples = 
+        (('entry1', 'entry2', 'entry3', 'entry4', 'entry5'),
+        ('content1', 'content2', 'content3', 'content4', 'content5'),
+        (0, 1, 0, 0, 1),
+        (0, 1, 0, 0, 1),
+        (0, 1, 0, 0, 1),
+        '("contetns1","contetns2","contetns3","contetns4","contetns5")'
+
+        example of packing tuples using packing:
+        entry = ('entry1', 'entry2', 'entry3', 'entry4', 'entry5')
+        contents = ('content1', 'content2', 'content3', 'content4', 'content5')
+        done_flags = (0, 1, 0, 0, 1)
+        set_flags = (0, 1, 0, 0, 1)
+        remedial_set_flags = (0, 1, 0, 0, 1)
+        remedial_content_flags = (0, 1, 0, 0, 1)
+
+        tuples = entry, contents, done_flags, set_flags, remedial_set_flags, remedial_content_flags
+
+        returns: string type sql query
+        
+        """
+        try:
+            # Assuming tuples is a tuple containing 6 nested tuples
+            if len(tuples) != 6 or not all(isinstance(inner_tuple, tuple) for inner_tuple in tuples):
+                raise ValueError("Input format is not as expected should be tuple(inner_tuple x6)")
+
+            # Unpack tuples
+            entry_name_tuple, contents_tuple, done_flags_tuple, set_flags_tuple, remedial_set_tuple, remedial_content_tuple = tuples
+
+            # Check if the length of each nested tuple is the same
+            tuple_lengths = [
+                len(inner_tuple) for inner_tuple in 
+                (entry_name_tuple, contents_tuple,
+                done_flags_tuple, set_flags_tuple,
+                remedial_set_tuple,
+                remedial_content_tuple)
+                ]
+            
+            #Check for tuple length difference and pass to error
+            if len(set(tuple_lengths)) != 1:
+                
+                different_lengths = [len(inner_tuple) for inner_tuple, length in zip(
+                    (entry_name_tuple,
+                    contents_tuple,
+                    done_flags_tuple,
+                    set_flags_tuple,
+                    remedial_set_tuple,
+                    remedial_content_tuple),
+                    tuple_lengths) 
+                    if length != tuple_lengths[0]]
+                
+                raise ValueError(f"All nested tuples must have the same length. Found different lengths in tuple: {different_lengths}")
+
+            # Construct the main query
+            query = f"""
+            INSERT INTO MyFrame2 (
+                {', '.join([f'{entry_name}' for entry_name in entry_name_tuple])},
+                {', '.join([f'{content}' for content in contents_tuple])},
+                {', '.join([f'done_flag{i}' for i in range(1, len(done_flags_tuple) + 1)])},
+                {', '.join([f'set_flag{i}' for i in range(1, len(set_flags_tuple) + 1)])},
+                {', '.join([f'remedial_set{i}' for i in range(1, len(remedial_set_tuple) + 1)])},
+                {', '.join([f'remedial_content{i}' for i in range(1, len(remedial_content_tuple) + 1)])}
+            ) VALUES ({', '.join(['?' for _ in range(len(entry_name_tuple) * 5)])})
+            """
+            return query
+
+        #if error occurs then return None
+        except Exception as e:
+            print(f"Error: {e}")
+            return None
+
+    def monthly_focus_entry(self):
+        pass
+    def daily_habits_entry(self, values):
+        pass
+
+    def additional_info_entry(self):
+        pass
+    def recording_instance_entry(self):
+        pass
+
+class DatabaseMixin:
+    """ Handles database operations """
+
+    def save_entry_to_database(self, sql):
+        # Implementation to save entry to the database
+        # This could involve executing the SQL statement against the database
+        print(f"Executing SQL: {sql}")
+        # Placeholder logic for database interaction
+
+
+class RecordFrame(FramesMixin, DatabaseMixin):
+    """ Uses mixins to create the entries and pass them to the database """
+    def create_entry(self):
+        sql = self.create_entry_sql()
+        self.save_entry_to_database(sql)
+
+##########TESTING#################
+
+
+
+############## CREATION OF RECORDS.DB ########################
+
+class CreateRecordsDB:
     def __init__(self):
         #create all tables using create_table x 5
         self.create_all_tables()
@@ -311,30 +433,30 @@ class Recorder:
 
         #Dynamic entry name and entry contents - join elements from list with ', ' as seperator
         dynamic_entry_and_contents = ', '.join([
-        f'{entry_names[i]} TEXT NULL, content{i} TEXT NULL ' for i in range(self.num_entries ) 
+        f'{entry_names[i]} TEXT NULL, content{i+1} TEXT NULL ' for i in range(self.num_entries) 
+        ])
+
+        
+        # Dynamic remedial content
+        remedial_content = ', '.join([
+        f'remedial_content{i+1} TEXT NULL ' for i in range(self.num_entries )
         ])
 
         #Dynamic done flags
         done_flags_boolean = ', '.join([
-            f'done_flag{i} BOOLEAN NULL ' for i in range(1, self.num_entries + 1)
+            f'done_flag{i+1} INTEGER NULL ' for i in range(self.num_entries )
         ])
 
         # Dynamic set flags
         set_flags_boolean = ', '.join([
-        f'set_flag{i} BOOLEAN NULL ' for i in range(1, self.num_entries + 1)
+        f'set_flag{i+1} INTEGER NULL ' for i in range(self.num_entries )
         ])
 
         #Dynamic remdial set
         remedial_set = ', '.join([
-            f'remedial_set{i} BOOLEAN NULL ' for i in range(1, self.num_entries + 1)
+            f'remedial_set{i+1} INTEGER NULL ' for i in range(self.num_entries )
         ])
 
-        # Dynamic remedial content
-        remedial_content = ', '.join([
-        f'remedial_content{i} TEXT NULL ' for i in range(1, self.num_entries + 1)
-        ])
-
-        
 
         # Daily habits table def
         todays_tasks_definition = f"""
@@ -454,7 +576,6 @@ class Recorder:
         #create recordinstance table
         self.create_record_instance()
 
-
         #create habit_tasks table
         self.create_table("daily_habits", "MyFrame", 5, ["project", "urgent1", "urgent2", "non_urgent1", "non_urgent2"])
 
@@ -464,14 +585,13 @@ class Recorder:
         #create today_tasks table
         self.create_table("todays_tasks", "MyFrame2", 5, ["entry1", "entry2", "entry3", "entry4", "entry5"])
 
-
         #create addional info table
-        self.create_table("additional_info", "MyFrame6", 9, ["Gratitude1", "Gratitude2", "Gratitude3", "Gratitude4", "Gratitude5","Fitness1","Fitness2","Desire","Desire"])
+        self.create_table("additional_info", "MyFrame6", 8, ["Gratitude1", "Gratitude2", "Gratitude3", "Gratitude4", "Gratitude5","Fitness1","Fitness2","Desire"])
 
 
     ################CREATE ALL TABLES#########################
 #instantiate the Recorder class creating all tables as required via contructor
-recorder = Recorder()    
+recorder = CreateRecordsDB()    
      
 
 
