@@ -594,36 +594,36 @@ class CreateRecordsDB:
     
     
 
-    def create_record_instance(self):
-        """Creates a record instance table"""
+    # def create_record_instance(self):
+    #     """Creates a record instance table"""
 
-        conn = sqlite3.connect("records.db")
-        cursor = conn.cursor()
+    #     conn = sqlite3.connect("records.db")
+    #     cursor = conn.cursor()
 
-        try:
-            cursor.execute(
-                """
-                CREATE TABLE IF NOT EXISTS record_instance (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    time_stamp DATETIME DEFAULT CURRENT_TIMESTAMP
-                )
-                """
-            )
-            print("record_instance successfully created")
+    #     try:
+    #         cursor.execute(
+    #             """
+    #             CREATE TABLE IF NOT EXISTS record_instance (
+    #                 id INTEGER PRIMARY KEY AUTOINCREMENT,
+    #                 time_stamp DATETIME DEFAULT CURRENT_TIMESTAMP
+    #             )
+    #             """
+    #         )
+    #         print("record_instance successfully created")
 
-        except Exception as e:
-            print(f"Error:{e}")
+    #     except Exception as e:
+    #         print(f"Error:{e}")
 
-        # Close connection
-        conn.commit()
-        conn.close()
-        print("Connection closed")
+    #     # Close connection
+    #     conn.commit()
+    #     conn.close()
+    #     print("Connection closed")
 
     def create_all_tables(self):
         """ creates all x5 tables required for recording all frames and a record instance with timetable"""
 
         #create recordinstance table
-        self.create_record_instance()
+        # self.create_record_instance()
 
         #create habit_tasks table
         self.create_table("daily_habits", "MyFrame", 5, ["project", "urgent1", "urgent2", "non_urgent1", "non_urgent2"])
@@ -640,7 +640,7 @@ class CreateRecordsDB:
 
     ################CREATE ALL TABLES#########################
 #instantiate the Recorder class creating all tables as required via contructor
-#recorder = CreateRecordsDB()    
+recorder = CreateRecordsDB()    
         
 #######################RECORD RECORDS ########################
 

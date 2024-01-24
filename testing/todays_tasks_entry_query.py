@@ -84,9 +84,6 @@ notes = ('up to 250 characters of notes here as a single string',)
 test_data = Gratitude1 + Gratitude2 + Gratitude3 + Gratitude4 + Gratitude5 + Fitness1 + Fitness2 + desire + how_you_feel + notes
 print(f"len test_data:{len(test_data)}")
 
-
-
-
     
 def test_insert_row(query,data, dbpath='/home/dci-student/Desktop/python/personal/tasker/records.db'):
     """ test inserts the row of data passed in the data arg to the database in dbpath """
