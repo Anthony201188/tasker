@@ -387,6 +387,7 @@ class MyFrame(ctk.CTkFrame):
         else:
             print("Current habit duration not elapsed, please wait until duraiton = 0")
 
+        
 
 #Todays Tasks
 class MyFrame2(ctk.CTkFrame):
@@ -1942,7 +1943,21 @@ class App(ctk.CTk):
     #callback Finish for the day button
     def finish_for_day(self):
         """ callback function that gets all the required data to save """
-        
+        #get the data to pass to the DB in tuple(str,str) formatt
+        ## daily habits
+        project_for_this_month = self.my_frame5v2.get_project_set_for_this_month()
+        project = ('monthly_project',project_for_this_month)
+        urgent1 = ('urgent1_name','urgent1 content')
+        urgent2 = ('urgent2_name','urgent1 content')
+        non_urgent1 = ('non_urgent_name','non_urgent1 content')
+        non_urgent2 = ('non_urgent_name','non_urgent2 content')
+        duration = ('10',)
+        done_flags = ('done_flag1','done_flag2','done_flag3','done_flag4','done_flag5')
+        set_on = ('2024-01-24 12:34:56',)# (Year-Month-Day Hour:Minute:Second)
+        days_remaining = ('3',)
+        daily_habits_tuple = project + urgent1 + urgent2 + non_urgent1 + non_urgent2 + duration + done_flags + set_on + days_remaining
+
+
         remedial_flags = self.get_remedial_flags()
         done_flags = self.get_done_flags()
         set_flags = self.get_set_flags()
@@ -1954,8 +1969,12 @@ class App(ctk.CTk):
 
         habit_names, habits =self.my_frame.get_habits_names()
         task_names, tasks = self.my_frame2.get_daily_tasks()
-        data_structure.save_entries(habit_names,habits, set_flags, done_flags,duration=duration_to_record)
-        data_structure.save_entries(task_names,tasks,set_flags, done_flags)#remedial_flags,original_content
+        
+        #record all frames
+        frame_recorder = data_structure.RecordFrame()
+
+        #daily habits
+        frame_recorder.create_entry("daily_habits",daily_habits_tuple)
         print("Everything saved!")   
 
 
