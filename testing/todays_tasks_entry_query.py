@@ -1,7 +1,7 @@
 import sqlite3
 
-
-todays_tasks_query = """
+binding ="?,"
+todays_tasks_query = f"""
 INSERT INTO MyFrame2 (
     entry1, entry2, entry3, entry4, entry5,
     content1, content2, content3, content4, content5,
@@ -10,7 +10,7 @@ INSERT INTO MyFrame2 (
     remedial_set1, remedial_set2, remedial_set3, remedial_set4, remedial_set5,
     remedial_content1, remedial_content2, remedial_content3, remedial_content4, remedial_content5,
     recording_instance
-) VALUES (?, ?, ?, ?, ? ,?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?, ?, ?, ?, ?, CURRENT_TIMESTAMP);
+) VALUES ({binding * 29} CURRENT_TIMESTAMP);
 """
 
 monthly_focus_query = """
@@ -27,34 +27,28 @@ monthly_focus1 = ('monthly focus1',)
 monthly_focus2 = ('monthly focus2',) 
 test_data = project + monthly_focus1 + monthly_focus2
 
-daily_habits_query = """
+daily_habits_query = f"""
     INSERT INTO MyFrame(
-    project,content1,
-    urgent1,content2,
-    urgent2,content3,
-    non_urgent1,content4,
-    non_urgent2,content5,
+    habit1,
+    habit2,
     duration,
-    done_flag1, done_flag2, done_flag3, done_flag4, done_flag5,
+    done_flag1, done_flag2,
     set_on,
     days_remaining,
-    recording_instance
-    ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,CURRENT_TIMESTAMP)
+    timestamp
+    ) VALUES ({binding *8} CURRENT_TIMESTAMP)
 """
 # sample VALUES data
 
-project = ('project_name','project content')
-urgent1 = ('urgent1_name','urgent1 content')
-urgent2 = ('urgent1_name','urgent1 content')
-non_urgent1 = ('non_urgent_name','non_urgent1 content')
-non_urgent2 = ('non_urgent_name','non_urgent2 content')
+habit1= ('habit1',)
+habit2 = ('habit2',)
 duration = ('10',)
-done_flags = ('done_flag1','done_flag2','done_flag3','done_flag4','done_flag5')
+done_flags = ('1','0')
 set_on = ('2024-01-24 12:34:56',)# (Year-Month-Day Hour:Minute:Second)
 days_remaining = ('3',)
-test_data = project + urgent1 + urgent2 + non_urgent1 + non_urgent2 + duration + done_flags + set_on + days_remaining
+test_data = project + habit1 + habit2 + duration + set_on + days_remaining 
 
-additional_info_query = """
+additional_info_query = f"""
 INSERT INTO MyFrame6 (
 Gratitude1,content1,
 Gratitude2,content2,
@@ -67,7 +61,7 @@ Desire,content8,
 how_you_feel,
 notes,
 recording_instance
-) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,CURRENT_TIMESTAMP);
+) VALUES ({binding * 18}CURRENT_TIMESTAMP);
 """
 #sample VALUES data
 

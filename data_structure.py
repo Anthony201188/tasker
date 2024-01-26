@@ -6,7 +6,8 @@ import time
 def get_current_time():
     current_time = time.time()
     local_time = time.localtime(current_time)
-    formatted_time = time.strftime("%d-%m-%Y,%H:%M:%S", local_time)
+    formatted_time = time.strftime("%Y-%m-%d,%H:%M:%S", local_time)
+    print(f"self.habit_set_timestamp set to:{formatted_time}")
     return formatted_time
 
 # testing
@@ -15,7 +16,8 @@ formatted_time = get_current_time()
 
 
 class FramesMixin:
-    def get_sql_query(frame_name):
+    def get_sql_query(self,frame_name):
+        binding = "?,"
 
         """
         creates fixed sql entries for each frame 
@@ -23,7 +25,7 @@ class FramesMixin:
         retunrs: sql_query(string)
         """
         
-        todays_tasks_query = """
+        todays_tasks_query = f"""
         INSERT INTO MyFrame2 (
         entry1, entry2, entry3, entry4, entry5,
         content1, content2, content3, content4, content5,
@@ -32,7 +34,7 @@ class FramesMixin:
         remedial_set1, remedial_set2, remedial_set3, remedial_set4, remedial_set5,
         remedial_content1, remedial_content2, remedial_content3, remedial_content4, remedial_content5,
         recording_instance
-        ) VALUES (?, ?, ?, ?, ? ,?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?, ?, ?, ?, ?, CURRENT_TIMESTAMP);
+        ) VALUES ({binding *30 } CURRENT_TIMESTAMP);
         """
         #sample VALUES data
         """ 
@@ -50,13 +52,13 @@ class FramesMixin:
         instanceofDatabaseMixin.save_entry_to_database(query,data)
         """
 
-        monthly_focus_query = """
+        monthly_focus_query = f"""
         INSERT INTO MyFrame3 (
         project,
         monthly_focus1, 
         monthly_focus2, 
         timestamp
-        ) VALUES (?, ?,?CURRENT_TIMESTAMP);
+        ) VALUES ({binding *3} CURRENT_TIMESTAMP);
         """
         #sample VALUES  data
         """ 
@@ -67,35 +69,31 @@ class FramesMixin:
         """
 
 
-        daily_habits_query = """
-        INSERT INTO MyFrame (
-        project,content1,
-        urgent1,content2,
-        urgent2,content3,
-        non_urgent1,content4,
-        non_urgent2,content5,
-        duration,
-        done_flag1, done_flag2, done_flag3, done_flag4, done_flag5,
+        daily_habits_query = f"""
+        INSERT INTO MyFrame(
+        habit1,
+        habit2,
+        set_duration,
+        done_flag1, done_flag2,
         set_on,
         days_remaining,
         timestamp
-        ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,CURRENT_TIMESTAMP);
+        ) VALUES ({binding *7} CURRENT_TIMESTAMP)
         """
         # sample VALUES data
         """
-        project = ('project_name','project content')
-        urgent1 = ('urgent1_name','urgent1 content')
-        urgent2 = ('urgent1_name','urgent1 content')
-        non_urgent1 = ('non_urgent_name','non_urgent1 content')
-        non_urgent2 = ('non_urgent_name','non_urgent2 content')
-        duration = ('10',)
-        done_flags = ('done_flag1','done_flag2','done_flag3','done_flag4','done_flag5')
+        # sample VALUES data
+
+        habit1= ('habit1',)
+        habit2 = ('habit2',)
+        set_duration = ('10',)
+        done_flags = ('1','0')
         set_on = ('2024-01-24 12:34:56',)# (Year-Month-Day Hour:Minute:Second)
         days_remaining = ('3',)
-        test_data = project + urgent1 + urgent2 + non_urgent1 + non_urgent2 + duration + done_flags + set_on + days_remaining
+        test_data = habit1 + habit2 + duration + set_on + days_remaining 
         """
 
-        additional_info_query = """
+        additional_info_query = f"""
         INSERT INTO MyFrame6 (
         Gratitude1,content1,
         Gratitude2,content2,
@@ -108,7 +106,7 @@ class FramesMixin:
         how_you_feel,
         notes,
         timestamp
-        ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,CURRENT_TIMESTAMP);
+        ) VALUES ({binding * 18} CURRENT_TIMESTAMP);
         """
         #sample VALUES data
         """ 
@@ -144,22 +142,23 @@ class FramesMixin:
         return sql_query
 
 class DatabaseMixin:
-    """ Handles database operations """
-    # TODO - need to add a way to link the recording insance to all the other entryies so it ties time all together and its easy to seach by date.
+    """Handles database operations."""
 
-    def save_entry_to_database(query,data,dbpath='/home/dci-student/Desktop/python/personal/tasker/records.db'):
-        """ 
-        attemptes to save data VALUES to database
-        args: data in tuple(string,string, xnumber of place holders in query)
-        returns:none
-        """
-       
-        # creates th required sql entry to pass to the database
-        conn= sqlite3.connect(dbpath)
+    def save_entry_to_database(self, data, query, dbpath='/home/dci-student/Desktop/python/personal/tasker/records.db'):
+        """Attempts to save data VALUES to the database."""
+        
+        # Type casting for ValueErrors
+        dbpath = str(dbpath)
+        print("dbpath:",dbpath)
+        print("data to pass:", data)
+        print("query to pass:", query)
+
+        # Creates the required SQL entry to pass to the database
+        conn = sqlite3.connect(dbpath)
 
         try:
             cursor = conn.cursor()
-            cursor.execute(query,data)
+            cursor.execute(data, query)  
             conn.commit()
             print("Data inserted successfully!")
 
@@ -169,22 +168,30 @@ class DatabaseMixin:
         finally:
             # Close the connection
             conn.close()
-            print("Connection successfully closed")
+            print("Connection successfully closed")   
 
 
 
 class RecordFrame(FramesMixin, DatabaseMixin):
-    """ Uses mixins to create the entries and pass them to the database """
+    """Uses mixins to create the entries and pass them to the database."""
+
+    def __init__(self, data=None):
+        super().__init__()
+        self.data = data
 
     def create_entry(self, frame_name, data):
-        """ 
-        saves required data to the frame provdided check the 'FramesMixin'
-        for datastructure but gernally passed as a tuple of string values
-        args:frame_name(string)
-        returns:none  
-        """
+        """Saves required data to the frame provided."""
+        # Debugging
+        print(f"frame_name: {frame_name}")
+        print(f"data: {data}")
+        
+        # Set the data for this instance
+        self.data = data
+
         sql = self.get_sql_query(frame_name)
+        print(f"sql:",sql)
         self.save_entry_to_database(sql, data)
+
 
 ##########TESTING#################
 
@@ -286,7 +293,7 @@ class CreateRecordsDB:
                 id INTEGER PRIMARY KEY AUTOINCREMENT, 
                 habit1,
                 habit2,
-                duration INTEGER,
+                set_duration INTEGER,
                 {done_flags_boolean},
                 set_on DATETIME,
                 days_remaining INTEGER,

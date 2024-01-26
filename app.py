@@ -95,8 +95,6 @@ class MyFrame(ctk.CTkFrame):
         # reference to the App instance for later use
         self.app_instance = app_instance #<-dependency injection
 
-        # --Add widgets onto the frame--
-
         #Label for the frame
         self.label = ctk.CTkLabel(self,anchor=ctk.N, text=self.val,width=self.val2 , height=self.val3)
         self.label.grid(row=0, column=0, padx=10, pady=5)
@@ -122,6 +120,12 @@ class MyFrame(ctk.CTkFrame):
         self.entry_duration.place(x=350,y=100)
 
         self.all_habit_boolvars = [self.habit1_set_var, self.habit2_set_var]
+
+        #habits set timestamp
+        self.habit_set_timestamp = "timestamp-placeholder"
+
+        #set duration var
+        self.set_duration_var = ""
 
 
         #Buttons
@@ -177,6 +181,22 @@ class MyFrame(ctk.CTkFrame):
 
     
     ############## methods ##############
+    #get set duration var
+    def get_set_duration_var(self):
+        """ returns the self.set_duration_var as a tuple(str,) for the DB """
+        return tuple(str(self.set_duration_var),)        
+
+    #get days remaining
+    def get_days_remaining(self):
+        """ returns the number of days remaining as a tuple(str,) for the DB """
+        days_remaining = self.get_current_duration()
+        return tuple(str(days_remaining,))
+
+            
+    #get habitset_timestamp
+    def get_habit_set_timestamp(self):
+        """ return the last set time of the last habit setting as a datetime string in ISO 8601 """
+        return self.habit_set_timestamp
 
     #habit functions
     def load_habits(self)->tuple:
@@ -257,11 +277,13 @@ class MyFrame(ctk.CTkFrame):
             if habit1:
                 new_value = not self.habit1_set_var.get()
                 self.habit1_set_var.set(new_value)
+                self.habit_set_timestamp = data_structure.get_current_time()
                 print(f"Habit1 set = {new_value}")
 
             if habit2:
                 new_value = not self.habit2_set_var.get()
                 self.habit2_set_var.set(new_value)
+                self.habit_set_timestamp = data_structure.get_current_time()
                 print(f"Habit2 set = {new_value}")
 
 
@@ -293,8 +315,12 @@ class MyFrame(ctk.CTkFrame):
     def set_duration(self, duration_to_set):
         """ takes an integers as an arg and sets the duration label to it"""
 
+
         self.label_number_of_days_remaining.configure (text = duration_to_set)
+        self.set_duration_var = duration_to_set 
+        print(f"self.set_duration_var set to :{duration_to_set}")
         print (f"habit duration set to:{duration_to_set}")
+
 
     def get_entry_duration(self)->str:
         """ gets whatever is in the 'duration' entry, returns it as an str """
@@ -386,6 +412,21 @@ class MyFrame(ctk.CTkFrame):
 
         else:
             print("Current habit duration not elapsed, please wait until duraiton = 0")
+
+    def get_done_flags(self):
+        """ get the done flags and return them as integers representing boool vals for DB """
+        done_flag_tuple = []
+        
+        if self.habit1_check_var.get():
+            done_flag_tuple.append("1")
+        else:
+            done_flag_tuple.append("0")
+        if self.habit2_check_var2.get():
+            done_flag_tuple.append("1")
+        else:
+            done_flag_tuple.append("0")
+        
+        return tuple(done_flag_tuple)
 
         
 
@@ -1944,18 +1985,19 @@ class App(ctk.CTk):
     def finish_for_day(self):
         """ callback function that gets all the required data to save """
         #get the data to pass to the DB in tuple(str,str) formatt
-        ## daily habits
-        project_for_this_month = self.my_frame5v2.get_project_set_for_this_month()
-        project = ('monthly_project',project_for_this_month)
-        urgent1 = ('urgent1_name','urgent1 content')
-        urgent2 = ('urgent2_name','urgent1 content')
-        non_urgent1 = ('non_urgent_name','non_urgent1 content')
-        non_urgent2 = ('non_urgent_name','non_urgent2 content')
-        duration = ('10',)
-        done_flags = ('done_flag1','done_flag2','done_flag3','done_flag4','done_flag5')
-        set_on = ('2024-01-24 12:34:56',)# (Year-Month-Day Hour:Minute:Second)
-        days_remaining = ('3',)
-        daily_habits_tuple = project + urgent1 + urgent2 + non_urgent1 + non_urgent2 + duration + done_flags + set_on + days_remaining
+        ## daily habits VALUES
+        habits = self.my_frame.get_habits()
+        set_duration = self.my_frame.get_set_duration_var()
+        done_flags = self.my_frame.get_done_flags() ###### GOT TO HERE
+        set_on = (self.my_frame.get_habit_set_timestamp(),) # (Year-Month-Day Hour:Minute:Second) might need to remove the seconds
+        days_remaining = self.my_frame.get_days_remaining()
+        
+        #de-bugging
+        print(habits)
+        print(habits, set_duration, done_flags, set_on, days_remaining)
+        print(habits + set_duration + done_flags + set_on + days_remaining)
+        daily_habits_tuple = habits + set_duration + done_flags + set_on + days_remaining 
+        print("daily_habits_tuple:",daily_habits_tuple)
 
 
         remedial_flags = self.get_remedial_flags()
@@ -1964,18 +2006,18 @@ class App(ctk.CTk):
         original_content = self.get_original_content()
         duration_to_record = app.my_frame.get_current_duration()
         
-        print("duration_to_record",duration_to_record)
-        print("Set flags:",set_flags)
+        #print("duration_to_record",duration_to_record)
+        #print("Set flags:",set_flags)
 
-        habit_names, habits =self.my_frame.get_habits_names()
-        task_names, tasks = self.my_frame2.get_daily_tasks()
+        #habit_names, habits =self.my_frame.get_habits_names()
+        #task_names, tasks = self.my_frame2.get_daily_tasks()
         
         #record all frames
         frame_recorder = data_structure.RecordFrame()
 
         #daily habits
         frame_recorder.create_entry("daily_habits",daily_habits_tuple)
-        print("Everything saved!")   
+        print("daily_habits have been successfully recorded!")   
 
 
 #TODO - drop down menu for project tasks that shows tasks from that project in middle frame, project can only be selected if monthly focus aligns and once set cant be unset until....
