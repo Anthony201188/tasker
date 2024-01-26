@@ -534,11 +534,11 @@ class MyFrame2(ctk.CTkFrame):
         self.project_remedial_switch_var = ctk.BooleanVar(value=False)
         self.project_remedial_switch = ctk.CTkSwitch(
             self,variable=self.project_remedial_switch_var,
-            onvalue=True, offvalue=False ,fg_color="green",
-            command=lambda :(
+            onvalue=True, offvalue=False ,text=None, fg_color="green",
+            command=lambda  :(
                 self.toggle_colour(self.project_remedial_switch_var,(self.entry, self.check),"green","light green"),
-                self.update_remedial_original_entry_content(),
-                self.update_remedial_switch_positions()), text=None)
+                self.update_remedial_original_entry_content(from_button=True) if self.toggle_test else self.update_remedial_original_entry_content(),
+                self.update_remedial_switch_positions()))
         self.project_remedial_switch.place(x=350,y=35)
 
         #urgent1
@@ -548,7 +548,7 @@ class MyFrame2(ctk.CTkFrame):
             onvalue=True, offvalue=False, text=None, fg_color="red",
             command=lambda :(
                 self.toggle_colour(self.urgent1_remedial_switch_var,(self.entry2, self.urgent_check1),"red","pink"),
-                self.update_remedial_original_entry_content(),
+                self.update_remedial_original_entry_content(from_button=True) if self.toggle_test else self.update_remedial_original_entry_content(),
                 self.update_remedial_switch_positions()))
         self.urgent1_remedial_switch.place(x=350,y=85)
 
@@ -558,7 +558,7 @@ class MyFrame2(ctk.CTkFrame):
             self,variable=self.urgent2_remedial_switch_var,
             onvalue=True, offvalue=False, text=None,fg_color="red",
             command=lambda :(self.toggle_colour(self.urgent2_remedial_switch_var,(self.entry3, self.urgent_check2),"red","pink"),
-                             self.update_remedial_original_entry_content(),
+                             self.update_remedial_original_entry_content(from_button=True) if self.toggle_test else self.update_remedial_original_entry_content(), #inline if to not unset on remote toggle()
                              self.update_remedial_switch_positions()))
         self.urgent2_remedial_switch.place(x=350,y=120)
 
@@ -568,7 +568,7 @@ class MyFrame2(ctk.CTkFrame):
             self,variable=self.non_urgent1_remedial_switch_var,
             onvalue=True, offvalue=False ,text=None,fg_color="blue",
             command=lambda :(self.toggle_colour(self.non_urgent1_remedial_switch_var,(self.entry4, self.non_urgent_check1),"blue","light blue"),
-                             self.update_remedial_original_entry_content(),
+                             self.update_remedial_original_entry_content(from_button=True) if self.toggle_test else self.update_remedial_original_entry_content(),
                              self.update_remedial_switch_positions()))
         self.non_urgent1_remedial_switch.place(x=350,y=160)        
         
@@ -578,7 +578,7 @@ class MyFrame2(ctk.CTkFrame):
             self,variable=self.non_urgent2_remedial_switch_var,
             onvalue=True, offvalue=False, fg_color="blue", text=None,
             command=lambda :(self.toggle_colour(self.non_urgent2_remedial_switch_var,(self.entry5, self.non_urgent_check2),"blue","light blue"),
-                             self.update_remedial_original_entry_content(),
+                             self.update_remedial_original_entry_content(from_button=True) if self.toggle_test else self.update_remedial_original_entry_content(),
                              self.update_remedial_switch_positions()))
         self.non_urgent2_remedial_switch.place(x=350,y=193)  
 
@@ -680,11 +680,12 @@ class MyFrame2(ctk.CTkFrame):
         print("zipped bools and switch objs:",zipped)
 
    
-
+        self.toggle_test = None
 
         #update switch positions
         for _, switch in zip(self.loaded_remedial_positions,self.all_remedial_switches):
-            if _:
+            if _ :
+                self.toggle_test = True # this var used for inline for in lambda functions to pass the from_button 
                 switch.toggle()
 
 
@@ -779,14 +780,14 @@ class MyFrame2(ctk.CTkFrame):
 
 
     
-    def update_remedial_original_entry_content(self):
+    def update_remedial_original_entry_content(self ,from_button=False):
         """ updates the variable original_remedial_content each time a switch is switched! """
 
         #update the entries dict
         self.update_entries_dict()
     
         #[ass the updated entries_dict to remedial_switch_capture
-        self.original_remedial_content = self.remedial_switch_capture(self.entries_and_switch_vars_dict)
+        self.original_remedial_content = self.remedial_switch_capture(self.entries_and_switch_vars_dict, from_button)
         
         print("global var - self.original_remedial_content", self.original_remedial_content)
 
@@ -2030,18 +2031,18 @@ class App(ctk.CTk):
     def get_done_flags(self, return_done_flags_and_entries_dict=False) -> list or dict:
         """ 
         Returns a list of all done_flags using BooleanVar .get() method
-        if return_done_flags_and_entries_dict=True then a dict is returned of
+        if return_done_flags_and_entries_dict=True then a tuple is returned of
         done_flags and their correspoding entry so that the entries can be reset
         """
         #note - have to use ids as boovar objects are non hasshable so cant be used as dict keys (non unique)
         checkbox_vars = {
-            id(self.my_frame.habit1_check_var): self.my_frame.entry_habit1,
-            id(self.my_frame.habit2_check_var2): self.my_frame.entry_habit2,
-            id(self.my_frame2.project_check_var): self.my_frame2.entry,
-            id(self.my_frame2.urgent_check1_var): self.my_frame2.entry2,
-            id(self.my_frame2.urgent_check2_var): self.my_frame2.entry3,
-            id(self.my_frame2.non_urgent_check1_var): self.my_frame2.entry4,
-            id(self.my_frame2.non_urgent_check2_var): self.my_frame5
+            "habit1": self.my_frame.entry_habit1,
+            "habit2": self.my_frame.entry_habit2,
+            "Project": self.my_frame2.entry,
+            "urgent1": self.my_frame2.entry2,
+            "urgent2": self.my_frame2.entry3,
+            "non_urgent1": self.my_frame2.entry4,
+            "non_urgent2": self.my_frame2.entry5
         }
 
         self.done_flags = [self.my_frame.habit1_check_var.get(),
@@ -2055,12 +2056,9 @@ class App(ctk.CTk):
         print("done_flags returned as list:", self.done_flags) # <- testing
 
         if return_done_flags_and_entries_dict:
-            self.done_flags = {
-                done_flag: checkbox_vars[done_flag_id] for done_flag, done_flag_id in
-                zip(self.done_flags, checkbox_vars)
-                }
-            
-            print("done_flags and entries returned as dict:", self.done_flags)
+            self.done_flags = tuple(zip(self.done_flags, checkbox_vars.values()))
+
+            print("done_flags and entries returned as tuple:", self.done_flags)
 
         return self.done_flags
     
@@ -2096,8 +2094,8 @@ class App(ctk.CTk):
     def if_done_checked_unlock_and_empty(self):
         """If done checked, unlock and empty entry"""
         done_flags = self.get_done_flags(return_done_flags_and_entries_dict=True)
-        for done_flag , entry in done_flags.items():
-            if done_flag and entry not in(self.my_frame.entry_habit1,self.my_frame.entry_habit2):
+        for done_flag , entry in done_flags:
+            if done_flag and (entry not in(self.my_frame.entry_habit1,self.my_frame.entry_habit2)):
                 entry.configure(state="normal", border_width=1)
                 entry.delete(0, "end")
 
