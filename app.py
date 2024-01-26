@@ -122,7 +122,7 @@ class MyFrame(ctk.CTkFrame):
         self.all_habit_boolvars = [self.habit1_set_var, self.habit2_set_var]
 
         #habits set timestamp
-        self.habit_set_timestamp = "timestamp-placeholder"
+        self.habit_set_timestamp = "timestamp-placeholder" #<- needs file persistance preferable if using db create a table specifically for file persistance
 
         #set duration var
         self.set_duration_var = ""
@@ -648,11 +648,13 @@ class MyFrame2(ctk.CTkFrame):
 
     
     
-    def remedial_switch_capture(self,entries)->dict:
+    def remedial_switch_capture(self,entries, from_button=False)->dict:
         """ takes a dict of entries and bool vars, if bool is truthy, 
         returns the same but with their contents and not the values
-        takse e.g {entry2:True}
-        returns e.g {entry2:"some text here"}
+        takes: {entry2:True}
+        returns: {entry2:"some text here"}
+        note: from_button default val ensures when this function
+        is called from finish for the day button the entry isnt unlocked
         """
 
         captured_entries = {}
@@ -665,8 +667,9 @@ class MyFrame2(ctk.CTkFrame):
                 #if you want obj not string name swap below
                 #captured_entries[entry] = entry.get()
                 captured_entries[self.get_entry_name(entry)] = entry.get()
-                #unset entry and bool var here
-                self.unset_unlock(entry)
+                #conditionaly unset entry and bool var here
+                if not from_button:
+                    self.unset_unlock(entry) 
 
         #this returns obj, content
         print("original_entry_content returned from function", captured_entries)
@@ -1968,12 +1971,16 @@ class App(ctk.CTk):
         
         return self.remedial_flags
     
-    def get_original_content(self):
-        """ return the orignal content for the remedial tasks as lst(str) """
+    def get_original_content(self, from_button=False):
+        """ 
+        return the orignal content for the remedial tasks as lst(str)
+        from_button is a bool passed to remedial_switch_capture to stop the
+        unsetting of the entry  if called from button as opposed to switch 
+        """
 
 
         #update the vars and switches dict
-        self.original_content_dict = self.my_frame2.remedial_switch_capture(self.my_frame2.update_entries_dict())
+        self.original_content_dict = self.my_frame2.remedial_switch_capture(self.my_frame2.update_entries_dict(),from_button)
         self.original_content = list(self.original_content_dict.values())
 
         print("TESTING SELF.ORIGINAL_CONTENT",self.original_content)
@@ -1988,22 +1995,20 @@ class App(ctk.CTk):
         ## daily habits VALUES
         habits = self.my_frame.get_habits()
         set_duration = self.my_frame.get_set_duration_var()
-        done_flags = self.my_frame.get_done_flags() ###### GOT TO HERE
+        done_flags = self.my_frame.get_done_flags()
         set_on = (self.my_frame.get_habit_set_timestamp(),) # (Year-Month-Day Hour:Minute:Second) might need to remove the seconds
         days_remaining = self.my_frame.get_days_remaining()
         
-        #de-bugging
-        print(habits)
-        print(habits, set_duration, done_flags, set_on, days_remaining)
-        print(habits + set_duration + done_flags + set_on + days_remaining)
         daily_habits_tuple = habits + set_duration + done_flags + set_on + days_remaining 
+        
+        #debugging        
         print("daily_habits_tuple:",daily_habits_tuple)
 
 
         remedial_flags = self.get_remedial_flags()
         done_flags = self.get_done_flags()
         set_flags = self.get_set_flags()
-        original_content = self.get_original_content()
+        original_content = self.get_original_content(from_button=True)
         duration_to_record = app.my_frame.get_current_duration()
         
         #print("duration_to_record",duration_to_record)
