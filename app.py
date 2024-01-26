@@ -46,6 +46,9 @@ def on_close():
     # save habit1/2 on close
     app.my_frame.save_habits()
 
+    #save remedial swtich postions on close
+    save_file("remedial_switch_positions.pkl",app.my_frame2.loaded_remedial_positions)
+
     # save daily tasks
     print("daily tasks set:",app.my_frame2.daily_tasks_set)#<- testing
     if app.my_frame2.daily_tasks_set:
@@ -413,7 +416,7 @@ class MyFrame(ctk.CTkFrame):
         else:
             print("Current habit duration not elapsed, please wait until duraiton = 0")
 
-    def get_done_flags(self):
+    def get_habit_done_flags(self):
         """ get the done flags and return them as integers representing boool vals for DB """
         done_flag_tuple = []
         
@@ -527,25 +530,76 @@ class MyFrame2(ctk.CTkFrame):
 
 
         #Remedial work switches 
+        #project
         self.project_remedial_switch_var = ctk.BooleanVar(value=False)
-        self.project_remedial_switch = ctk.CTkSwitch(self,variable=self.project_remedial_switch_var,onvalue=True, offvalue=False ,fg_color="green",command=lambda :(self.toggle_colour(self.project_remedial_switch_var,(self.entry, self.check),"green","light green"),self.update_remedial_original_entry_content()), text=None)
+        self.project_remedial_switch = ctk.CTkSwitch(
+            self,variable=self.project_remedial_switch_var,
+            onvalue=True, offvalue=False ,fg_color="green",
+            command=lambda :(
+                self.toggle_colour(self.project_remedial_switch_var,(self.entry, self.check),"green","light green"),
+                self.update_remedial_original_entry_content(),
+                self.update_remedial_switch_positions()), text=None)
         self.project_remedial_switch.place(x=350,y=35)
 
+        #urgent1
         self.urgent1_remedial_switch_var = ctk.BooleanVar(value=False)
-        self.urgent1_remedial_switch = ctk.CTkSwitch(self,variable=self.urgent1_remedial_switch_var,onvalue=True, offvalue=False ,command=lambda :(self.toggle_colour(self.urgent1_remedial_switch_var,(self.entry2, self.urgent_check1),"red","pink"),self.update_remedial_original_entry_content()),fg_color="red", text=None)
+        self.urgent1_remedial_switch = ctk.CTkSwitch(
+            self,variable=self.urgent1_remedial_switch_var,
+            onvalue=True, offvalue=False, text=None, fg_color="red",
+            command=lambda :(
+                self.toggle_colour(self.urgent1_remedial_switch_var,(self.entry2, self.urgent_check1),"red","pink"),
+                self.update_remedial_original_entry_content(),
+                self.update_remedial_switch_positions()))
         self.urgent1_remedial_switch.place(x=350,y=85)
 
+        #urgent2
         self.urgent2_remedial_switch_var = ctk.BooleanVar(value=False)
-        self.urgent2_remedial_switch = ctk.CTkSwitch(self,variable=self.urgent2_remedial_switch_var,onvalue=True, offvalue=False,command=lambda :(self.toggle_colour(self.urgent2_remedial_switch_var,(self.entry3, self.urgent_check2),"red","pink"),self.update_remedial_original_entry_content()) ,fg_color="red", text=None)
+        self.urgent2_remedial_switch = ctk.CTkSwitch(
+            self,variable=self.urgent2_remedial_switch_var,
+            onvalue=True, offvalue=False, text=None,fg_color="red",
+            command=lambda :(self.toggle_colour(self.urgent2_remedial_switch_var,(self.entry3, self.urgent_check2),"red","pink"),
+                             self.update_remedial_original_entry_content(),
+                             self.update_remedial_switch_positions()))
         self.urgent2_remedial_switch.place(x=350,y=120)
 
+        #urgent1
         self.non_urgent1_remedial_switch_var = ctk.BooleanVar(value=False)
-        self.non_urgent1_remedial_switch = ctk.CTkSwitch(self,variable=self.non_urgent1_remedial_switch_var,onvalue=True, offvalue=False ,command=lambda :(self.toggle_colour(self.non_urgent1_remedial_switch_var,(self.entry4, self.non_urgent_check1),"blue","light blue"),self.update_remedial_original_entry_content()),fg_color="blue", text=None)
+        self.non_urgent1_remedial_switch = ctk.CTkSwitch(
+            self,variable=self.non_urgent1_remedial_switch_var,
+            onvalue=True, offvalue=False ,text=None,fg_color="blue",
+            command=lambda :(self.toggle_colour(self.non_urgent1_remedial_switch_var,(self.entry4, self.non_urgent_check1),"blue","light blue"),
+                             self.update_remedial_original_entry_content(),
+                             self.update_remedial_switch_positions()))
         self.non_urgent1_remedial_switch.place(x=350,y=160)        
         
+        #urgent2
         self.non_urgent2_remedial_switch_var = ctk.BooleanVar(value=False)
-        self.non_urgent2_remedial_switch = ctk.CTkSwitch(self,variable=self.non_urgent2_remedial_switch_var,onvalue=True, offvalue=False ,command=lambda :(self.toggle_colour(self.non_urgent2_remedial_switch_var,(self.entry5, self.non_urgent_check2),"blue","light blue"),self.update_remedial_original_entry_content()),fg_color="blue", text=None)
-        self.non_urgent2_remedial_switch.place(x=350,y=193)   
+        self.non_urgent2_remedial_switch = ctk.CTkSwitch(
+            self,variable=self.non_urgent2_remedial_switch_var,
+            onvalue=True, offvalue=False, fg_color="blue", text=None,
+            command=lambda :(self.toggle_colour(self.non_urgent2_remedial_switch_var,(self.entry5, self.non_urgent_check2),"blue","light blue"),
+                             self.update_remedial_original_entry_content(),
+                             self.update_remedial_switch_positions()))
+        self.non_urgent2_remedial_switch.place(x=350,y=193)  
+
+        #remedial switch vars
+        self.all_remedial_switch_vars = [
+        self.project_remedial_switch_var,
+        self.urgent1_remedial_switch_var,
+        self.urgent2_remedial_switch_var,
+        self.non_urgent1_remedial_switch_var,
+        self.non_urgent2_remedial_switch_var,
+        ]
+
+        #remedial switch vars
+        self.all_remedial_switches = [
+        self.project_remedial_switch,
+        self.urgent1_remedial_switch,
+        self.urgent2_remedial_switch,
+        self.non_urgent1_remedial_switch,
+        self.non_urgent2_remedial_switch,
+        ]
+
 
         #dict of widgets to toggle and there place locations as vals
         self.easy_day_widgets_to_toggle = {
@@ -561,8 +615,7 @@ class MyFrame2(ctk.CTkFrame):
             self.entry:"10,35",
             self.entry3:"10,118",
             self.entry5:"10,193"
-
-        }
+            }
 
         # varible for all entreis and corresponding switch vars
         self.entries_and_switch_vars_dict = {}
@@ -586,6 +639,7 @@ class MyFrame2(ctk.CTkFrame):
         #load pickled file
         daily_task_entry_lst = load_file("daily_task_entry_lst.pkl")
 
+
         #select entry dicts to pseudo-load, shouldnt  as only truthy values should be stored in file double filtering not bad.
         for dict_obj in daily_task_entry_lst:
             if dict_obj["load_on_start"]: #checks if entry dict "load_on_start" value is truthy 
@@ -603,26 +657,38 @@ class MyFrame2(ctk.CTkFrame):
         #lock entries
         self.set_entries_on_start()
 
+        #switch postion file persistance
+        try:
+            self.loaded_remedial_positions = load_file("remedial_switch_positions.pkl")
+        except EOFError as e:
+            print(f"Error:{e}")
+            print("remedial_switch_positions.pkl doesnt exists, creating file now!")
 
-        #version- operation below
-        #find all files containing "daily_task_entry" in cwd
-        #testing below removed for list of dicts in one file and unpacked as in version 2 above
+        #account for first time start with no file
+        if not self.loaded_remedial_positions:
+            switch_positions = self.update_remedial_switch_positions()
+            print("switch_positions",switch_positions)
+            save_file("remedial_switch_positions.pkl",switch_positions)
+            self.loaded_remedial_positions = switch_positions
+
         
-        """current_directory = os.getcwd()
-        daily_task_files = [os.path.join(root, file) for root, _, files in os.walk(current_directory) for file in files if "daily_task_entry" in file]
-        print("Files found", daily_task_files)"""
 
-        """#read files using for loop and if "load_on_start=True"
-        #load files for entries
-        self.loaded_entries = []
-        for entry_dict in daily_task_entry_lst:
-            loaded_entry_dict = self.if_required_load_file(entry_dict) #<- returns none causes ERROR
-            if loaded_entry_dict is not None:#<- stops the none types being added to the list if files not required to be loaded
-                print("Files required to load:", loaded_entry_dict)
-                self.loaded_entries.append(loaded_entry_dict) """
+        #de-bugging
+        print("loaded_remedial_positions type",type(self.loaded_remedial_positions))
+        print("remdial switch vars type",type(self.all_remedial_switch_vars))
+        zipped = list(zip(self.loaded_remedial_positions,self.all_remedial_switches)) # zipped returns iterator object must be set to var to print
+        print("zipped bools and switch objs:",zipped)
 
-        #on-close if entry is NOT empty get entry text and save to file and load on start=True
-        #save file should contain a dict daily_task_entry = {"entry_name":"entry2","content":"entry_text_here", "load_on_start":True}
+   
+
+
+        #update switch positions
+        for _, switch in zip(self.loaded_remedial_positions,self.all_remedial_switches):
+            if _:
+                switch.toggle()
+
+
+
 
 
 ################ methods ######################
@@ -633,6 +699,16 @@ class MyFrame2(ctk.CTkFrame):
 
 #the problem with this is it really needs to take a dictionary and not two lists
 #but I dont want to have to change the data_structure.saveentries function to take dicts
+                
+    # def save_switch_positions(self):
+    #     """ 
+    #     saves the position of the switch as a bool 
+    #     e.g. [True,False,Flase,True,False]  to "remedial_swtich_positions.pkl"
+    #     """
+    #     switch_positions = [bool_var for bool_var in self.all_remedial_switch_vars]
+    #     save_file("remedial_switch_positions.pkl",switch_positions)
+
+
     def get_entry_name(self,entry):
         """ returns the name of an entry """
       
@@ -675,6 +751,11 @@ class MyFrame2(ctk.CTkFrame):
         print("original_entry_content returned from function", captured_entries)
 
         return captured_entries
+    
+    def update_remedial_switch_positions(self):
+        """ updated the self.loded_swtich_positions list every time a switch is thrown """
+        self.loaded_remedial_positions = [bool_var.get() for bool_var in self.all_remedial_switch_vars]
+        return self.loaded_remedial_positions
    
 
     
@@ -1008,6 +1089,7 @@ class MyFrame2(ctk.CTkFrame):
             bool_var = self.entry_var_dict[entry]
 
             bool_var.set(not bool_var.get())
+            ###HERE
 
             print(f"Toggled [{self.get_entry_name(entry)}] bool var now set to:", bool_var.get())
         else:
@@ -1945,25 +2027,48 @@ class App(ctk.CTk):
         return self.habit_set_flags 
 
 
-    def get_done_flags(self)->list:
-        """ returns a list of all done_flags """
-    
-        checkbox_vars = [
-        self.my_frame.habit1_check_var,
-        self.my_frame.habit2_check_var2,
-        self.my_frame2.project_check_var,
-        self.my_frame2.urgent_check1_var,
-        self.my_frame2.urgent_check2_var,
-        self.my_frame2.non_urgent_check1_var,
-        self.my_frame2.non_urgent_check2_var]
+    def get_done_flags(self, return_done_flags_and_entries_dict=False) -> list or dict:
+        """ 
+        Returns a list of all done_flags using BooleanVar .get() method
+        if return_done_flags_and_entries_dict=True then a dict is returned of
+        done_flags and their correspoding entry so that the entries can be reset
+        """
+        #note - have to use ids as boovar objects are non hasshable so cant be used as dict keys (non unique)
+        checkbox_vars = {
+            id(self.my_frame.habit1_check_var): self.my_frame.entry_habit1,
+            id(self.my_frame.habit2_check_var2): self.my_frame.entry_habit2,
+            id(self.my_frame2.project_check_var): self.my_frame2.entry,
+            id(self.my_frame2.urgent_check1_var): self.my_frame2.entry2,
+            id(self.my_frame2.urgent_check2_var): self.my_frame2.entry3,
+            id(self.my_frame2.non_urgent_check1_var): self.my_frame2.entry4,
+            id(self.my_frame2.non_urgent_check2_var): self.my_frame5
+        }
+
+        self.done_flags = [self.my_frame.habit1_check_var.get(),
+                    self.my_frame.habit2_check_var2.get(),
+                    self.my_frame2.project_check_var.get(),
+                    self.my_frame2.urgent_check1_var.get(),
+                    self.my_frame2.urgent_check2_var.get(),
+                    self.my_frame2.non_urgent_check1_var.get(),
+                    self.my_frame2.non_urgent_check2_var.get()]
         
-        self.done_flags = [var.get() for var in checkbox_vars]
-        print("done_flags",self.done_flags)#<-testing
+        print("done_flags returned as list:", self.done_flags) # <- testing
+
+        if return_done_flags_and_entries_dict:
+            self.done_flags = {
+                done_flag: checkbox_vars[done_flag_id] for done_flag, done_flag_id in
+                zip(self.done_flags, checkbox_vars)
+                }
+            
+            print("done_flags and entries returned as dict:", self.done_flags)
 
         return self.done_flags
     
     def get_remedial_flags(self):
-        """ return the remeidal flags a list of bools """
+        """ 
+        return the remeidal flags a list of bools 
+        example:[True, False, False, False, False]
+        """
 
         self.remedial_flags_dict =self.my_frame2.update_entries_dict()#<- CHECK WHAT THE CONTENTS OF THIS DICT LOOKS LIKE AND WRITE IT IN THE DOC STRING
         self.remedial_flags = list(self.remedial_flags_dict.values())
@@ -1980,12 +2085,21 @@ class App(ctk.CTk):
 
 
         #update the vars and switches dict
-        self.original_content_dict = self.my_frame2.remedial_switch_capture(self.my_frame2.update_entries_dict(),from_button)
+        self.original_content_dict = self.my_frame2.remedial_switch_capture(
+        self.my_frame2.update_entries_dict(),from_button)
         self.original_content = list(self.original_content_dict.values())
 
         print("TESTING SELF.ORIGINAL_CONTENT",self.original_content)
 
         return self.original_content
+    
+    def if_done_checked_unlock_and_empty(self):
+        """If done checked, unlock and empty entry"""
+        done_flags = self.get_done_flags(return_done_flags_and_entries_dict=True)
+        for done_flag , entry in done_flags.items():
+            if done_flag and entry not in(self.my_frame.entry_habit1,self.my_frame.entry_habit2):
+                entry.configure(state="normal", border_width=1)
+                entry.delete(0, "end")
 
     
     #callback Finish for the day button
@@ -1995,7 +2109,7 @@ class App(ctk.CTk):
         ## daily habits VALUES
         habits = self.my_frame.get_habits()
         set_duration = self.my_frame.get_set_duration_var()
-        done_flags = self.my_frame.get_done_flags()
+        done_flags = self.my_frame.get_habit_done_flags()
         set_on = (self.my_frame.get_habit_set_timestamp(),) # (Year-Month-Day Hour:Minute:Second) might need to remove the seconds
         days_remaining = self.my_frame.get_days_remaining()
         
@@ -2022,7 +2136,14 @@ class App(ctk.CTk):
 
         #daily habits
         frame_recorder.create_entry("daily_habits",daily_habits_tuple)
-        print("daily_habits have been successfully recorded!")   
+        print("daily_habits have been successfully recorded!")  
+
+        # if done is checked empty and unlock the entry
+        self.if_done_checked_unlock_and_empty()
+
+
+
+                
 
 
 #TODO - drop down menu for project tasks that shows tasks from that project in middle frame, project can only be selected if monthly focus aligns and once set cant be unset until....
