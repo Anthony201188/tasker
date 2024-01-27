@@ -698,11 +698,11 @@ class MyFrame2(ctk.CTkFrame):
         """ returns the name of an entry """
       
         entry_names = {
-            self.entry:"project",
-            self.entry2:"urgent1",
-            self.entry3:"urgent2",
-            self.entry4:"nonurgent1",
-            self.entry5:"nonurgent2",
+            self.entry:"entry1",
+            self.entry2:"entry2",
+            self.entry3:"entry3",
+            self.entry4:"entry4",
+            self.entry5:"entry5",
         }
         
         return entry_names[entry]
@@ -890,10 +890,15 @@ class MyFrame2(ctk.CTkFrame):
         #get all entry content
         for entry in self.all_entries:
             count += 1
-            if entry:
+            if entry.get():
                 content = entry.get()
                 self.daily_tasks.append(content)
                 self.entry_names.append(f"entry{count}")
+            else:
+                self.daily_tasks.append("NULL")
+                self.entry_names.append("NULL")
+
+        # debugging        
         self.collected_content = [item for item in self.daily_tasks if item != ""]
         print(f"Collected daily tasks:{self.entry_names} ")#<- testing
         print(f"Collected daily tasks content:{self.collected_content} ")#<- testing
@@ -1994,6 +1999,9 @@ class App(ctk.CTk):
         self.my_frame6 = MyFrame6(self,"Addtional info", 340, 825)
         self.my_frame6.place(x=1530, y=130)
 
+        #used for finish for the day saving 
+        self.remedial_contents = self.get_original_content()
+
         
     
     ########## methods  ##############
@@ -2022,7 +2030,7 @@ class App(ctk.CTk):
         return self.habit_set_flags 
     
     def get_daily_tasks_set_flags(self):
-        """ returns a list of string type integers representing the boolean values
+        """ returns a tuple of string type integers representing the boolean values
         of if the entries have been set or not
         returns: ('1','0','0','1','1')
         """
@@ -2030,9 +2038,9 @@ class App(ctk.CTk):
         full_bool_list = self.get_set_flags()
 
         # Slice the first two elements with the string "1" or "0" conditions
-        sliced_list = ["1" if val else "0" for val in full_bool_list[:2]]
+        sliced_list = ["1" if val else "0" for val in full_bool_list[2:]]
         
-        return sliced_list
+        return tuple(sliced_list)
         
 
     def get_done_flags(self, return_done_flags_and_entries_dict=False) -> list or dict:
@@ -2075,13 +2083,13 @@ class App(ctk.CTk):
         """
         done_flag_tuple = []
         
-        self.done_flags = [self.my_frame.habit1_check_var.get(),
-                    self.my_frame.habit2_check_var2.get(),
+        self.done_flags = [
                     self.my_frame2.project_check_var.get(),
                     self.my_frame2.urgent_check1_var.get(),
                     self.my_frame2.urgent_check2_var.get(),
                     self.my_frame2.non_urgent_check1_var.get(),
-                    self.my_frame2.non_urgent_check2_var.get()]
+                    self.my_frame2.non_urgent_check2_var.get()
+                    ]
         
         for val in self.done_flags:
             if val:
@@ -2120,9 +2128,11 @@ class App(ctk.CTk):
 
     def get_original_content(self, from_button=False):
         """ 
-        return the orignal content for the remedial tasks as lst(str)
+        return the orignal content for the remedial tasks as tuple(str)
         from_button is a bool passed to remedial_switch_capture to stop the
-        unsetting of the entry  if called from button as opposed to switch 
+        unsetting of the entry  if called from button as opposed to switch
+        fill the empty values in the tuple with NULL values and the index postion(+1)
+        is the number of the remedial_contentx to insert into the DB 
         """
 
         #update the vars and switches dict
@@ -2130,9 +2140,42 @@ class App(ctk.CTk):
         self.my_frame2.update_entries_dict(),from_button)
         self.original_content = list(self.original_content_dict.values())
 
+        #debugging
+        print("self.original_content_dict.keys",self.original_content_dict)
+
+        #For missing positions in the returned tuple add NULL to satisfy sqlite bindings in query
+        self.missing_values = []
+        if not self.original_content_dict:
+            self.missing_values.extend([0,1,2,3,4])
+
+        for key in self.original_content_dict.keys():
+            # first entry is "entry"
+            #if not any(char in key for char in ("1", "2", "3", "4")):
+                #self.missing_values.extend([1,2,3,4])
+            if "1" in key:
+                self.missing_values.extend([1,2,3,4])
+            elif "2" in key:
+                self.missing_values.extend([0,2,3,4])
+            elif "3" in key:
+                self.missing_values.extend([0,1,3,4])
+            elif "4" in key:
+                self.missing_values.extend([0,1,2,4])
+            elif "5" in key:
+                self.missing_values.extend([0,1,2,3]) #
+
+        #filter duplicates        
+        self.filtered_missing_values = set(self.missing_values)
+
+        #debugging
+        print("self.missing_values",self.missing_values)
+
+        for val in self.missing_values:
+            self.original_content.insert(val, "NULL")
+
         print("TESTING SELF.ORIGINAL_CONTENT",self.original_content)
 
-        return self.original_content
+        return tuple(self.original_content)
+
     
     def if_done_checked_unlock_and_empty(self):
         """If done checked, unlock and empty entry"""
@@ -2161,13 +2204,23 @@ class App(ctk.CTk):
 
         ## todays tasks
         todays_tasks_entries, todays_tasks_contents = self.my_frame2.get_daily_tasks() #('entry1', 'entry2', 'entry3', 'entry4', 'entry5')
+        todays_tasks_entries_tuple = tuple(todays_tasks_entries)
+        todays_tasks_contents_tuple = tuple(todays_tasks_contents)
         done_flags = self.get_daily_tasks_done_flags() #('1','0','0','1','1')
         set_flags = self.get_daily_tasks_set_flags() #('0', '1', '0', '0', '1')
-        remedial_set_flags = self.get_remedial_set_flag() #('0', '1', '0', '0', '1')
-        remedial_contents = self.get_original_content(from_button=True)#('content1', 'content2', 'content3', 'content4', 'content5')
+        remedial_set_flags = self.get_remedial_set_flags() #('0', '1', '0', '0', '1')
+        self.remedial_contents = self.get_original_content(from_button=True)#('content1', 'content2', 'content3', 'content4', 'content5')
+
+        #debugging
+        print("todays_tasks_entries:", todays_tasks_entries)
+        print("todays_tasks_contents:", todays_tasks_contents)
+        print("done_flags:", done_flags)
+        print("set_flags:", set_flags)
+        print("remedial_set_flags:", remedial_set_flags)
+        print("remedial_contents:", self.remedial_contents)
 
         #todays tasks tuple
-        todays_tasks_tuple = todays_tasks_entries + todays_tasks_contents + done_flags + set_flags + remedial_set_flags + remedial_contents
+        todays_tasks_tuple = todays_tasks_entries_tuple + todays_tasks_contents_tuple + done_flags + set_flags + remedial_set_flags + self.remedial_contents
         
         
         #print("duration_to_record",duration_to_record)

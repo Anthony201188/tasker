@@ -33,7 +33,7 @@ class FramesMixin:
         set_flag1, set_flag2, set_flag3, set_flag4, set_flag5,
         remedial_set1, remedial_set2, remedial_set3, remedial_set4, remedial_set5,
         remedial_content1, remedial_content2, remedial_content3, remedial_content4, remedial_content5,
-        recording_instance
+        timestamp
         ) VALUES ({binding *30 } CURRENT_TIMESTAMP);
         """
         #sample VALUES data
@@ -355,7 +355,7 @@ class CreateRecordsDB:
         self.create_table("monthly_focus", "MyFrame3", 3, ["Project", "Month_Focus1", "Month_Focus2"])
 
         #create today_tasks table
-        self.create_table("todays_tasks", "MyFrame2", 5, ["project", "urgent1", "urgent2", "non_urgent1", "non_urgent2"])
+        self.create_table("todays_tasks", "MyFrame2", 5, ["entry1", "entry2", "entry3", "entry4", "entry5"])
 
         #create addional info table
         self.create_table("additional_info", "MyFrame6", 8, ["Gratitude1", "Gratitude2", "Gratitude3", "Gratitude4", "Gratitude5","Fitness1","Fitness2","Desire"])
