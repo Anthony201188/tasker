@@ -363,7 +363,7 @@ class CreateRecordsDB:
 
     ################CREATE ALL TABLES#########################
 #instantiate the Recorder class creating all tables as required via contructor
-recorder = CreateRecordsDB()    
+#recorder = CreateRecordsDB()    
         
 #######################RECORD RECORDS ########################
 

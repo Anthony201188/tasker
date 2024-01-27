@@ -1,3 +1,4 @@
 {
-    "editor.autoClosingBrackets": "never"
+    "editor.autoClosingBrackets": "never",
+    "editor.hover.enabled": false
 }
