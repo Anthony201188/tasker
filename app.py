@@ -1902,8 +1902,8 @@ class MyFrame6(ctk.CTkFrame):
 
         # Fitness entries
         self.fitness_entries_dict = {
-            'fitness_entry1': ctk.CTkEntry(self, placeholder_text="Fitness 1", width=220),
-            'fitness_entry2': ctk.CTkEntry(self, placeholder_text="Fitness 2", width=220)
+            'fitness_entry1': ctk.CTkEntry(self, placeholder_text="Fitness1", width=220),
+            'fitness_entry2': ctk.CTkEntry(self, placeholder_text="Fitness2", width=220)
         }
 
         # Place the fitness entries
@@ -1932,8 +1932,8 @@ class MyFrame6(ctk.CTkFrame):
 
         #Desire entries dict
         self.desire_entries_dict = {
-            'desire_entry': ctk.CTkEntry(self, placeholder_text="Desire 1", width=220),
-            #'desire_entry2': ctk.CTkEntry(self, placeholder_text="Desire 2", width=220),
+            'desire_entry': ctk.CTkEntry(self, placeholder_text="Desire1", width=220),
+            #'desire_entry2': ctk.CTkEntry(self, placeholder_text="Desire2", width=220),
         }
 
         #Place the entries
@@ -2231,6 +2231,20 @@ class App(ctk.CTk):
         monthly_focus2 = (monthly_focus2,) #('monthly focus2',) 
         monthly_focus_tuple = project + monthly_focus1 + monthly_focus2
 
+        #additional info 
+        gratitude1 = ('Gratitude1',f'{app.my_frame6.gratitude_entries_dict["gratitude_entry"].get()}')
+        gratitude2 = ('Gratitude2',f'{app.my_frame6.gratitude_entries_dict["gratitude_entry2"].get()}')
+        gratitude3 = ('Gratitude3',f'{app.my_frame6.gratitude_entries_dict["gratitude_entry3"].get()}')
+        gratitude4 = ('Gratitude4',f'{app.my_frame6.gratitude_entries_dict["gratitude_entry4"].get()}')
+        gratitude5 = ('Gratitude5',f'{app.my_frame6.gratitude_entries_dict["gratitude_entry"].get()}')
+        fitness1 = ('Fitness1',f'{app.my_frame6.fitness_entries_dict["fitness_entry1"].get()}')
+        fitness2 = ('Fitness2',f'{app.my_frame6.fitness_entries_dict["fitness_entry2"].get()}')
+        desire =('Desire1', f'{app.my_frame6.desire_entries_dict["desire_entry"].get()}')
+        how_you_feel = (f'{app.my_frame6.how_you_feel_entry.get()}',)
+        notes = (f'{app.my_frame6.notes_textbox.get("1.0", "end-1c")}',)
+        
+        additional_info_tuple = gratitude1 + gratitude2 + gratitude3 + gratitude4 + gratitude5 + fitness1 + fitness2 + desire + how_you_feel + notes
+
         #record all frames
         frame_recorder = data_structure.RecordFrame()
 
@@ -2245,6 +2259,9 @@ class App(ctk.CTk):
         #monthly focus
         frame_recorder.create_entry("monthly_focus", monthly_focus_tuple)
         print("monthly_focus have been successfully recorded!")
+
+        #additional info 
+        frame_recorder.create_entry("additional_info",additional_info_tuple)
 
 
         # if done is checked empty and unlock the entry
