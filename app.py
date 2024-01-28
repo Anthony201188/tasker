@@ -125,7 +125,7 @@ class MyFrame(ctk.CTkFrame):
         self.all_habit_boolvars = [self.habit1_set_var, self.habit2_set_var]
 
         #habits set timestamp
-        self.habit_set_timestamp = "timestamp-placeholder" #<- needs file persistance preferable if using db create a table specifically for file persistance
+        self.habit_set_timestamp = "not-yet-set" #<- needs file persistance preferable if using db create a table specifically for file persistance
 
         #set duration var
         self.set_duration_var = ""
@@ -2222,13 +2222,15 @@ class App(ctk.CTk):
         #todays tasks tuple
         todays_tasks_tuple = todays_tasks_entries_tuple + todays_tasks_contents_tuple + done_flags + set_flags + remedial_set_flags + self.remedial_contents
         
-        
-        #print("duration_to_record",duration_to_record)
-        #print("Set flags:",set_flags)
+        #monthly focus
+        project = app.my_frame3.dropdown.get()#('project name',)
+        project = (project,)
+        monthly_focus1 = app.my_frame3.entry_focus1.get()#('monthly focus1',)
+        monthly_focus1 = (monthly_focus1,)
+        monthly_focus2 = app.my_frame3.entry_focus2.get()#('monthly focus1',)
+        monthly_focus2 = (monthly_focus2,) #('monthly focus2',) 
+        monthly_focus_tuple = project + monthly_focus1 + monthly_focus2
 
-        #habit_names, habits =self.my_frame.get_habits_names()
-        #task_names, tasks = self.my_frame2.get_daily_tasks()
-        
         #record all frames
         frame_recorder = data_structure.RecordFrame()
 
@@ -2239,6 +2241,10 @@ class App(ctk.CTk):
         #daily tasks
         frame_recorder.create_entry("todays_tasks",todays_tasks_tuple) 
         print("todays_tasks have been successfully recorded!") 
+
+        #monthly focus
+        frame_recorder.create_entry("monthly_focus", monthly_focus_tuple)
+        print("monthly_focus have been successfully recorded!")
 
 
         # if done is checked empty and unlock the entry
