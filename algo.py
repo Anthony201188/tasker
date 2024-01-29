@@ -1,7 +1,10 @@
 # write the algo sorting method for tasks here 
 #### utils
 import class_def
+from tasker import App
 from datetime import datetime
+
+
 
 
 def within_7_days_or_past(date_str):
@@ -269,7 +272,7 @@ def full_sort(task_obj_list, focus1, focus2):
 
 
 #utils for main
-def get_taskmanger_unsorted_tasks():
+def get_taskmanager_unsorted_tasks():
     """ 
     attempts to get the all_tasks list and stores it in all_tasks_temp incase of error,
     makes a local copy of this and returns it as a list of task objects
@@ -298,8 +301,14 @@ def get_taskmanger_unsorted_tasks():
     except Exception as e:
         print(f"error {e} in clearring tasks, sorting halted")
         return None
+    
+def get_mothly_foci():
+    """ returns two strings that are the monthly foci set for this month """
+    focus1 = app.my_frame3.entry_focus1.get()
+    focus2 = app.my_frame3.entry_focus2.get()
+    return focus1 , focus2
             
-def return_test_data():
+def get_test_data():
     """ retuns a test set of data to be used for testing 
      returns: lst[task_object(),task_object()], focus1"string", focus2"string" """
     #create mock main task list used for testing
@@ -391,7 +400,7 @@ def main(test=None):
 
 
     if test is not None:
-        test_data, focus1, focus2 = return_test_data()
+        test_data, focus1, focus2 = get_test_data()
         
         #check the objects have been created
         print("obj check",test_data[1])
@@ -406,7 +415,7 @@ def main(test=None):
         print("'pre-sort'class_def.project_task_stack",class_def.task_tracking.project_stack.return_stack_names())
 
         #run the function
-        list1 = full_sort(test_data, focus1, focus2)
+        test_sorted_list = full_sort(test_data, focus1, focus2)
 
         #post-sort testing
         print("POST-SORTING TESTING")
@@ -416,6 +425,27 @@ def main(test=None):
         print("'post-sort'class_def.urgent_task_stack",class_def.task_tracking.urgent_stack.return_stack_names())
         print("'post-sort'class_def.non_urgent_task_stack",class_def.task_tracking.non_urgent_task_stack.return_stack_names())
         print("'post-sort'class_def.project_task_stack",class_def.task_tracking.project_stack.return_stack_names())
+        print("sorted non_urgent list:",test_sorted_list)
+
+    else:
+        #get the data
+        focus1, focus2 = get_mothly_foci()
+        list_to_sort  =  get_taskmanager_unsorted_tasks()
+
+        #sort the data
+        sorted_non_urgent_tasks = full_sort(list_to_sort, focus1, focus2)
+        print("Successfully sorted non_urgent list:",sorted_non_urgent_tasks)
+
+        #get the urgent list
+        # TODO
+
+        #sort the urgent list
+        # TODO
+
+if __name__ == "__main__":
+    pass
+
+
 
 
         
