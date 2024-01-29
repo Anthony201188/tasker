@@ -139,6 +139,7 @@ class TaskTracking:
     def __init__(self):
 
         self.all_tasks = []
+        self.all_tasks_temp = []
         self.id_counter = 0
         self.display_task = ""
 

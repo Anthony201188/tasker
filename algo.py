@@ -244,8 +244,92 @@ def task_sort(task_list, focus1, focus2):
     
 
     return combined_shuffled_sorted
-            
 
+def full_sort(task_obj_list, focus1, focus2):
+    """ 
+    sorts a list of tasks objects depending on the 2x focui passed to it. sends the task objects
+    to the relevant task stacks.
+    args: task_obj_list = lst[Task_obj(),Task_obj()] , focus1 = "string" , focus2= "string"
+    returns:None
+          """
+    
+    for item in task_obj_list:
+        # pre-sort as per the sorting diagram
+        pre_sort(item, focus1, focus2) 
+    
+    # runs the rest of the sorting diagram 
+    fully_sorted = task_sort(class_def.task_tracking.non_urgent_task_stack.stack, focus1, focus2)
+
+
+    # set the non_urgent stack to the fully_sorted order.
+    class_def.task_tracking.non_urgent_task_stack.stack = fully_sorted # the fully sorted list is then dropping all tasks not in cat1 or 2 this shouldnt happen look at split_focus_stack function
+    print("Tasks successfully sorted")
+    return fully_sorted
+
+
+
+#utils for main
+def get_taskmanger_unsorted_tasks():
+    """ 
+    attempts to get the all_tasks list and stores it in all_tasks_temp incase of error,
+    makes a local copy of this and returns it as a list of task objects
+    returns: lst[Task_obj(),Task_obj()] else returns None
+    """
+
+    #empty the all_tasks_temp list from last time
+    class_def.task_tracking.all_tasks_temp.clear()
+
+    #check clearing successfull
+    try:
+        if not class_def.task_tracking.all_tasks_temp:
+            print(f"all_tasks_temp successfully cleared:{class_def.task_tracking.all_tasks_temp}")
+
+            #back up the list of all_tasks from the task manager
+            class_def.task_tracking.all_tasks_temp = class_def.task_tracking.all_tasks.copy()
+
+            #make a local copy to retutnr
+            all_to_be_sorted = class_def.task_tracking.all_tasks_temp.copy()
+
+            #clear all tasks
+            class_def.all_tasks.clear()
+
+            return all_to_be_sorted
+    
+    except Exception as e:
+        print(f"error {e} in clearring tasks, sorting halted")
+        return None
+            
+def return_test_data():
+    """ retuns a test set of data to be used for testing 
+     returns: lst[task_object(),task_object()], focus1"string", focus2"string" """
+    #create mock main task list used for testing
+    test_data = [
+        class_def.Task("Task 1", "Description 1", 8, 4, "Category 1", "03-08-23",done=True), #add this to check filtering ->,done=True
+        class_def.Task("Task 2", "Description 2", 5, 2, "Category 2", "25-09-24"), # this one is now urgent
+        class_def.Task("Task 3", "Description 3", 6, 3, "Category 1", "01-08-24"),
+        class_def.Task("Task 4", "Description 4", 7, 5, "Category 3", "04-08-24"),
+        class_def.Task("Task 5", "Description 5", 9, 2, "Category 2", "05-08-24"),
+        class_def.Task("Task 6", "Description 6", 4, 1, "Category 4", "06-08-24"),
+        class_def.Task("Task 7", "Description 7", 5, 3, "Category 5", "07-08-24"),
+        class_def.Task("Task 8", "Description 8", 7, 4, "Category 1", "08-08-24"),
+        class_def.Task("Task 9", "Description 9", 6, 2, "Category 6", "09-08-24"),
+        class_def.Task("Task 10", "Description 10", 8, 5, "Category 7", "10-08-23"),
+        class_def.Task("Task 11", "Description 11", 5, 3, "Category 2", "11-08-23"),
+        class_def.Task("Task 12", "Description 12", 6, 1, "Category 8", "12-08-23"),
+        class_def.Task("Task 13", "Description 13", 7, 4, "Category 9", "13-08-23"),
+        class_def.Task("Task 14", "Description 14", 4, 2, "Category 3", "14-08-23"),
+        class_def.Task("Task 15", "Description 15", 5, 3, "Category 10", "15-08-23"),
+        class_def.Task("Task 16", "Description 16", 6, 2, "Category 1", "16-08-23"),
+        class_def.Task("Task 17", "Description 17", 7, 5, "Category 11", "10-10-23"),
+        class_def.Task("Task 18", "Description 18", 8, 4, "Category 12", "10-10-23"),
+        class_def.Task("Task 19", "Description 19", 5, 3, "Category 2", "10-10-23"),
+        class_def.Task("Task 20", "Description 20", 6, 2, "Category 13", "10-10-23"),
+    ]
+
+    focus1 = "Category 1"
+    focus2 = "Category 2"
+
+    return test_data, focus1, focus2
 
 
 
@@ -302,72 +386,36 @@ for task in sorted_data:
     print(f"{task.name} - Importance: {task.importance} - Urgency: {task.urgency} - Due Date: {task.due_date} ") """
 
 #############################
-def main():
-    #create mock main task list
-    test_data = [
-        class_def.Task("Task 1", "Description 1", 8, 4, "Category 1", "03-08-23",done=True), #add this to check filtering ->,done=True
-        class_def.Task("Task 2", "Description 2", 5, 2, "Category 2", "25-09-24"), # this one is now urgent
-        class_def.Task("Task 3", "Description 3", 6, 3, "Category 1", "01-08-24"),
-        class_def.Task("Task 4", "Description 4", 7, 5, "Category 3", "04-08-24"),
-        class_def.Task("Task 5", "Description 5", 9, 2, "Category 2", "05-08-24"),
-        class_def.Task("Task 6", "Description 6", 4, 1, "Category 4", "06-08-24"),
-        class_def.Task("Task 7", "Description 7", 5, 3, "Category 5", "07-08-24"),
-        class_def.Task("Task 8", "Description 8", 7, 4, "Category 1", "08-08-24"),
-        class_def.Task("Task 9", "Description 9", 6, 2, "Category 6", "09-08-24"),
-        class_def.Task("Task 10", "Description 10", 8, 5, "Category 7", "10-08-23"),
-        class_def.Task("Task 11", "Description 11", 5, 3, "Category 2", "11-08-23"),
-        class_def.Task("Task 12", "Description 12", 6, 1, "Category 8", "12-08-23"),
-        class_def.Task("Task 13", "Description 13", 7, 4, "Category 9", "13-08-23"),
-        class_def.Task("Task 14", "Description 14", 4, 2, "Category 3", "14-08-23"),
-        class_def.Task("Task 15", "Description 15", 5, 3, "Category 10", "15-08-23"),
-        class_def.Task("Task 16", "Description 16", 6, 2, "Category 1", "16-08-23"),
-        class_def.Task("Task 17", "Description 17", 7, 5, "Category 11", "10-10-23"),
-        class_def.Task("Task 18", "Description 18", 8, 4, "Category 12", "10-10-23"),
-        class_def.Task("Task 19", "Description 19", 5, 3, "Category 2", "10-10-23"),
-        class_def.Task("Task 20", "Description 20", 6, 2, "Category 13", "10-10-23"),
-    ]
-
-    focus1 = "Category 1"
-    focus2 = "Category 2"
+def main(test=None):
+    
 
 
-    #check the objects have been created
-    print("obj check",test_data[1])
-
-    #pre sorting check whats in each stack
-    print("PRE-SORTING TESTING")
-    print()
-    print("'pre-sort'class_def.all_tasks",class_def.task_tracking.string_list_all_tasks())
-    print("'pre-sort'class_def.task_archive",class_def.task_tracking.task_archive.return_stack_names())
-    print("'pre-sort'class_def.urgent_task_stack",class_def.task_tracking.non_urgent_task_stack.return_stack_names())
-    print("'pre-sort'class_def.non_urgent_task_stack",class_def.task_tracking.non_urgent_task_stack.return_stack_names())
-    print("'pre-sort'class_def.project_task_stack",class_def.task_tracking.project_stack.return_stack_names())
-
-    def full_sort(task_obj_list, focus1, focus2):
+    if test is not None:
+        test_data, focus1, focus2 = return_test_data()
         
-        for item in task_obj_list:
-            pre_sort(item, focus1, focus2) # pre-sort its missing task3 for some reason even though its "catagory 1"
-        
-        
-        fully_sorted = task_sort(class_def.task_tracking.non_urgent_task_stack.stack, focus1, focus2)
+        #check the objects have been created
+        print("obj check",test_data[1])
 
+        #pre sorting check whats in each stack
+        print("PRE-SORTING TESTING")
+        print()
+        print("'pre-sort'class_def.all_tasks",class_def.task_tracking.string_list_all_tasks())
+        print("'pre-sort'class_def.task_archive",class_def.task_tracking.task_archive.return_stack_names())
+        print("'pre-sort'class_def.urgent_task_stack",class_def.task_tracking.non_urgent_task_stack.return_stack_names())
+        print("'pre-sort'class_def.non_urgent_task_stack",class_def.task_tracking.non_urgent_task_stack.return_stack_names())
+        print("'pre-sort'class_def.project_task_stack",class_def.task_tracking.project_stack.return_stack_names())
 
-        # set the stack to the fully_sorted order
-        class_def.task_tracking.non_urgent_task_stack.stack = fully_sorted # the fully sorted list is then dropping all tasks not in cat1 or 2 this shouldnt happen look at split_focus_stack function
-        print("Tasks successfully sorted")
-        return fully_sorted
+        #run the function
+        list1 = full_sort(test_data, focus1, focus2)
 
-    #run the function
-    list1 = full_sort(test_data, focus1, focus2)
-
-    #post-sort testing
-    print("POST-SORTING TESTING")
-    print()
-    print("'post-sort'class_def.all_tasks",class_def.task_tracking.string_list_all_tasks())
-    print("'post-sort'class_def.task_archive",class_def.task_tracking.task_archive.return_stack_names())
-    print("'post-sort'class_def.urgent_task_stack",class_def.task_tracking.urgent_stack.return_stack_names())
-    print("'post-sort'class_def.non_urgent_task_stack",class_def.task_tracking.non_urgent_task_stack.return_stack_names())
-    print("'post-sort'class_def.project_task_stack",class_def.task_tracking.project_stack.return_stack_names())
+        #post-sort testing
+        print("POST-SORTING TESTING")
+        print()
+        print("'post-sort'class_def.all_tasks",class_def.task_tracking.string_list_all_tasks())
+        print("'post-sort'class_def.task_archive",class_def.task_tracking.task_archive.return_stack_names())
+        print("'post-sort'class_def.urgent_task_stack",class_def.task_tracking.urgent_stack.return_stack_names())
+        print("'post-sort'class_def.non_urgent_task_stack",class_def.task_tracking.non_urgent_task_stack.return_stack_names())
+        print("'post-sort'class_def.project_task_stack",class_def.task_tracking.project_stack.return_stack_names())
 
 
         
