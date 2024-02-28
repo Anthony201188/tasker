@@ -517,28 +517,33 @@ class MyFrame2(ctk.CTkFrame):
 
         #Checkboxes 
         self.project_check_var = ctk.BooleanVar(value=False) 
-        self.check = ctk.CTkCheckBox(self,checkbox_height=28,checkbox_width=28,text=None, variable=self.project_check_var,fg_color="green",border_color="green", onvalue=True, offvalue=False) #"command=checkbox_event," needs to be added to the end 
+        self.check = ctk.CTkCheckBox(self,checkbox_height=28,checkbox_width=28,text=None, variable=self.project_check_var,fg_color="green",border_color="green", onvalue=True, offvalue=False) 
         self.check.place(x=295, y=35)
 
-        #self.entry.lift(aboveThis=self.check)
-
         self.urgent_check1_var = ctk.BooleanVar(value=False)  
-        self.urgent_check1 = ctk.CTkCheckBox(self,checkbox_height=28,checkbox_width=28, text=None, variable=self.urgent_check1_var, onvalue=True,fg_color="red", border_color="red", offvalue=False) #"command=checkbox_event," needs to be added to the end 
+        self.urgent_check1 = ctk.CTkCheckBox(self,checkbox_height=28,checkbox_width=28, text=None, variable=self.urgent_check1_var, onvalue=True,fg_color="red", border_color="red", offvalue=False) 
         self.urgent_check1.place(x=295, y=85)
   
         self.urgent_check2_var = ctk.BooleanVar(value=False)  
-        self.urgent_check2 = ctk.CTkCheckBox(self,checkbox_height=28,checkbox_width=28, text=None, variable=self.urgent_check2_var, onvalue=True,fg_color="red", border_color="red", offvalue=False) #"command=checkbox_event," needs to be added to the end 
+        self.urgent_check2 = ctk.CTkCheckBox(self,checkbox_height=28,checkbox_width=28, text=None, variable=self.urgent_check2_var, onvalue=True,fg_color="red", border_color="red", offvalue=False)
         self.urgent_check2.place(x=295, y=120)   
 
         self.non_urgent_check1_var = ctk.BooleanVar(value=False)  
-        self.non_urgent_check1 = ctk.CTkCheckBox(self,checkbox_height=28,checkbox_width=28, text=None, variable=self.non_urgent_check1_var, onvalue=True, border_color="blue",offvalue=False) #"command=checkbox_event," needs to be added to the end 
+        self.non_urgent_check1 = ctk.CTkCheckBox(self,checkbox_height=28,checkbox_width=28, text=None, variable=self.non_urgent_check1_var, onvalue=True, border_color="blue",offvalue=False)
         self.non_urgent_check1.place(x=295, y=160)  
 
         self.non_urgent_check2_var = ctk.BooleanVar(value=False)  
-        self.non_urgent_check2 = ctk.CTkCheckBox(self,checkbox_height=28,checkbox_width=28, text=None, variable=self.non_urgent_check2_var, onvalue=True, border_color="blue",offvalue=False) #"command=checkbox_event," needs to be added to the end 
+        self.non_urgent_check2 = ctk.CTkCheckBox(self,checkbox_height=28,checkbox_width=28, text=None, variable=self.non_urgent_check2_var, onvalue=True, border_color="blue",offvalue=False) 
         self.non_urgent_check2.place(x=295, y=193)
 
-
+        #for uncheck on done callback
+        self.all_checkboxes = [
+            self.check,
+            self.urgent_check1,
+            self.urgent_check2,
+            self.non_urgent_check1,
+            self.non_urgent_check2
+        ]
 
         #Remedial work switches 
         #project
@@ -1131,6 +1136,11 @@ class MyFrame2(ctk.CTkFrame):
             print(f"Toggled [{self.get_entry_name(entry)}] bool var now set to:", bool_var.get())
         else:
             print("Error: Entry not in entry_var_dict, therefore, doesn't exist or cannot be set")
+
+    def untick_on_done(self):
+        """ a callback function that unticks all checkboxes """
+        for item in self.all_checkboxes:
+            item.deselect()
 
         
 
@@ -2316,8 +2326,9 @@ class App(ctk.CTk):
                 self.if_done_set_done_true(task_name)
                 entry.configure(state="normal", border_width=1)
                 entry.delete(0, "end")
-
-
+        
+        #test poistion for unselect all
+        self.my_frame2.untick_on_done()
     
     #callback Finish for the day button
     def finish_for_day(self):
