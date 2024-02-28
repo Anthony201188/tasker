@@ -1,7 +1,7 @@
 # write the algo sorting method for tasks here 
 #### utils
 import class_def
-from tasker import App
+import tasker
 from datetime import datetime
 
 
@@ -9,18 +9,26 @@ from datetime import datetime
 
 def within_7_days_or_past(date_str):
     try:
-        # Parse the input date string into a datetime object
-        input_date = datetime.strptime(date_str, '%d-%m-%y')
+        
+        # Try parsing with '%d-%m-%Y' format
+        try:
+            input_date = datetime.strptime(date_str, '%d-%m-%Y')
+        
+        except ValueError:
+            # If parsing fails, try with '%d-%m-%y' format
+            input_date = datetime.strptime(date_str, '%d-%m-%y')
         
         # Get the current date
         current_date = datetime.now()
+        #print("current_date:",current_date)
         
         # Calculate the timedelta between the input date and the current date
         time_delta = input_date - current_date
 
         # Check if the timedelta is within the next 7 days or past todays date
-        return (time_delta.days <= 0 and time_delta.days <= 7) or (current_date.date() == input_date.date()) #effectivley a compound condition that will only return true ig both condtions are met at the same time
-   
+        #return (time_delta.days <= 0 and time_delta.days <= 7) or (current_date.date() == input_date.date()) #effectivley a compound condition that will only return true ig both condtions are met at the same time
+        return (time_delta.days >= -7) or (current_date.date() == input_date.date())
+
     except ValueError as e:
         # If there's an error in parsing the string
         print(f"Error:{type(e).__name__} - {e}")
@@ -50,6 +58,7 @@ def task_cat_in_month_foci(task_class_obj, *foci) -> bool:
     """Takes a task instance and multiple monthly foci as args and returns a bool depending on if the task attribute "category" matches any of the provided foci."""
     return any(focus == task_class_obj.category for focus in foci)
 
+
 #####
 
 #pre-sort full algo
@@ -71,28 +80,37 @@ def pre_sort(task_class_obj, *foci)->None:
 
     if task_class_obj.done:
         #Add task to archive whilst removing from task_tracking.all_tasks
-        class_def.task_tracking.task_archive.add_task_from_main(task_class_obj)
+        class_def.task_tracking.task_archive.add_task_from_main(task_class_obj) #try
         print(f"{task_class_obj} added to TaskArchive.task_archive")
 
-    else:
+        #exxept message "Task not found in all_tasks" searching all_stacks"
+
+        #else add task to archive whilst removing from its stack.
+
+
+    elif task_class_obj.isproject:
+        #Add task to Project list
+        class_def.task_tracking.project_stack.add_task_from_main(task_class_obj)
+        print(f"{task_class_obj} added to task_tracking.project_stack")
+
+    elif is_urgent(task_class_obj):
         # Sends objects to urgent stack if due in next 7 days
-        if is_urgent(task_class_obj):
-            class_def.task_tracking.urgent_stack.add_task_from_main(task_class_obj)#add to urgent stack whilst removing from all_tasks
-            print(f"{task_class_obj} added to task_tacking.urgent_stack")
+        class_def.task_tracking.urgent_stack.add_task_from_main(task_class_obj)#add to urgent stack whilst removing from all_tasks
+        print(f"{task_class_obj} added to task_tacking.urgent_stack")
 
-        else:
-            # Sorting Remaining, non-urgent priority stack
+    else:
+        # Sorting Remaining, non-urgent priority stack
 
-            #In monthly focus1/2 then top of the list
-            if task_cat_in_month_foci(task_class_obj, *foci):
-                class_def.task_tracking.non_urgent_task_stack.add_task_from_main(task_class_obj,0)
-                print(f"{task_class_obj} added to task_tacking.non_urgent_stack, tracing:algo_utils:if")
+        #In monthly focus1/2 then top of the list
+        if task_cat_in_month_foci(task_class_obj, *foci):
+            class_def.task_tracking.non_urgent_task_stack.add_task_from_main(task_class_obj,0)
+            print(f"{task_class_obj} added to task_tacking.non_urgent_stack, tracing:algo_utils:if")
 
             
-            #Else bottom of the list
-            else:
-                class_def.task_tracking.non_urgent_task_stack.add_task_from_main(task_class_obj)
-                print(f"{task_class_obj} added to task_tacking.non_urgent_stack (-1), tracing:algo_utils:else")
+        #Else bottom of the list
+        else:
+            class_def.task_tracking.non_urgent_task_stack.add_task_from_main(task_class_obj)
+            print(f"{task_class_obj} added to task_tacking.non_urgent_stack (-1), tracing:algo_utils:else")
 
 # TODO - sorting seems to work ok, need to work on the print overiding and the other print statments
 # need to find a way to seach all classes for a tasks to monitor them across multiple stacks.
@@ -230,6 +248,13 @@ def task_sort(task_list, focus1, focus2):
     sorted_list2 = sorted(list2, key=custom_sort_key)
     print("sorted list2 :", [item.name for item in sorted_list2])
 
+    #testing
+    print(f"project stack: {class_def.task_tracking.project_stack.return_stack_names()}")
+    print(f"archive stack: {class_def.task_tracking.task_archive.return_stack_names()}")
+    print(f"urgent stack: {class_def.task_tracking.urgent_stack.return_stack_names()}")
+    
+
+
     #shuffles the lists 3:1
     shuffled_list = shuffle_with_ratio(sorted_list1, sorted_list2)
     #combined_shuffled_sorted = list1 + list2
@@ -289,24 +314,33 @@ def get_taskmanager_unsorted_tasks():
 
             #back up the list of all_tasks from the task manager
             class_def.task_tracking.all_tasks_temp = class_def.task_tracking.all_tasks.copy()
+            print('Back up list of all_tasks created')
 
             #make a local copy to retutnr
             all_to_be_sorted = class_def.task_tracking.all_tasks_temp.copy()
+            print('all_tasks copied')
 
+            # I think tasks auto delete themselves from task.tracking need to check this
             #clear all tasks
-            class_def.all_tasks.clear()
+            #class_def.task_tracking.all_tasks.clear()
+            #print('all_tasks cleared')
+
+            print(f"successfully collected: [{all_to_be_sorted}]to be sorted")
 
             return all_to_be_sorted
     
     except Exception as e:
-        print(f"error {e} in clearring tasks, sorting halted")
+        print(f"error:[{e}] in 'get_taskmanager_unsorted_tasks', sorting halted")
         return None
     
-def get_mothly_foci():
+def get_mothly_foci(app_instance):
     """ returns two strings that are the monthly foci set for this month """
-    focus1 = app.my_frame3.entry_focus1.get()
-    focus2 = app.my_frame3.entry_focus2.get()
+    focus1 = app_instance.my_frame3.entry_focus1.get()
+    focus2 = app_instance.my_frame3.entry_focus2.get()
+
+    print(f"Monthly focus1:{focus1}, Monthly focus1:{focus2}")
     return focus1 , focus2
+
             
 def get_test_data():
     """ retuns a test set of data to be used for testing 
@@ -370,7 +404,7 @@ print(is_urgent(washing))
 
 #pre-sorting checks
 pre_sort(washing) """
-print("test")
+#print("test")
 
 """ # Testing Task class list, counter and instance id
 print(Task.task_list, Task.id_counter, washing.id_,cleaning.id_ )#<- should return list of all instaces, total num of instance, unique id of insace 3 and 4, PASSED
@@ -395,7 +429,7 @@ for task in sorted_data:
     print(f"{task.name} - Importance: {task.importance} - Urgency: {task.urgency} - Due Date: {task.due_date} ") """
 
 #############################
-def main(test=None):
+def main(app_instance, test=None):
     
 
 
@@ -429,18 +463,20 @@ def main(test=None):
 
     else:
         #get the data
-        focus1, focus2 = get_mothly_foci()
+        focus1, focus2 = get_mothly_foci(app_instance)
         list_to_sort  =  get_taskmanager_unsorted_tasks()
+        
+
+        #extends the list to sort with all tasks from all stack
+        combined_stack_contents = []
+        for stack in class_def.task_tracking.all_stacks:
+            combined_stack_contents.extend(stack.stack)
+        list_to_sort.extend(combined_stack_contents)
+
 
         #sort the data
         sorted_non_urgent_tasks = full_sort(list_to_sort, focus1, focus2)
         print("Successfully sorted non_urgent list:",sorted_non_urgent_tasks)
-
-        #get the urgent list
-        # TODO
-
-        #sort the urgent list
-        # TODO
 
 if __name__ == "__main__":
     pass

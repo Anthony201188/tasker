@@ -7,7 +7,7 @@ import calendar
 import os
 from time import sleep
 from link_click import ClickableLinkLabel
-from algo import main as algo
+import algo
 from urgent_algo import sort_urgent_tasks
 
 
@@ -497,7 +497,12 @@ class MyFrame2(ctk.CTkFrame):
         self.button_suggest = ctk.CTkButton(self, text="Easy day toggle",command=self.easy_day_toggle, height=28, width=28 ) 
         self.button_suggest.place(x=405, y=33)
         
-        self.button_sort = ctk.CTkButton(self, text="sort all tasks",fg_color="dark blue",command= lambda:(self.sort_all_tasks(),MyFrame5.populate_task_list(app.my_frame5, class_def.task_tracking.non_urgent_task_stack),MyFrame5.populate_task_list(app.my_frame5v3, class_def.task_tracking.urgent_stack)), height=28, width=45 ) # need to shorten the lamda function here by combining the updating of all funcitions somehwere!
+        self.button_sort = ctk.CTkButton(self, text="sort all tasks",fg_color="dark blue",command=lambda:(
+            self.sort_all_tasks(app),MyFrame5.populate_task_list(app.my_frame5,class_def.task_tracking.non_urgent_task_stack),
+            MyFrame5V2.populate_task_list(app.my_frame5v2),
+            MyFrame5.populate_task_list(app.my_frame5v3,
+            class_def.task_tracking.urgent_stack)),
+            height=28, width=45) # need to shorten the lamda function here by combining the updating of all funcitions somehwere!
         self.button_sort.place(x=405, y=65)
 
         self.button_suggest = ctk.CTkButton(self, text="suggest",command=self.suggest_todays_tasks, height=28, width=28 ) 
@@ -857,7 +862,7 @@ class MyFrame2(ctk.CTkFrame):
         my_frame5v2_instance = self.app_instance.my_frame5v2
         
         #get the top 2 tasks from app.my_frame5 (Non-urgent task list)
-        top_task = self.get_top_tasks(my_frame5v2_instance,1)
+        top_task = self.get_top_tasks_projects(my_frame5v2_instance,1)
         print("Project top tasks:" ,top_task)
 
         #insert these tasks into the selected entries
@@ -1020,9 +1025,37 @@ class MyFrame2(ctk.CTkFrame):
                 print(f"{set_entry_var} set to = {new_value}")
             
 
-    def sort_all_tasks(self):
+    def sort_all_tasks(self, app_instance):
         """ sorts all tasks using the sorting methods from 'algo.py' """
-        algo()
+        algo.main(app_instance)
+
+
+    def get_top_tasks_projects(self, class_inst, num_tasks) :
+        """ 
+        get text from task list text box and split on new line. 
+        Takes task list class instance and number of lines of text as args, returns a list of strings 
+        """
+        # Get text from the textbox
+        text = class_inst.textbox.get("1.0", "end-1c")
+        
+        # Print collected text (for testing)
+        # print(f"Text collected from Task List:{text}") 
+
+        # Check if "ALL PARENT PROJECTS" or "ALL SUB-PROJECT TASKS FROM" is in the text
+        if "ALL PARENT PROJECTS"  in text:
+            # If "ALL PARENT PROJECTS" is in the text, split text on new line and return a slice
+            split_text = text.splitlines()[1:]
+       
+        elif "ALL SUB-PROJECT TASKS FROM" or "To display project tasks please select a" in text:
+            # If "ALL SUB-PROJECT TASKS FROM" is in the text, split text on new line and return a slice starting from the third line
+            split_text = text.splitlines()[2:]
+       
+        else:
+            # If neither string is found, split text on new line and return the entire split text
+            split_text = text.splitlines()
+
+        # Return the specified number of tasks
+        return split_text[:num_tasks]
 
 
     #suggest tasks function
@@ -1035,9 +1068,13 @@ class MyFrame2(ctk.CTkFrame):
         text = class_inst.textbox.get("1.0", "end-1c")
         #print(f"Text collected from Task List:{text}") #<- testing
 
-        #split on new line
-        split_text = text.splitlines() 
-        #print(split_text)
+        if "Task list is empty. No tasks to display."  in text:
+            # If "ALL PARENT PROJECTS" is in the text, split text on new line and return a slice
+            split_text = text.splitlines()[1:]
+        else:
+            #split on new line
+            split_text = text.splitlines() 
+            #print(split_text)
         
         #slice to retun that number of elements
         return split_text[:num_tasks] 
@@ -1111,6 +1148,8 @@ class MyFrame3(ctk.CTkFrame):
         self.val3 = height
         self.grid_rowconfigure(10, weight=1)  # configure grid system
         self.grid_columnconfigure(3, weight=1)
+
+
 
 
         #Label for the frame
@@ -1295,9 +1334,9 @@ class MyFrame3(ctk.CTkFrame):
     def set_todays_task(self):
         """ locks all the entries in the 'todays tasks' fram and thickens the borders """
 
-    def sort_all_tasks(self):
-        """ sorts all tasks using the sorting methods from 'algo.py' """
-        algo()
+    #def sort_all_tasks(self):
+    #   """ sorts all tasks using the sorting methods from 'algo.py' """
+    #    algo()
 
 
 
@@ -1546,7 +1585,7 @@ class MyFrame4(ctk.CTkFrame):
     def is_project_toggle(self, event):
 
         self.check_var_state = self.isproject_check_var.get()
-        print("toggle is project state:changed") 
+        print(f"toggle is project state:{self.check_var_state}") 
 
         if self.check_var_state == True :
             self.dropdown_parent_project.place(x=140, y=380)
@@ -1558,7 +1597,7 @@ class MyFrame4(ctk.CTkFrame):
             self.dropdown_options_label.place_forget()
     
     def get_isparent(self)->bool:
-        return self.dropdown_parent_project != "None"
+        return self.dropdown_parent_project.get() == "None"
     # TODO - needs error handling
 
     def get_all_entries(self):
@@ -1575,10 +1614,20 @@ class MyFrame4(ctk.CTkFrame):
         all_entries['isparent'] = self.isparent = self.get_isparent()
 
         return all_entries
+    
+    def print_attributes(self,obj):
+        """ prints all attributes of an instance object """
+        for attr_name in vars(obj):
+            attr_value = getattr(obj, attr_name)
+            print(f"{attr_name}: {attr_value}")
 
     
     def create_task(self):
         """ Collect all entry data and create a task instance  """
+
+        # TODO - update the above so that I can use the get all entries method instead
+        # TODO - add form validation and error handling for task creation here
+        #date format YY-MM-DD (string)
         
         self.task_name = self.entry_task_name.get()
         self.task_description = self.entry_task_description.get()
@@ -1586,28 +1635,44 @@ class MyFrame4(ctk.CTkFrame):
         self.task_importance = self.entry_task_importance.get()
         self.task_catagory = self.entry_task_catagory.get()
         self.task_due_date = self.entry_task_due_date.get()
+
+        #use the Project create_subtask function to create conditionally subtasks from the parent instance
         self.isproject = self.isproject_check_var.get()
         self.isparent = self.get_isparent()
 
-        #TODO - update the above so that I can use the get all entries method instead
-        # TODO - add constraints and error handling for task creation here
-        #date format YY-MM-DD (string)
-
-
-        class_def.task_tracking.create_task(
-            self.task_name,
-            self.task_description,
-            int(self.task_urgency),
-            int(self.task_importance),
-            self.task_catagory,
-            self.task_due_date,
-            self.isproject,
-            self.isparent
+        #uses the create_subtask instance method on the project task instance to pass its details to the subtask
+        if self.isproject and not self.isparent:
+            self.task_parent = class_def.task_tracking.get_task(self.dropdown_parent_project.get())
+            created_subtask = self.task_parent.create_subtask(
+                self.task_name,
+                self.task_description,
+                self.task_urgency,
+                self.task_importance,
+                self.task_catagory,
+                self.task_due_date
             )
-        
-        #prints name of task and list of all tasks for testing
-        print(f"Task {self.task_name} created")
-        class_def.task_tracking.string_list_all_tasks()
+            
+            #testing
+            print("created_subtask:")
+            self.print_attributes(created_subtask)
+
+            return #<- used to exit the function ealry to stop duplicated
+            
+        else:
+            class_def.task_tracking.create_task(
+                self.task_name,
+                self.task_description,
+                int(self.task_urgency),
+                int(self.task_importance),
+                self.task_catagory,
+                self.task_due_date,
+                self.isproject,
+                self.isparent
+                )
+            
+            #prints name of task and list of all tasks for testing
+            print(f"Task {self.task_name} created")
+            class_def.task_tracking.string_list_all_tasks()
 
     def update_selected_task(self, event=None):
         """ takes the task name as a string and any attributes to update """
@@ -1736,7 +1801,8 @@ class MyFrame5(ctk.CTkFrame):
 ################ methods ######################
     def populate_task_list(self, task_stack):
         """ populates the task list with all relevant, takes the task_stack(obj) as arg """
-
+    #TODO - make more generica and add to utils and clean up crazy long lambda on button callback
+        
     # Insert task names
         print("task_stack type:", type(task_stack))
         print("TESTING WORKING")
@@ -1769,6 +1835,9 @@ class MyFrame5V2(ctk.CTkFrame):
         self.val2 = width
         self.val3 = height
 
+        #instance to share the get this months focus  TODO could clean up the other dependancy injections based on this method!
+        self.master = master
+
         #configure grid system
         self.grid_rowconfigure(20, weight=1) 
         self.grid_columnconfigure(1, weight=1)
@@ -1787,30 +1856,75 @@ class MyFrame5V2(ctk.CTkFrame):
     
 ################ methods ######################
 # TODO - clean up the duplication here with the poulation of lists, try either a global function in utils or call the one from Myframe 5 and pass the textbox to populate as an arg rember to pass the instance of this class
-    def populate_task_list(self):
-        """ populates the task list with all the project tasks. """
-        this_months_project = self.get_project_set_for_this_month()
-
-    
-        #checks if any project set this month
-        if this_months_project:
-            task_names = this_months_project.return_stack_names()
-            for task_name in task_names:
-                self.textbox.insert("end", task_name, "\n")
-                self.textbox.configure(state="disabled")
-                print("Project tasks text successfully inserted")
-        else:
-            #insert alt text into box
-            self.textbox.insert("0.0", "To display project tasks please select a \n project for this month")
-            self.textbox.configure(state="disabled")
-
+  
     def get_project_set_for_this_month(self):
-        """ gets the project set for this month, if none set returns none """
-        project_task_list = class_def.task_tracking.project_stack.return_task_stack()
-        for project in project_task_list:
-            if project.set_for_this_month :
-                return project
+        """ gets the project set for this month, if none set returns none, returns task_obj NOT string. """
+        #get the string val from the entry
+        set_project = self.master.my_frame3.dropdown.get()
+
+        #match the task obj to the string if no match found return None
+        if class_def.task_tracking.project_stack.get_task(set_project):
+            set_project = class_def.task_tracking.project_stack.get_task(set_project)
+            #testing
+            print(f"Set project for this month: [{set_project}] found.")
+            return set_project
+        
         return None
+  
+    def populate_task_list(self):
+        """Populates/updates the task list with all the project tasks."""
+        this_months_project_set = self.get_project_set_for_this_month()
+        this_months_project_set_name = getattr(this_months_project_set, 'name', None)
+        all_parent_projects = [task for task in class_def.task_tracking.project_stack.stack if not isinstance(task, class_def.ProjectSubTask)]
+    
+
+        # Enable the text box for writing
+        self.textbox.configure(state="normal")
+
+        # Testing
+        print("this_months_project", this_months_project_set)
+        print("all_projects", all_parent_projects)
+
+        # Displays sub-tasks of monthly focus Project
+        if this_months_project_set:
+            task_names = [x.name for x in this_months_project_set.all_subtasks.values()]
+            print("This months project focus subtasks task_names", task_names)
+
+            self.textbox.delete("1.0", "end")
+            self.textbox.insert("1.0", f"ALL SUB-PROJECT TASKS FROM \n [{this_months_project_set_name.upper()}] \n")
+
+            for task_name in task_names:
+                self.textbox.insert("end", f"{task_name} \n")
+                print(f"Task [{task_name}] successfully inserted")
+
+            # Disable the text box again
+            self.textbox.configure(state="disabled")
+            return  # Stop execution after populating tasks
+
+        # Displays all parent projects if no monthly focus set
+        if all_parent_projects:
+            self.textbox.delete("1.0", "end")
+            self.textbox.configure(state="normal")
+            self.textbox.insert("1.0", "ALL PARENT PROJECTS" + "\n")
+
+            for task in all_parent_projects:
+                self.textbox.insert("end", f"{task.name} \n" )
+                print(f"Task [{task.name}] successfully inserted")
+
+            # Disable the text box again
+            self.textbox.configure(state="disabled")
+            return  # Stop execution after populating tasks
+
+        # Insert alt text into box if no projects found
+        self.textbox.insert("1.0", "To display project tasks please select a \n project for this month")
+
+        # Disable the text box again
+        self.textbox.configure(state="disabled")
+
+
+
+
+
 
 
     # TODO -  mote to task manager frame
@@ -1962,7 +2076,7 @@ class App(ctk.CTk):
         self.my_frame.grid(row=0, column=0, padx=10, pady=10 )
 
         #Today's tasks Frame
-        """ MyFrame2 Uses dependacy injection to share data  instance to another class. 
+        """ MyFrame2 Uses dependancy injection to share data  instance to another class. 
         essentially linking the two via pointing so I can get data from the instance of my_frame2 here in the App class """
 
         self.my_frame2 = MyFrame2(self, "Today's Tasks",520 ,260 ,self) #<- second self passes instance to 'app_instance' in MyFrame2 
@@ -2050,6 +2164,7 @@ class App(ctk.CTk):
         done_flags and their correspoding entry so that the entries can be reset
         """
         #note - have to use ids as boovar objects are non hasshable so cant be used as dict keys (non unique)
+        #could have used a tuple here as the key rather than zipping later
         checkbox_vars = {
             "habit1": self.my_frame.entry_habit1,
             "habit2": self.my_frame.entry_habit2,
@@ -2175,15 +2290,31 @@ class App(ctk.CTk):
         print("TESTING SELF.ORIGINAL_CONTENT",self.original_content)
 
         return tuple(self.original_content)
-
     
+    def if_done_set_done_true(self, task_name):
+        """ Searches task_tracking.all_tasks and task_tracking.all_stacks for matching tasks and sets done=True
+        Takes a task name as a string (Case sensitive)
+        Returns None
+        """
+        try:
+            task = class_def.task_tracking.get_task(task_name)  # Search all_tasks and all_stacks
+        except (ValueError, AttributeError) as e:
+            print(f"[{task_name}] not found in task_tracking. Error: {e}")
+        else:
+            if task:
+                task.update_attributes(done=True)
+
+        
     def if_done_checked_unlock_and_empty(self):
         """If done checked, unlock and empty entry"""
         done_flags = self.get_done_flags(return_done_flags_and_entries_dict=True)
         for done_flag , entry in done_flags:
             if done_flag and (entry not in(self.my_frame.entry_habit1,self.my_frame.entry_habit2)):
+                task_name = entry.get()
+                self.if_done_set_done_true(task_name)
                 entry.configure(state="normal", border_width=1)
                 entry.delete(0, "end")
+
 
     
     #callback Finish for the day button

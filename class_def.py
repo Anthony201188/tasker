@@ -73,10 +73,15 @@ class Stack:
         return self.stack
     
     def return_stack_names(self):
-        """ returns a list of all task names as type(str) """
+        """Returns a list of all task names as type(str) if the stack is empty it returns none"""
+        
+        # Check if self.stack is empty
+        if not self.stack: 
+            return None  # Return None if self.stack is empty
+        
+        # Generate the list of task names from self.stack
         stack_names = [x.name for x in self.stack]
         return stack_names
-    
 
     def print_task_stack(self):
         print(self.name ,self.stack)
@@ -86,6 +91,16 @@ class Stack:
     def task_exists(self, task)->bool:
         """ Checks if a task exists in the stack """
         return task in self.stack
+    
+    def get_task(self,task):
+        """ Takes a string as and arg and returns the task obj if found in stack else returns none """
+        task_to_return = None
+        
+        for item in self.stack:
+            if item.name == task:
+                task_to_return = item
+        
+        return task_to_return
     
     #might need to put a task obj getter here
         
@@ -186,7 +201,7 @@ class TaskTracking:
                 print(f"[{task.name}] found and returned")
                 return task
         else:
-            print(task_name,"not currently in all_tasks list")
+            print(task_name,"not currently in [all_tasks] list")
         
         for stack in self.all_stacks:
             for task in stack.stack:
@@ -194,7 +209,7 @@ class TaskTracking:
                     print(f"[{task.name}] found and returned")
                     return task
         else:
-            print(task_name,"not currently in all_stacks list")
+            print(task_name,"not currently in [all_stacks] list")
     
     def no_of_total_tasks(self)->int:
         return len(self.all_tasks)
@@ -212,6 +227,9 @@ class TaskTracking:
         print(f"[{task}] successfully deleted from main task list")
         print(self.string_list_all_tasks())#<-testing
 
+    ###
+    # def delete_task_everywhere(self,task)
+
     def task_exists(self, task)->bool:
         """ Checks if a task exists in the stack """
         return task in self.all_tasks#<- membership syntax to check if something is in something consicley and return bool
@@ -227,12 +245,12 @@ class TaskTracking:
         project_task_names = []
 
         for task in self.all_tasks:
-            if task.isproject:
+            if task.isproject and not isinstance(task, ProjectSubTask):
                 project_task_names.append(task.name)
 
         for stack in self.all_stacks:
             for task in stack.stack:
-                if task.isproject:
+                if task.isproject and not isinstance(task, ProjectSubTask):
                     project_task_names.append(task.name)
         print("testing project_task_names",project_task_names)
         return project_task_names
@@ -266,6 +284,11 @@ class Task:
 
         #task_tracking.create_task(self.name, self.description, self.urgency, self.importance, self.category, self.due_date, project=False, done=False)
 
+    def print_attributes(self,obj):
+        """ prints all attributes of an instance object """
+        for attr_name in vars(obj):
+            attr_value = getattr(obj, attr_name)
+            print(f"{attr_name}: {attr_value}")
 
     def __str__(self) -> str:
         return (f"""
@@ -277,8 +300,8 @@ class Task:
                 Task due date:[{self.due_date}]
                 Task status:Done=[{self.done}]
                 Task is a project:[{self.isproject}]
-                Task is a parent [{isinstance(self, Project)}]
-                Task is a sub task [{isinstance(self, ProjectSubTask)}]
+                Task is a parent :[{isinstance(self, Project)}]
+                Task is a sub task: [{isinstance(self, ProjectSubTask)}]
                 Task id_:[{self.id_}]
                 """)
     
