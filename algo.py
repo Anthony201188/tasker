@@ -79,8 +79,9 @@ def pre_sort(task_class_obj, *foci)->None:
 #otherwise things not in the enxt 7 days become non urgent again!
 
     if task_class_obj.done:
+    
         #Add task to archive whilst removing from task_tracking.all_tasks
-        class_def.task_tracking.task_archive.add_task_from_main(task_class_obj) #try
+        class_def.task_tracking.task_archive.archive_task(task_class_obj) #try
         print(f"{task_class_obj} added to TaskArchive.task_archive")
 
         #exxept message "Task not found in all_tasks" searching all_stacks"
@@ -281,6 +282,7 @@ def full_sort(task_obj_list, focus1, focus2):
     returns:None
           """
     
+    print(f"full_sort.task_obj_list:[{task_obj_list}]")
     for item in task_obj_list:
         # pre-sort as per the sorting diagram
         pre_sort(item, focus1, focus2) 
@@ -467,12 +469,14 @@ def main(app_instance, test=None):
         list_to_sort  =  get_taskmanager_unsorted_tasks()
         
 
+        
+
         #extends the list to sort with all tasks from all stack
-        combined_stack_contents = []
-        for stack in class_def.task_tracking.all_stacks:
-            combined_stack_contents.extend(stack.stack)
+        combined_stack_contents = class_def.task_tracking.return_all_stacks_combined()#<- think this is where the double tasks are coming from.
         list_to_sort.extend(combined_stack_contents)
 
+        #need think about updating the stack.stack in task_tracking here
+        class_def.task_tracking.empty_all()
 
         #sort the data
         sorted_non_urgent_tasks = full_sort(list_to_sort, focus1, focus2)

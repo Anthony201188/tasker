@@ -1805,7 +1805,6 @@ class MyFrame5(ctk.CTkFrame):
         
     # Insert task names
         print("task_stack type:", type(task_stack))
-        print("TESTING WORKING")
         task_stack.print_task_stack()
         task_names = task_stack.return_stack_names()
         print("task_names:",task_names)
@@ -1821,6 +1820,7 @@ class MyFrame5(ctk.CTkFrame):
         else:
             # Insert alt text into box
             print("inside populate task list else block")
+            self.textbox.delete("1.0", "end")
             self.textbox.insert("0.0", "Task list is empty. No tasks to display.")
             self.textbox.configure(state="disabled")
         
@@ -1914,9 +1914,11 @@ class MyFrame5V2(ctk.CTkFrame):
             # Disable the text box again
             self.textbox.configure(state="disabled")
             return  # Stop execution after populating tasks
-
-        # Insert alt text into box if no projects found
-        self.textbox.insert("1.0", "To display project tasks please select a \n project for this month")
+        
+        else:
+            # Insert alt text into box if no projects found
+            self.textbox.delete("1.0", "end")
+            self.textbox.insert("1.0", "To display project tasks please select a \n project for this month")
 
         # Disable the text box again
         self.textbox.configure(state="disabled")

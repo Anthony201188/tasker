@@ -35,21 +35,22 @@ class Stack:
         self.stack = []
         self.name = name
 
-    def add_task_from_main(self,task, position=None):
+    def add_task_from_main(self, task, position=None):
         """
         Adds task obj to stack, Can take an optional third argument to add it at a certain position
         IMPORTANT removes stack from tasktracking.all_tasks
         """
-        if position is not None:
-            self.stack.insert(position, task)
-            task_tracking.delete_task(task)
-            print(f"{task.name} added to {self.name} tracing:class_def,if")
-
-
-        else:
-            self.stack.append(task)
-            print(f"{task.name} added to {self.name} tracing:class_def,else")
-            task_tracking.delete_task(task)
+        try:
+            if position is not None:
+                self.stack.insert(position, task)
+                task_tracking.delete_task(task)
+                print(f"{task.name} added to {self.name}")
+            else:
+                self.stack.append(task)
+                print(f"{task.name} added to {self.name}")
+                task_tracking.delete_task(task)
+        except ValueError:
+            print(f"Error: {task.name} not found in task_tracking. Task not removed from task_tracking.")
 
 
 
@@ -101,6 +102,10 @@ class Stack:
                 task_to_return = item
         
         return task_to_return
+    
+    def empty(self):
+        """ emptys the stack its called from """
+        self.stack = []
     
     #might need to put a task obj getter here
         
@@ -196,8 +201,10 @@ class TaskTracking:
     
     def get_task(self,task_name):
         """ pass task name as a string to return that task from the all_task list as an obj """
+        cleaned_task_name = task_name.strip()
+        
         for task in self.all_tasks:
-            if task.name == task_name:
+            if task.name == cleaned_task_name:
                 print(f"[{task.name}] found and returned")
                 return task
         else:
@@ -205,7 +212,7 @@ class TaskTracking:
         
         for stack in self.all_stacks:
             for task in stack.stack:
-                if task.name == task_name:
+                if task.name == cleaned_task_name:
                     print(f"[{task.name}] found and returned")
                     return task
         else:
@@ -227,8 +234,35 @@ class TaskTracking:
         print(f"[{task}] successfully deleted from main task list")
         print(self.string_list_all_tasks())#<-testing
 
-    ###
-    # def delete_task_everywhere(self,task)
+    def return_all_stacks_combined(self):
+        """ returns the current contents of all stacks as a single list """
+        combined_list = []
+        for stack in self.all_stacks:
+            combined_list.extend(stack.stack)
+
+        print(f"combined_stacks:[{combined_list}]")
+        return combined_list
+
+
+    
+    def delete_task_everywhere(self,task):
+        """ Removes a single task(obj) from both the all_tasks list and all_stacks
+        Note:the same as the archive stack method 'remove_from_all_stacks()'
+        """
+        print("delete_task_everywhere() called")
+        
+        try:
+            self.all_tasks.remove(task)
+            print(f"[{task.name}] found in all_tasks and successfully deleted.")
+        except ValueError as e:
+            print(f"Error:[{task.name}] not in all_tasks, searching all_stacks...")
+            try:
+                all_stacks = self.return_all_stacks_combined()
+                if task in all_stacks:
+                    task.delete_self()
+            except ValueError as e:
+                print(f"Error:[{task.name}] not in all_stacks or all_tasks, can't be deleted")
+
 
     def task_exists(self, task)->bool:
         """ Checks if a task exists in the stack """
@@ -254,6 +288,15 @@ class TaskTracking:
                     project_task_names.append(task.name)
         print("testing project_task_names",project_task_names)
         return project_task_names
+    
+    def empty_all(self):
+        """ deletes entire contents of all tasks in task_tracking """
+        self.all_tasks = []
+        print(f"self.all_tasks now empty[{self.all_tasks}]")
+        for stack in self.all_stacks:
+            stack.stack = []
+        print(f"all_stacks now empty: {[f'{stack.name}:{stack.stack}' for stack in self.all_stacks]}")
+
 
 
 ###############################
@@ -318,6 +361,10 @@ class Task:
             print("update_attributes **kwargs empty",kwargs)
         for key, value in kwargs.items():
             print(f"  {key}: {value}")
+
+    def delete_self(self):
+        del self
+        print(f"{self.name} deleted.")
 
 
 class Project(Task):
