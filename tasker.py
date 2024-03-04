@@ -1214,12 +1214,21 @@ class MyFrame3(ctk.CTkFrame):
         
 
         ################# on-start logic ######################
+        # init the empty vars for first run
         self.set = None
+        self.past_zero_latch = None
 
         # Call the function and get the remaining days
-        self.remaining_days = self.get_remaining_days_of_month()
+        self.remaining_days = self.get_remaining_days_of_month() #<- setting of the past_zero_latch done here   
 
-        #TODO - if remaining days = 0 on load then reset entries
+        #load the 'set' state
+        self.set = load_file("focus_set.pkl")
+        self.toggle_set(self.set)
+
+        #load the self.past_zero_latch state here#
+        self.past_zero_latch = load_file("past_zero_latch.pkl")
+        if self.past_zero_latch:
+            self.toggle_set(False)
 
         print("Remaining days of the month:", self.remaining_days)
 
@@ -1229,9 +1238,6 @@ class MyFrame3(ctk.CTkFrame):
         #Load the month focus on start
         self.load_month_focus()
 
-        #set the 'set' attribute
-        self.set = load_file("focus_set.pkl")
-        self.toggle_set(self.set)
 
 
 
@@ -1291,7 +1297,13 @@ class MyFrame3(ctk.CTkFrame):
             self.toggle_set(True)
 
 
-    def get_remaining_days_of_month(self):
+    def get_remaining_days_of_month(self)->int:
+        """ Gets the remaining number of days in this months and returns them as an int 
+        ASLO: if the remaining days == 0 or the current month isnt the same as the last close month
+        it sets the class attribute of 'self.past_zero_latch' to True in order to unlock the entries when the 
+        past the remaining days but not yes set again (this could be seperated but was convienient to put it here for the moment)
+        """
+        
         #Get the current time in seconds since the epoch
         self.current_time = time.time()
 
@@ -1303,6 +1315,21 @@ class MyFrame3(ctk.CTkFrame):
 
         #Step 4: Calculate the remaining days
         self.remaining_days = self.last_day - self.current_struct_time.tm_mday # struct time obj can access each elem using the ".tm_xxx" tag
+
+        #get last close time and get the month
+        last_close = load_file("closing_date.pkl")
+
+        #convert the unix time to a month as an int
+        last_close_month = time.gmtime(last_close).tm_mon
+
+        #get the last current month
+        current_month = self.current_struct_time.tm_mon
+
+        #if number of days is zero or the month is different between 'closing_date.pkl' and today self.past_zero-latch == True
+        if self.remaining_days == 0 or last_close_month != current_month:
+            self.past_zero_latch = True
+            save_file("past_zero_latch.pkl")
+            print("self.past_zero_latch set to:True")
 
         return self.remaining_days
     
